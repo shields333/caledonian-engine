@@ -2,18 +2,18 @@
 
 #include <vk_types.h>
 
-class Image 
+class SwapchainImage
 {
 public:
-	Image(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-	Image(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView view);
-	~Image();
+	SwapchainImage(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+	SwapchainImage(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView view);
+	~SwapchainImage();
 
-	Image(const Image& other) = delete;
-	Image operator=(const Image& other) = delete;
+	SwapchainImage(const SwapchainImage& other) = delete;
+	SwapchainImage operator=(const SwapchainImage& other) = delete;
 
-	Image(Image&& other) noexcept;
-	Image& operator=(Image&& other) noexcept;
+	SwapchainImage(SwapchainImage&& other) noexcept;
+	SwapchainImage& operator=(SwapchainImage&& other) noexcept;
 
 	VkImageLayout			m_layout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
 	VkPipelineStageFlags2	m_srcStage = VK_PIPELINE_STAGE_2_NONE;
@@ -24,10 +24,16 @@ public:
 
 	VkFormat			getFormat()			{ return m_format; }
 	VkImageAspectFlags	getAspectFlags()	{ return m_aspectFlags; }
-private:
+
+protected:
 	VkImage		m_handle = VK_NULL_HANDLE;
 	VkImageView m_view	 = VK_NULL_HANDLE;
 
 	VkFormat			 m_format;
 	VkImageAspectFlags	 m_aspectFlags;
+};
+
+class Image : public SwapchainImage
+{
+	~Image();
 };

@@ -36,10 +36,10 @@ Swapchain::Swapchain(VkExtent2D extent, VkFormat format /*= VK_FORMAT_B8G8R8A8_U
 
 Swapchain::~Swapchain()
 {
+    vkDestroySwapchainKHR(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
+
     // destroy swapchain resources
     m_swapchainImages.clear();
-
-    vkDestroySwapchainKHR(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
 }
 
 Swapchain::Swapchain(Swapchain&& other) noexcept :

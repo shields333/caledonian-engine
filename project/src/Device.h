@@ -16,6 +16,8 @@ public:
 
 	VkDevice getHandle() const { return m_handle; }
 
+	void waitIdle();
+
 	VkImageView createImageView(const VkImageViewCreateInfo& info) const ;
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
 

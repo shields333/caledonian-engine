@@ -31,14 +31,13 @@ public:
 
 	std::vector<FrameData> m_frames;
 
-	FencePool m_fencePool;
+	std::unique_ptr<FencePool> m_fencePool;
 
 	FrameData& getCurrentFrame() { return m_frames[m_frameNumber % m_frameCount]; };
 
 	bool m_stopRendering{ false };
 	VkExtent2D m_windowExtent{ 1600 , 900 };
 
-	VkInstance m_instance = VK_NULL_HANDLE;// Vulkan library handle
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;// Vulkan window surface
 
 	VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;// Vulkan debug output handle
@@ -73,6 +72,8 @@ public:
 private:
 
 	static VulkanEngine* sm_loadedEngine;
+
+	VkInstance m_instance = VK_NULL_HANDLE;// Vulkan library handle
 
 	std::unique_ptr<Device> m_device; // Vulkan device for commands
 

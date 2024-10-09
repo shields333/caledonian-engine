@@ -21,6 +21,11 @@ Device& Device::operator=(Device&& other) noexcept
 	return *this;
 }
 
+void Device::waitIdle()
+{
+	vkDeviceWaitIdle(m_handle);
+}
+
 VkImageView Device::createImageView(const VkImageViewCreateInfo& info) const
 {
 	VkImageView view;

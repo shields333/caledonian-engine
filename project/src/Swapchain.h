@@ -22,7 +22,7 @@ public:
 	const	VkExtent2D  m_swapchainExtent;
 	const	VkFormat	m_swapchainImageFormat;
 
-	std::vector<Image>& getswapchainImages() { return m_swapchainImages; }
+	std::vector<SwapchainImage>& getswapchainImages() { return m_swapchainImages; }
 
 	uint32_t acquireImage(uint64_t timeout, VkSemaphore semaphore = VK_NULL_HANDLE);
 
@@ -30,5 +30,5 @@ private:
 
 	VkSwapchainKHR m_handle;
 
-	std::vector<Image> m_swapchainImages;
+	std::vector<SwapchainImage> m_swapchainImages;
 };

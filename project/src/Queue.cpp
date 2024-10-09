@@ -20,7 +20,7 @@ Fence Queue::submit(VkCommandBuffer cmdBuf,
 
 	VkSubmitInfo2 submit = vkinit::submit_info(&cmdinfo, &signalInfo, &waitInfo);
 
-	Fence fence = VulkanEngine::get().m_fencePool.requestFence();
+	Fence fence = VulkanEngine::get().m_fencePool->requestFence();
 
 	VK_CHECK(vkQueueSubmit2(m_handle, 1, &submit, fence.getHandle()));
 

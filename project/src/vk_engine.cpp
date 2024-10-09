@@ -46,11 +46,25 @@ VulkanEngine::VulkanEngine()
 
 VulkanEngine::~VulkanEngine()
 {
+    m_device->waitIdle();
+
+    for (auto& frame : m_frames) {
+        vkDestroySemaphore(m_device->getHandle(), frame.renderSemaphore, nullptr);
+        vkDestroySemaphore(m_device->getHandle(), frame.swapchainSemaphore, nullptr);
+    }
+
+    m_frames.clear();
+
+    m_fencePool.reset();
+
     DestroySwapchain();
 
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 
     vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
+
+    m_device.reset();
+
     vkDestroyInstance(m_instance, nullptr);
 
     SDL_DestroyWindow(m_window);
@@ -147,6 +161,8 @@ void VulkanEngine::initCommandPools()
         frame.commandPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
         frame.mainCommandBuffer = frame.commandPool->requestCommandBuffer();
     }
+
+    m_fencePool = std::make_unique<FencePool>();
 }
 
 void VulkanEngine::initSyncStructures()
@@ -169,14 +185,14 @@ void VulkanEngine::recordCommands()
         for (auto& fence : frameData.fences) {
             fence.wait(UINT64_MAX);
             fence.reset();
-            m_fencePool.returnFence(fence);
+            m_fencePool->returnFence(fence);
         }
         frameData.fences.clear();
     }
 
     // acquire the next swapchain image
     m_swapchainIndex = m_swapchain->acquireImage(UINT64_MAX, frameData.swapchainSemaphore);
-    Image& swapchainImage = m_swapchain->getswapchainImages()[m_swapchainIndex];
+    Image& swapchainImage = static_cast<Image&>(m_swapchain->getswapchainImages()[m_swapchainIndex]);
 
     // reset the pool before recording
     frameData.commandPool->resetPool();
@@ -222,8 +238,10 @@ void VulkanEngine::run()
         // Handle events on queue
         while (SDL_PollEvent(&e) != 0) {
             // close the window when user alt-f4s or clicks the X button
-            if (e.type == SDL_QUIT)
+            if (e.type == SDL_QUIT) {
                 bQuit = true;
+                m_stopRendering = true;
+            }
 
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_MINIMIZED) {
@@ -245,4 +263,6 @@ void VulkanEngine::run()
         recordCommands();
         submitFrame();
     }
+
+    delete sm_loadedEngine;
 }
