@@ -4,12 +4,15 @@
 #pragma once
 
 #include <vk_types.h>
+#include <vk_descriptors.h>
 
 #include "Device.h"
 #include "Swapchain.h"
 #include "CommandPool.h"
 #include "FencePool.h"
 #include "Queue.h"
+#include "Image.h"
+#include "ComputePipeline.h"
 
 struct FrameData {
 
@@ -20,8 +23,16 @@ struct FrameData {
 	std::vector<Fence> fences;
 };
 
-class VulkanEngine {
+class VulkanEngine 
+{
 public:
+
+	DescriptorAllocator m_globalDescriptorAllocator;
+
+	VkDescriptorSet m_drawImageDescriptors;
+	VkDescriptorSetLayout m_drawImageDescriptorLayout;
+
+	std::unique_ptr<ComputePipeline> m_pipeline;
 
 	uint32_t m_frameCount = 3;
 
@@ -31,9 +42,13 @@ public:
 
 	std::vector<FrameData> m_frames;
 
+	std::unique_ptr<Image> m_drawImage;
+
 	std::unique_ptr<FencePool> m_fencePool;
 
 	FrameData& getCurrentFrame() { return m_frames[m_frameNumber % m_frameCount]; };
+
+	VmaAllocator m_allocator;
 
 	bool m_stopRendering{ false };
 	VkExtent2D m_windowExtent{ 1600 , 900 };
@@ -86,6 +101,9 @@ private:
 	void initSwapchain();
 	void initCommandPools();
 	void initSyncStructures();
+	void init_descriptors();
+	void init_pipelines();
+	void init_background_pipelines();
 
-	void DestroySwapchain();
+	void destroySwapchain();
 };

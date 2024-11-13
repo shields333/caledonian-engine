@@ -27,6 +27,8 @@ add_executable (engine
   Queue.h
   Image.cpp
   Image.h 
+  ComputePipeline.cpp
+  ComputePipeline.h
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

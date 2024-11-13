@@ -133,3 +133,58 @@ void CommandBuffer::clearColourImage(Image& image, VkClearColorValue clearColour
     vkCmdClearColorImage(m_handle, image.getHandle(), image.m_layout, &clearColour, 1, &range);
 }
 
+void CommandBuffer::blit(Image& srcImg, Image& dstImg)
+{
+    VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
+
+    blitRegion.srcOffsets[1].x = srcImg.getExtent().width;
+    blitRegion.srcOffsets[1].y = srcImg.getExtent().height;
+    blitRegion.srcOffsets[1].z = 1;
+
+    blitRegion.dstOffsets[1].x = dstImg.getExtent().width;
+    blitRegion.dstOffsets[1].y = dstImg.getExtent().height;
+    blitRegion.dstOffsets[1].z = 1;
+
+    blitRegion.srcSubresource.aspectMask = srcImg.getAspectFlags();
+    blitRegion.srcSubresource.baseArrayLayer = 0;
+    blitRegion.srcSubresource.layerCount = 1;
+    blitRegion.srcSubresource.mipLevel = 0;
+
+    blitRegion.dstSubresource.aspectMask = dstImg.getAspectFlags();
+    blitRegion.dstSubresource.baseArrayLayer = 0;
+    blitRegion.dstSubresource.layerCount = 1;
+    blitRegion.dstSubresource.mipLevel = 0;
+
+    VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
+    blitInfo.dstImage = dstImg.getHandle();
+    blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    blitInfo.srcImage = srcImg.getHandle();
+    blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    blitInfo.filter = VK_FILTER_LINEAR;
+    blitInfo.regionCount = 1;
+    blitInfo.pRegions = &blitRegion;
+
+    vkCmdBlitImage2(m_handle, &blitInfo);
+}
+
+void CommandBuffer::bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint)
+{
+    vkCmdBindPipeline(m_handle, bindPoint, pipeline);
+}
+
+void CommandBuffer::bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint)
+{
+    std::vector<VkDescriptorSet> sets(1, set);
+    bindDescriptorSets(sets, layout, bindPoint);
+}
+
+void CommandBuffer::bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPipelineLayout layout, VkPipelineBindPoint bindPoint)
+{
+    vkCmdBindDescriptorSets(m_handle, bindPoint, layout, 0, sets.size(), sets.data(), 0, nullptr);
+}
+
+void CommandBuffer::dispatch(uint32_t x, uint32_t y, uint32_t z)
+{
+    vkCmdDispatch(m_handle, x, y, z);
+}
+

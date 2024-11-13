@@ -9,6 +9,9 @@
 //bootstrap library
 #include "VkBootstrap.h"
 
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 #include <chrono>
 #include <thread>
 
@@ -48,6 +51,11 @@ VulkanEngine::~VulkanEngine()
 {
     m_device->waitIdle();
 
+    m_pipeline.reset();
+
+    m_globalDescriptorAllocator.destroy_pool(m_device->getHandle());
+    vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
+
     for (auto& frame : m_frames) {
         vkDestroySemaphore(m_device->getHandle(), frame.renderSemaphore, nullptr);
         vkDestroySemaphore(m_device->getHandle(), frame.swapchainSemaphore, nullptr);
@@ -57,9 +65,13 @@ VulkanEngine::~VulkanEngine()
 
     m_fencePool.reset();
 
-    DestroySwapchain();
+    destroySwapchain();
 
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+
+    m_drawImage.reset();
+
+    vmaDestroyAllocator(m_allocator);
 
     vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
 
@@ -73,7 +85,7 @@ VulkanEngine::~VulkanEngine()
     sm_loadedEngine = nullptr;
 }
 
-void VulkanEngine::DestroySwapchain()
+void VulkanEngine::destroySwapchain()
 {
     m_swapchain.reset();
 }
@@ -87,6 +99,10 @@ void VulkanEngine::init()
     initCommandPools();
 
     initSyncStructures();
+
+    init_descriptors();
+
+    init_pipelines();
 }
 
 void VulkanEngine::initVulkan()
@@ -145,12 +161,28 @@ void VulkanEngine::initVulkan()
     // use vkbootstrap to get a Graphics queue
     m_graphicsQueue = std::make_unique<Queue>(vkbDevice.get_queue(vkb::QueueType::graphics).value(),
         vkbDevice.get_queue_index(vkb::QueueType::graphics).value());
+
+    // initialize the memory allocator
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = m_physicalDevice;
+    allocatorInfo.device = m_device->getHandle();
+    allocatorInfo.instance = m_instance;
+    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    vmaCreateAllocator(&allocatorInfo, &m_allocator);
 }
 
 void VulkanEngine::initSwapchain()
 {
     m_swapchain = std::make_unique<Swapchain>(m_windowExtent);
     m_frameCount = m_swapchain->getswapchainImages().size();
+
+    VkImageUsageFlags drawImageUsages{};
+    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
+    drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    m_drawImage = std::make_unique<Image>(VK_FORMAT_B10G11R11_UFLOAT_PACK32, m_windowExtent, drawImageUsages, VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void VulkanEngine::initCommandPools()
@@ -177,6 +209,54 @@ void VulkanEngine::initSyncStructures()
     }
 }
 
+void VulkanEngine::init_descriptors()
+{
+    //create a descriptor pool that will hold 10 sets with 1 image each
+    std::vector<DescriptorAllocator::PoolSizeRatio> sizes =
+    {
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
+    };
+
+    m_globalDescriptorAllocator.init_pool(m_device->getHandle(), 10, sizes);
+
+    //make the descriptor set layout for our compute draw
+    {
+        DescriptorLayoutBuilder builder;
+        builder.add_binding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+        m_drawImageDescriptorLayout = builder.build(m_device->getHandle(), VK_SHADER_STAGE_COMPUTE_BIT);
+    }
+
+    //allocate a descriptor set for our draw image
+    m_drawImageDescriptors = m_globalDescriptorAllocator.allocate(m_device->getHandle(), m_drawImageDescriptorLayout);
+
+    VkDescriptorImageInfo imgInfo{};
+    imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    imgInfo.imageView = m_drawImage->getViewHandle();
+
+    VkWriteDescriptorSet drawImageWrite = {};
+    drawImageWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    drawImageWrite.pNext = nullptr;
+
+    drawImageWrite.dstBinding = 0;
+    drawImageWrite.dstSet = m_drawImageDescriptors;
+    drawImageWrite.descriptorCount = 1;
+    drawImageWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    drawImageWrite.pImageInfo = &imgInfo;
+
+    vkUpdateDescriptorSets(m_device->getHandle(), 1, &drawImageWrite, 0, nullptr);
+}
+
+void VulkanEngine::init_pipelines()
+{
+    init_background_pipelines();
+}
+
+void VulkanEngine::init_background_pipelines()
+{
+    std::vector<VkDescriptorSetLayout> layouts(1, m_drawImageDescriptorLayout);
+    m_pipeline = std::make_unique<ComputePipeline>("../project/shaders/gradient.comp.spv", layouts);
+}
+
 void VulkanEngine::recordCommands()
 {
     auto& frameData = m_frames[m_frameNumber];
@@ -200,17 +280,21 @@ void VulkanEngine::recordCommands()
     auto& cmd = frameData.mainCommandBuffer;
     cmd->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-    // transition swapchain for transfer
+    // transition image for transfer
+    cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
+
+    cmd->bindPipeline(m_pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+    cmd->bindDescriptorSet(m_drawImageDescriptors, m_pipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+    cmd->dispatch(std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
+
+    // transition images for copying
+    cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
     cmd->barrier(swapchainImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
-    VkClearColorValue clearValue;
-    clearValue = { { 0.0f, 0.0f, 1.0, 1.0f } };
-    VkImageSubresourceRange clearRange = vkinit::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
+    // copy offscreen image to swapchain image
+    cmd->blit(*m_drawImage, swapchainImage);
 
-    //clear image
-    cmd->clearColourImage(swapchainImage, clearValue, clearRange);
-
-    // transition swapchain for present
+    // transition swapchain image for present
     cmd->barrier(swapchainImage, VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE);
 
     cmd->end();

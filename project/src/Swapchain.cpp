@@ -29,17 +29,21 @@ Swapchain::Swapchain(VkExtent2D extent, VkFormat format /*= VK_FORMAT_B8G8R8A8_U
 
     m_swapchainImages.reserve(swapchainImages.size());
     for (int i = 0; i < swapchainImages.size(); i++) {
-        m_swapchainImages.emplace_back(swapchainImages[i], vkbSwapchain.image_format, VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT,
+        m_swapchainImages.emplace_back(swapchainImages[i], 
+            vkbSwapchain.image_format, 
+            vkbSwapchain.extent, 
+            vkbSwapchain.image_usage_flags,
+            VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT, 
             swapchainImageViews[i]);
     }
 }
 
 Swapchain::~Swapchain()
 {
-    vkDestroySwapchainKHR(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
-
     // destroy swapchain resources
     m_swapchainImages.clear();
+
+    vkDestroySwapchainKHR(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
 }
 
 Swapchain::Swapchain(Swapchain&& other) noexcept :

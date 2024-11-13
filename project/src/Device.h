@@ -18,9 +18,6 @@ public:
 
 	void waitIdle();
 
-	VkImageView createImageView(const VkImageViewCreateInfo& info) const ;
-	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
-
 private:
 	VkDevice m_handle;
 };

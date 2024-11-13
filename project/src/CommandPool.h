@@ -18,6 +18,11 @@ public:
 	void end();
 	void barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access);
 	void clearColourImage(Image& image, VkClearColorValue clearColour, VkImageSubresourceRange& range);
+	void blit(Image& srcImg, Image& dstImg);
+	void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint);
+	void bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
+	void bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
+	void dispatch(uint32_t x, uint32_t y, uint32_t z);
 
 private:
 	VkCommandBuffer m_handle = VK_NULL_HANDLE;
