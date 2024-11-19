@@ -4,13 +4,20 @@
 
 #include "vk_engine.h"
 
-ComputePipeline::ComputePipeline(std::string sourcePath, std::vector<VkDescriptorSetLayout> &descriptorLayouts)
+ComputePipeline::ComputePipeline(std::string sourcePath, std::vector<VkDescriptorSetLayout> &descriptorLayouts, 
+	std::vector<VkPushConstantRange>* pushConstants /*= nullptr*/)
 {
 	VkPipelineLayoutCreateInfo computeLayout{};
 	computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	computeLayout.pNext = nullptr;
 	computeLayout.pSetLayouts = descriptorLayouts.data();
 	computeLayout.setLayoutCount = descriptorLayouts.size();
+
+	// add push constants if supplied
+	if (pushConstants){
+		computeLayout.pPushConstantRanges = pushConstants->data();
+		computeLayout.pushConstantRangeCount = pushConstants->size();
+	}
 
 	VK_CHECK(vkCreatePipelineLayout(VulkanEngine::getDevice()->getHandle(), &computeLayout, nullptr, &m_layout));
 

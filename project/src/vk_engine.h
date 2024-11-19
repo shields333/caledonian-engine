@@ -13,6 +13,7 @@
 #include "Queue.h"
 #include "Image.h"
 #include "ComputePipeline.h"
+#include "GuiManager.h"
 
 struct FrameData {
 
@@ -21,6 +22,21 @@ struct FrameData {
 
 	VkSemaphore swapchainSemaphore, renderSemaphore;
 	std::vector<Fence> fences;
+};
+
+struct ComputePushConstants {
+	glm::vec4 data1;
+	glm::vec4 data2;
+	glm::vec4 data3;
+	glm::vec4 data4;
+};
+
+struct ComputeEffect {
+	const char* name;
+
+	ComputePipeline* pipeline;
+
+	ComputePushConstants data;
 };
 
 class VulkanEngine 
@@ -32,7 +48,11 @@ public:
 	VkDescriptorSet m_drawImageDescriptors;
 	VkDescriptorSetLayout m_drawImageDescriptorLayout;
 
-	std::unique_ptr<ComputePipeline> m_pipeline;
+	std::unique_ptr<ComputePipeline> m_gradientPipeline;
+	std::unique_ptr<ComputePipeline> m_skyPipeline;
+
+	std::vector<ComputeEffect> m_backgroundEffects;
+	int m_currentBackgroundEffect{ 0 };
 
 	uint32_t m_frameCount = 3;
 
@@ -61,12 +81,17 @@ public:
 
 	std::unique_ptr<Swapchain> m_swapchain;
 
+	std::unique_ptr<Queue>	m_graphicsQueue;
+
 	bool m_useValidationLayers = false;
 
 	struct SDL_Window* m_window{ nullptr };
 
+	std::unique_ptr<GuiManager> m_guiManager;
+
 	static VulkanEngine& get();
 	static const Device* getDevice();
+	static const VkInstance& getInstance();
 
 	VulkanEngine(VulkanEngine& other) = delete;
 	VulkanEngine& operator=(const VulkanEngine& other) = delete;
@@ -91,8 +116,6 @@ private:
 	VkInstance m_instance = VK_NULL_HANDLE;// Vulkan library handle
 
 	std::unique_ptr<Device> m_device; // Vulkan device for commands
-
-	std::unique_ptr<Queue>	m_graphicsQueue;
 
 	VulkanEngine();
 	~VulkanEngine();

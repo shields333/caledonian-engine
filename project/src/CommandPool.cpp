@@ -183,8 +183,26 @@ void CommandBuffer::bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPip
     vkCmdBindDescriptorSets(m_handle, bindPoint, layout, 0, sets.size(), sets.data(), 0, nullptr);
 }
 
+void CommandBuffer::pushConstants(void* data, size_t range, VkPipelineLayout layout, VkShaderStageFlagBits stages)
+{
+    vkCmdPushConstants(m_handle, layout, stages, 0, range, data);
+}
+
 void CommandBuffer::dispatch(uint32_t x, uint32_t y, uint32_t z)
 {
     vkCmdDispatch(m_handle, x, y, z);
+}
+
+void CommandBuffer::beginRendering(Image& image)
+{
+    VkRenderingAttachmentInfo colorAttachment = vkinit::attachment_info(image.getViewHandle(), nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    VkRenderingInfo renderInfo = vkinit::rendering_info(image.getExtent(), &colorAttachment, nullptr);
+
+    vkCmdBeginRendering(m_handle, &renderInfo);
+}
+
+void CommandBuffer::endRendering()
+{
+    vkCmdEndRendering(m_handle);
 }
 

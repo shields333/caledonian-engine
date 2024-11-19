@@ -22,7 +22,10 @@ public:
 	void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
+	void pushConstants(void* data, size_t range, VkPipelineLayout layout, VkShaderStageFlagBits stages);
 	void dispatch(uint32_t x, uint32_t y, uint32_t z);
+	void beginRendering(Image& image);
+	void endRendering();
 
 private:
 	VkCommandBuffer m_handle = VK_NULL_HANDLE;

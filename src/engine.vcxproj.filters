@@ -46,6 +46,9 @@
     <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\project\src\GuiManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_types.h">
@@ -101,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\RelWithDebInfo\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\project\src\GuiManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

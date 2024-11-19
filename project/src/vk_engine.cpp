@@ -31,6 +31,12 @@ const Device* VulkanEngine::getDevice()
     return sm_loadedEngine->m_device.get();
 }
 
+const VkInstance& VulkanEngine::getInstance()
+{
+    assert(sm_loadedEngine->m_instance);
+    return sm_loadedEngine->m_instance;
+}
+
 VulkanEngine::VulkanEngine()
 {
     // We initialize SDL and create a window with it.
@@ -51,7 +57,10 @@ VulkanEngine::~VulkanEngine()
 {
     m_device->waitIdle();
 
-    m_pipeline.reset();
+    m_guiManager.reset();
+
+    m_gradientPipeline.reset();
+    m_skyPipeline.reset();
 
     m_globalDescriptorAllocator.destroy_pool(m_device->getHandle());
     vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
@@ -103,6 +112,8 @@ void VulkanEngine::init()
     init_descriptors();
 
     init_pipelines();
+
+    m_guiManager = std::make_unique<GuiManager>();
 }
 
 void VulkanEngine::initVulkan()
@@ -253,8 +264,34 @@ void VulkanEngine::init_pipelines()
 
 void VulkanEngine::init_background_pipelines()
 {
+    // create gradient pipeline
     std::vector<VkDescriptorSetLayout> layouts(1, m_drawImageDescriptorLayout);
-    m_pipeline = std::make_unique<ComputePipeline>("../project/shaders/gradient.comp.spv", layouts);
+    std::vector <VkPushConstantRange> pushConstant(1);
+    pushConstant[0].offset = 0;
+    pushConstant[0].size = sizeof(ComputePushConstants);
+    pushConstant[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    m_gradientPipeline = std::make_unique<ComputePipeline>("../project/shaders/gradient_color.comp.spv", layouts, &pushConstant);
+    m_skyPipeline = std::make_unique<ComputePipeline>("../project/shaders/sky.comp.spv", layouts, &pushConstant);
+
+    ComputeEffect gradient;
+    gradient.pipeline = m_gradientPipeline.get();
+    gradient.name = "gradient";
+    gradient.data = {};
+
+    //default colors
+    gradient.data.data1 = glm::vec4(1, 0, 0, 1);
+    gradient.data.data2 = glm::vec4(0, 0, 1, 1);
+
+    ComputeEffect sky;
+    sky.pipeline = m_skyPipeline.get();
+    sky.name = "sky";
+    sky.data = {};
+    //default sky parameters
+    sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+
+    //add the 2 background effects into the array
+    m_backgroundEffects.push_back(gradient);
+    m_backgroundEffects.push_back(sky);
 }
 
 void VulkanEngine::recordCommands()
@@ -283,8 +320,12 @@ void VulkanEngine::recordCommands()
     // transition image for transfer
     cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
 
-    cmd->bindPipeline(m_pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
-    cmd->bindDescriptorSet(m_drawImageDescriptors, m_pipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+    ComputeEffect& effect = m_backgroundEffects[m_currentBackgroundEffect];
+    cmd->bindPipeline(effect.pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+    cmd->bindDescriptorSet(m_drawImageDescriptors, m_gradientPipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+    cmd->pushConstants(&effect.data, sizeof(ComputePushConstants), effect.pipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
+
     cmd->dispatch(std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
 
     // transition images for copying
@@ -293,6 +334,16 @@ void VulkanEngine::recordCommands()
 
     // copy offscreen image to swapchain image
     cmd->blit(*m_drawImage, swapchainImage);
+
+    // begin UI pass
+    cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    cmd->beginRendering(swapchainImage);
+
+    // draw the GUI
+    m_guiManager->draw(*cmd, swapchainImage);
+
+    // end the UI pass
+    cmd->endRendering();
 
     // transition swapchain image for present
     cmd->barrier(swapchainImage, VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE);
@@ -335,6 +386,9 @@ void VulkanEngine::run()
                     m_stopRendering = false;
                 }
             }
+
+            //send SDL event to imgui for handling
+            m_guiManager->processEvents(e);
         }
 
         // do not draw if we are minimized
@@ -343,6 +397,8 @@ void VulkanEngine::run()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
+
+        m_guiManager->newFrame();
 
         recordCommands();
         submitFrame();
