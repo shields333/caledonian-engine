@@ -145,7 +145,7 @@ void GuiManager::newFrame()
 	ImGui::Render();
 }
 
-void GuiManager::draw(CommandBuffer& cmd, Image& target)
+void GuiManager::draw(CommandBuffer& cmd)
 {
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.getHandle());
 }

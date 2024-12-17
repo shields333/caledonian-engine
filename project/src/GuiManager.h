@@ -24,7 +24,7 @@ public:
 
 	void processEvents(SDL_Event &e);
 	void newFrame();
-	void draw(CommandBuffer &cmd, Image &target);
+	void draw(CommandBuffer &cmd);
 
 private:
 	std::unique_ptr<CommandPool> m_cmdPool;
