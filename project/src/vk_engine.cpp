@@ -340,7 +340,7 @@ void VulkanEngine::recordCommands()
     cmd->beginRendering(swapchainImage);
 
     // draw the GUI
-    m_guiManager->draw(*cmd, swapchainImage);
+    m_guiManager->draw(*cmd);
 
     // end the UI pass
     cmd->endRendering();
