@@ -12,9 +12,6 @@
 
 GuiManager::GuiManager()
 {
-	m_cmdPool = std::make_unique<CommandPool>(VulkanEngine::get().m_graphicsQueue->m_familyIndex);
-	m_cmdBuf = std::make_unique<CommandBuffer>(*m_cmdPool->requestCommandBuffer());
-
 	// 1: create descriptor pool for IMGUI
 	//  the size of the pool is very oversized, but it's copied from imgui demo
 	//  itself.
@@ -73,9 +70,6 @@ GuiManager::GuiManager()
 
 GuiManager::~GuiManager()
 {
-	m_cmdBuf.reset();
-	m_cmdPool.reset();
-
 	ImGui_ImplVulkan_Shutdown();
 
 	vkDestroyDescriptorPool(VulkanEngine::getDevice()->getHandle(), m_imguiPool, nullptr);
@@ -88,28 +82,9 @@ GuiManager::GuiManager(GuiManager&& other) noexcept
 
 GuiManager* GuiManager::operator=(GuiManager&& other) noexcept
 {
-	this->m_cmdBuf = std::move(other.m_cmdBuf);
-	this->m_cmdPool = std::move(other.m_cmdPool);
-
 	this->m_imguiPool = std::exchange(other.m_imguiPool, VK_NULL_HANDLE);
 
 	return this;
-}
-
-void GuiManager::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
-{
-	m_cmdPool->resetPool();
-
-	m_cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-	function(m_cmdBuf->getHandle());
-	m_cmdBuf->end();
-
-	Fence fence = std::move(VulkanEngine::get().m_graphicsQueue->submit(m_cmdBuf->getHandle()));
-	
-	// block until the submit has completed
-	fence.wait(UINT32_MAX);
-
-	VulkanEngine::get().m_fencePool->returnFence(fence);
 }
 
 void GuiManager::processEvents(SDL_Event& e)

@@ -13,7 +13,9 @@
 #include "Queue.h"
 #include "Image.h"
 #include "ComputePipeline.h"
+#include "GraphicsPipeline.h"
 #include "GuiManager.h"
+#include "Mesh.h"
 
 struct FrameData {
 
@@ -54,6 +56,11 @@ public:
 	std::vector<ComputeEffect> m_backgroundEffects;
 	int m_currentBackgroundEffect{ 0 };
 
+	std::unique_ptr<GraphicsPipeline> m_trianglePipeline;
+	std::unique_ptr<GraphicsPipeline> m_meshPipeline;
+
+	std::unique_ptr<Mesh> m_mesh;
+
 	uint32_t m_frameCount = 3;
 
 	uint32_t m_swapchainIndex = 0;
@@ -71,7 +78,7 @@ public:
 	VmaAllocator m_allocator;
 
 	bool m_stopRendering{ false };
-	VkExtent2D m_windowExtent{ 1600 , 900 };
+	VkExtent2D m_windowExtent{ 1280 , 720 };
 
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;// Vulkan window surface
 
@@ -99,6 +106,8 @@ public:
 	VulkanEngine(VulkanEngine&& other) noexcept { *this = std::move(other); }
 	VulkanEngine& operator=(VulkanEngine&& other) noexcept = default;
 
+	void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
+
 	void init();
 
 	void recordCommands();
@@ -117,6 +126,9 @@ private:
 
 	std::unique_ptr<Device> m_device; // Vulkan device for commands
 
+	std::unique_ptr<CommandPool> m_cmdPool;
+	std::unique_ptr<CommandBuffer> m_cmdBuf;
+
 	VulkanEngine();
 	~VulkanEngine();
 
@@ -127,6 +139,13 @@ private:
 	void init_descriptors();
 	void init_pipelines();
 	void init_background_pipelines();
+
+	void initTrianglePipeline();
+	void initMeshPipeline();
+
+	void initDefaultData();
+
+	void drawGeometry(CommandBuffer &cmd);
 
 	void destroySwapchain();
 };

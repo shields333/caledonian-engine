@@ -15,14 +15,18 @@ Fence Queue::submit(VkCommandBuffer cmdBuf,
 {
 	VkCommandBufferSubmitInfo cmdinfo = vkinit::command_buffer_submit_info(cmdBuf);
 
-	VkSemaphoreSubmitInfo waitInfo = vkinit::semaphore_submit_info(waitStageMask, waitSemaphore);
-	VkSemaphoreSubmitInfo signalInfo = vkinit::semaphore_submit_info(signalStageMask, signalSemaphore);
+	VkSemaphoreSubmitInfo* waitInfo = waitSemaphore ? new VkSemaphoreSubmitInfo(vkinit::semaphore_submit_info(waitStageMask, waitSemaphore)) : nullptr;
+	VkSemaphoreSubmitInfo* signalInfo = signalSemaphore ? new VkSemaphoreSubmitInfo(vkinit::semaphore_submit_info(signalStageMask, signalSemaphore)) : nullptr;
 
-	VkSubmitInfo2 submit = vkinit::submit_info(&cmdinfo, &signalInfo, &waitInfo);
+
+	VkSubmitInfo2 submit = vkinit::submit_info(&cmdinfo, signalInfo, waitInfo);
 
 	Fence fence = VulkanEngine::get().m_fencePool->requestFence();
 
 	VK_CHECK(vkQueueSubmit2(m_handle, 1, &submit, fence.getHandle()));
+
+	delete waitInfo;
+	delete signalInfo;
 
 	return fence;
 }

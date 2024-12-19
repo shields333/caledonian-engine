@@ -4,6 +4,7 @@
 #include <deque>
 
 #include "Image.h"
+#include "Buffer.h"
 
 class CommandBuffer
 {
@@ -22,10 +23,15 @@ public:
 	void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
+	void bindIndexBuffer(Buffer& buffer, VkIndexType type = VK_INDEX_TYPE_UINT32);
 	void pushConstants(void* data, size_t range, VkPipelineLayout layout, VkShaderStageFlagBits stages);
+	void setViewport(VkExtent2D extent);
+	void setScissor(VkExtent2D extent);
 	void dispatch(uint32_t x, uint32_t y, uint32_t z);
 	void beginRendering(Image& image);
 	void endRendering();
+	void draw(uint32_t vertexCount, uint32_t instanceCount,uint32_t firstVertex, uint32_t firstInstance);
+	void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance);
 
 private:
 	VkCommandBuffer m_handle = VK_NULL_HANDLE;

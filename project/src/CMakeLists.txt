@@ -27,8 +27,14 @@ add_executable (engine
   Queue.h
   Image.cpp
   Image.h 
+  Buffer.cpp
+  Buffer.h
+  Mesh.cpp
+  Mesh.h
   ComputePipeline.cpp
   ComputePipeline.h
+  GraphicsPipeline.cpp
+  GraphicsPipeline.h
   GuiManager.cpp
   GuiManager.h
 )

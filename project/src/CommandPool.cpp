@@ -183,9 +183,38 @@ void CommandBuffer::bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPip
     vkCmdBindDescriptorSets(m_handle, bindPoint, layout, 0, sets.size(), sets.data(), 0, nullptr);
 }
 
+void CommandBuffer::bindIndexBuffer(Buffer& buffer, VkIndexType type)
+{
+    vkCmdBindIndexBuffer(m_handle, buffer.getHandle(), 0, type);
+}
+
 void CommandBuffer::pushConstants(void* data, size_t range, VkPipelineLayout layout, VkShaderStageFlagBits stages)
 {
     vkCmdPushConstants(m_handle, layout, stages, 0, range, data);
+}
+
+void CommandBuffer::setViewport(VkExtent2D extent)
+{
+    VkViewport viewport = {};
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = extent.width;
+    viewport.height = extent.height;
+    viewport.minDepth = 0.f;
+    viewport.maxDepth = 1.f;
+
+    vkCmdSetViewport(m_handle, 0, 1, &viewport);
+}
+
+void CommandBuffer::setScissor(VkExtent2D extent)
+{
+    VkRect2D scissor = {};
+    scissor.offset.x = 0;
+    scissor.offset.y = 0;
+    scissor.extent.width = extent.width;
+    scissor.extent.height = extent.height;
+
+    vkCmdSetScissor(m_handle, 0, 1, &scissor);
 }
 
 void CommandBuffer::dispatch(uint32_t x, uint32_t y, uint32_t z)
@@ -204,5 +233,15 @@ void CommandBuffer::beginRendering(Image& image)
 void CommandBuffer::endRendering()
 {
     vkCmdEndRendering(m_handle);
+}
+
+void CommandBuffer::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    vkCmdDraw(m_handle, vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void CommandBuffer::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)
+{
+    vkCmdDrawIndexed(m_handle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 

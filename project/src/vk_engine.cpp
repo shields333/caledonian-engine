@@ -61,6 +61,10 @@ VulkanEngine::~VulkanEngine()
 
     m_gradientPipeline.reset();
     m_skyPipeline.reset();
+    m_trianglePipeline.reset();
+    m_meshPipeline.reset();
+
+    m_mesh.reset();
 
     m_globalDescriptorAllocator.destroy_pool(m_device->getHandle());
     vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
@@ -73,6 +77,9 @@ VulkanEngine::~VulkanEngine()
     m_frames.clear();
 
     m_fencePool.reset();
+
+    m_cmdBuf.reset();
+    m_cmdPool.reset();
 
     destroySwapchain();
 
@@ -99,6 +106,22 @@ void VulkanEngine::destroySwapchain()
     m_swapchain.reset();
 }
 
+void VulkanEngine::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
+{
+    m_cmdPool->resetPool();
+
+    m_cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    function(m_cmdBuf->getHandle());
+    m_cmdBuf->end();
+
+    Fence fence = std::move(VulkanEngine::get().m_graphicsQueue->submit(m_cmdBuf->getHandle()));
+
+    // block until the submit has completed
+    fence.wait(UINT32_MAX);
+
+    VulkanEngine::get().m_fencePool->returnFence(fence);
+}
+
 void VulkanEngine::init()
 {
     initVulkan();
@@ -112,6 +135,8 @@ void VulkanEngine::init()
     init_descriptors();
 
     init_pipelines();
+
+    initDefaultData();
 
     m_guiManager = std::make_unique<GuiManager>();
 }
@@ -206,6 +231,9 @@ void VulkanEngine::initCommandPools()
     }
 
     m_fencePool = std::make_unique<FencePool>();
+
+    m_cmdPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
+    m_cmdBuf = std::make_unique<CommandBuffer>(*m_cmdPool->requestCommandBuffer());
 }
 
 void VulkanEngine::initSyncStructures()
@@ -259,6 +287,8 @@ void VulkanEngine::init_descriptors()
 
 void VulkanEngine::init_pipelines()
 {
+    initTrianglePipeline();
+    initMeshPipeline();
     init_background_pipelines();
 }
 
@@ -294,6 +324,94 @@ void VulkanEngine::init_background_pipelines()
     m_backgroundEffects.push_back(sky);
 }
 
+void VulkanEngine::initTrianglePipeline()
+{
+    PipelineBuilder builder;
+
+    builder.setShaders("../project/shaders/coloured_triangle.vert.spv", "../project/shaders/coloured_triangle.frag.spv");
+    builder.createPipelineLayout(nullptr);
+    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
+    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+
+    builder.setColourAttachmentFormat(m_drawImage->getFormat());
+    builder.setDepthFormat(VK_FORMAT_UNDEFINED);
+
+    m_trianglePipeline.reset(builder.buildPipeline());
+}
+
+void VulkanEngine::initMeshPipeline()
+{
+    std::vector <VkPushConstantRange> pushConstant(1);
+    pushConstant[0].offset = 0;
+    pushConstant[0].size = sizeof(Mesh::GPUDrawPushConstants);
+    pushConstant[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    PipelineBuilder builder;
+
+    builder.setShaders("../project/shaders/coloured_triangle_mesh.vert.spv", "../project/shaders/coloured_triangle.frag.spv");
+    builder.createPipelineLayout(nullptr, &pushConstant);
+    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
+    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+
+    builder.setColourAttachmentFormat(m_drawImage->getFormat());
+    builder.setDepthFormat(VK_FORMAT_UNDEFINED);
+
+    m_meshPipeline.reset(builder.buildPipeline());
+}
+
+void VulkanEngine::initDefaultData()
+{
+    std::array<Vertex, 4> rect_vertices;
+
+    rect_vertices[0].position = { 0.5,-0.5, 0 };
+    rect_vertices[1].position = { 0.5,0.5, 0 };
+    rect_vertices[2].position = { -0.5,-0.5, 0 };
+    rect_vertices[3].position = { -0.5,0.5, 0 };
+
+    rect_vertices[0].color = { 0, 0, 0, 1 };
+    rect_vertices[1].color = { 0.5, 0.5, 0.5, 1 };
+    rect_vertices[2].color = { 1, 0, 0, 1 };
+    rect_vertices[3].color = { 0, 1, 0, 1 };
+
+    std::array<uint32_t, 6> rect_indices;
+
+    rect_indices[0] = 0;
+    rect_indices[1] = 1;
+    rect_indices[2] = 2;
+
+    rect_indices[3] = 2;
+    rect_indices[4] = 1;
+    rect_indices[5] = 3;
+
+    m_mesh = std::make_unique<Mesh>(rect_indices, rect_vertices);
+}
+
+void VulkanEngine::drawGeometry(CommandBuffer& cmd)
+{
+    //begin a render pass  connected to our draw image
+    cmd.beginRendering(*m_drawImage);
+
+    cmd.bindPipeline(m_trianglePipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+    //set dynamic viewport and scissor
+    cmd.setViewport(m_drawImage->getExtent());
+    cmd.setScissor(m_drawImage->getExtent());
+
+    //launch a draw command to draw 3 vertices
+    cmd.draw(3, 1, 0, 0);
+
+    cmd.bindPipeline(m_meshPipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+    cmd.pushConstants(&m_mesh->getPushConstants(), sizeof(Mesh::GPUDrawPushConstants),m_meshPipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
+    cmd.bindIndexBuffer(m_mesh->getIndexBuffer());
+
+    cmd.drawIndexed(6, 1, 0, 0, 0);
+
+    cmd.endRendering();
+}
+
 void VulkanEngine::recordCommands()
 {
     auto& frameData = m_frames[m_frameNumber];
@@ -327,6 +445,9 @@ void VulkanEngine::recordCommands()
     cmd->pushConstants(&effect.data, sizeof(ComputePushConstants), effect.pipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
 
     cmd->dispatch(std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
+
+    cmd->barrier(*m_drawImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    drawGeometry(*cmd);
 
     // transition images for copying
     cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);

@@ -43,7 +43,16 @@
     <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp">
@@ -90,7 +99,16 @@
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.h">
