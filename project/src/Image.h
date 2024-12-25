@@ -19,12 +19,12 @@ public:
 	VkPipelineStageFlags2	m_srcStage = VK_PIPELINE_STAGE_2_NONE;
 	VkAccessFlags2			m_srcAccess = VK_ACCESS_2_NONE;
 
-	VkImage		getHandle()		{ return m_handle; }
-	VkImageView getViewHandle() { return m_view; }
+	VkImage		getHandle()		const { return m_handle; }
+	VkImageView getViewHandle() const { return m_view; }
 
-	VkFormat			getFormat()			{ return m_format; }
-	VkImageAspectFlags	getAspectFlags()	{ return m_aspectFlags; }
-	VkExtent2D			getExtent() { return m_extent; }
+	VkFormat			getFormat()	const		{ return m_format; }
+	VkImageAspectFlags	getAspectFlags() const	{ return m_aspectFlags; }
+	VkExtent2D			getExtent() const		{ return m_extent; }
 
 protected:
 	VkImage			m_handle		= VK_NULL_HANDLE;

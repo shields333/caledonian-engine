@@ -5,7 +5,9 @@
 #include <SDL_vulkan.h>
 
 #include <vk_initializers.h>
+#include <vk_loader.h>
 
+#include <glm/gtx/transform.hpp>
 //bootstrap library
 #include "VkBootstrap.h"
 
@@ -57,37 +59,7 @@ VulkanEngine::~VulkanEngine()
 {
     m_device->waitIdle();
 
-    m_guiManager.reset();
-
-    m_gradientPipeline.reset();
-    m_skyPipeline.reset();
-    m_trianglePipeline.reset();
-    m_meshPipeline.reset();
-
-    m_mesh.reset();
-
-    m_globalDescriptorAllocator.destroy_pool(m_device->getHandle());
-    vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
-
-    for (auto& frame : m_frames) {
-        vkDestroySemaphore(m_device->getHandle(), frame.renderSemaphore, nullptr);
-        vkDestroySemaphore(m_device->getHandle(), frame.swapchainSemaphore, nullptr);
-    }
-
-    m_frames.clear();
-
-    m_fencePool.reset();
-
-    m_cmdBuf.reset();
-    m_cmdPool.reset();
-
-    destroySwapchain();
-
-    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-
-    m_drawImage.reset();
-
-    vmaDestroyAllocator(m_allocator);
+    m_deleteionQueue.flush();
 
     vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
 
@@ -99,11 +71,6 @@ VulkanEngine::~VulkanEngine()
     
     // clear engine pointer
     sm_loadedEngine = nullptr;
-}
-
-void VulkanEngine::destroySwapchain()
-{
-    m_swapchain.reset();
 }
 
 void VulkanEngine::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
@@ -136,9 +103,13 @@ void VulkanEngine::init()
 
     init_pipelines();
 
-    initDefaultData();
+    loadMeshes();
 
     m_guiManager = std::make_unique<GuiManager>();
+
+    m_deleteionQueue.push_function([&]() {
+        m_guiManager.reset();
+        });
 }
 
 void VulkanEngine::initVulkan()
@@ -205,6 +176,11 @@ void VulkanEngine::initVulkan()
     allocatorInfo.instance = m_instance;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     vmaCreateAllocator(&allocatorInfo, &m_allocator);
+
+    m_deleteionQueue.push_function([&]() {
+        vmaDestroyAllocator(m_allocator);
+        vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+        });
 }
 
 void VulkanEngine::initSwapchain()
@@ -219,6 +195,17 @@ void VulkanEngine::initSwapchain()
     drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     m_drawImage = std::make_unique<Image>(VK_FORMAT_B10G11R11_UFLOAT_PACK32, m_windowExtent, drawImageUsages, VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT);
+
+    VkImageUsageFlags depthImageUsages{};
+    depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    m_depthImage = std::make_unique<Image>(VK_FORMAT_D32_SFLOAT, m_windowExtent, depthImageUsages, VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    m_deleteionQueue.push_function([&]() {
+        m_depthImage.reset();
+        m_drawImage.reset();
+        m_swapchain.reset();
+        });
 }
 
 void VulkanEngine::initCommandPools()
@@ -230,10 +217,14 @@ void VulkanEngine::initCommandPools()
         frame.mainCommandBuffer = frame.commandPool->requestCommandBuffer();
     }
 
-    m_fencePool = std::make_unique<FencePool>();
-
     m_cmdPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
     m_cmdBuf = std::make_unique<CommandBuffer>(*m_cmdPool->requestCommandBuffer());
+
+    m_deleteionQueue.push_function([&]() {
+        m_cmdBuf.reset();
+        m_cmdPool.reset();
+        m_frames.clear();
+        });
 }
 
 void VulkanEngine::initSyncStructures()
@@ -246,6 +237,16 @@ void VulkanEngine::initSyncStructures()
         VK_CHECK(vkCreateSemaphore(m_device->getHandle(), &semaphoreCreateInfo, nullptr, &m_frames[i].swapchainSemaphore));
         VK_CHECK(vkCreateSemaphore(m_device->getHandle(), &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
     }
+
+    m_fencePool = std::make_unique<FencePool>();
+
+    m_deleteionQueue.push_function([&]() {
+        m_fencePool.reset();
+        for (auto& frame : m_frames) {
+            vkDestroySemaphore(m_device->getHandle(), frame.renderSemaphore, nullptr);
+            vkDestroySemaphore(m_device->getHandle(), frame.swapchainSemaphore, nullptr);
+        }
+        });
 }
 
 void VulkanEngine::init_descriptors()
@@ -283,11 +284,15 @@ void VulkanEngine::init_descriptors()
     drawImageWrite.pImageInfo = &imgInfo;
 
     vkUpdateDescriptorSets(m_device->getHandle(), 1, &drawImageWrite, 0, nullptr);
+
+    m_deleteionQueue.push_function([&]() {
+        vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
+        m_globalDescriptorAllocator.destroy_pool(m_device->getHandle());
+        });
 }
 
 void VulkanEngine::init_pipelines()
 {
-    initTrianglePipeline();
     initMeshPipeline();
     init_background_pipelines();
 }
@@ -322,22 +327,11 @@ void VulkanEngine::init_background_pipelines()
     //add the 2 background effects into the array
     m_backgroundEffects.push_back(gradient);
     m_backgroundEffects.push_back(sky);
-}
 
-void VulkanEngine::initTrianglePipeline()
-{
-    PipelineBuilder builder;
-
-    builder.setShaders("../project/shaders/coloured_triangle.vert.spv", "../project/shaders/coloured_triangle.frag.spv");
-    builder.createPipelineLayout(nullptr);
-    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
-    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-
-    builder.setColourAttachmentFormat(m_drawImage->getFormat());
-    builder.setDepthFormat(VK_FORMAT_UNDEFINED);
-
-    m_trianglePipeline.reset(builder.buildPipeline());
+    m_deleteionQueue.push_function([&]() {
+        m_skyPipeline.reset();
+        m_gradientPipeline.reset();
+        });
 }
 
 void VulkanEngine::initMeshPipeline()
@@ -356,58 +350,52 @@ void VulkanEngine::initMeshPipeline()
     builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 
     builder.setColourAttachmentFormat(m_drawImage->getFormat());
-    builder.setDepthFormat(VK_FORMAT_UNDEFINED);
+    builder.setDepthFormat(m_depthImage->getFormat());
+    builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
 
     m_meshPipeline.reset(builder.buildPipeline());
+
+    m_deleteionQueue.push_function([&]() {
+        m_meshPipeline.reset();
+        });
 }
 
-void VulkanEngine::initDefaultData()
+void VulkanEngine::loadMeshes()
 {
-    std::array<Vertex, 4> rect_vertices;
+    m_testMeshes = loadGltfMeshes(this, "../project/assets/basicmesh.glb").value();
 
-    rect_vertices[0].position = { 0.5,-0.5, 0 };
-    rect_vertices[1].position = { 0.5,0.5, 0 };
-    rect_vertices[2].position = { -0.5,-0.5, 0 };
-    rect_vertices[3].position = { -0.5,0.5, 0 };
-
-    rect_vertices[0].color = { 0, 0, 0, 1 };
-    rect_vertices[1].color = { 0.5, 0.5, 0.5, 1 };
-    rect_vertices[2].color = { 1, 0, 0, 1 };
-    rect_vertices[3].color = { 0, 1, 0, 1 };
-
-    std::array<uint32_t, 6> rect_indices;
-
-    rect_indices[0] = 0;
-    rect_indices[1] = 1;
-    rect_indices[2] = 2;
-
-    rect_indices[3] = 2;
-    rect_indices[4] = 1;
-    rect_indices[5] = 3;
-
-    m_mesh = std::make_unique<Mesh>(rect_indices, rect_vertices);
+    m_deleteionQueue.push_function([&]() {
+        m_testMeshes.clear();
+        });
 }
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)
 {
     //begin a render pass  connected to our draw image
-    cmd.beginRendering(*m_drawImage);
+    cmd.beginRendering(m_depthImage.get(), m_drawImage.get());
 
-    cmd.bindPipeline(m_trianglePipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+    // bind mesh pipeline
+    cmd.bindPipeline(m_meshPipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
     //set dynamic viewport and scissor
     cmd.setViewport(m_drawImage->getExtent());
     cmd.setScissor(m_drawImage->getExtent());
 
-    //launch a draw command to draw 3 vertices
-    cmd.draw(3, 1, 0, 0);
+    glm::mat4 view = glm::translate(glm::vec3{ 0,0,-5 });
+    // camera projection
+    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_windowExtent.width / (float)m_windowExtent.height, 10000.f, 0.1f);
 
-    cmd.bindPipeline(m_meshPipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+    // invert the Y direction on projection matrix so that we are more similar
+    // to opengl and gltf axis
+    projection[1][1] *= -1;
 
-    cmd.pushConstants(&m_mesh->getPushConstants(), sizeof(Mesh::GPUDrawPushConstants),m_meshPipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
-    cmd.bindIndexBuffer(m_mesh->getIndexBuffer());
+    m_testMeshes[2]->getPushConstants().worldMatrix = projection * view;
 
-    cmd.drawIndexed(6, 1, 0, 0, 0);
+    cmd.pushConstants(&m_testMeshes[2]->getPushConstants(), sizeof(Mesh::GPUDrawPushConstants), m_meshPipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
+    cmd.bindIndexBuffer(m_testMeshes[2]->getIndexBuffer());
+
+    auto surfaces = m_testMeshes[2]->getSurfaces();
+    cmd.drawIndexed(surfaces[2].count, 1, surfaces[2].startIndex, 0, 0);
 
     cmd.endRendering();
 }
@@ -447,6 +435,8 @@ void VulkanEngine::recordCommands()
     cmd->dispatch(std::ceil(m_windowExtent.width / 16.0), std::ceil(m_windowExtent.height / 16.0), 1);
 
     cmd->barrier(*m_drawImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    cmd->barrier(*m_depthImage, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+
     drawGeometry(*cmd);
 
     // transition images for copying
@@ -458,7 +448,7 @@ void VulkanEngine::recordCommands()
 
     // begin UI pass
     cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
-    cmd->beginRendering(swapchainImage);
+    cmd->beginRendering(nullptr, &swapchainImage);
 
     // draw the GUI
     m_guiManager->draw(*cmd);

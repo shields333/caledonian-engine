@@ -2,8 +2,21 @@
 
 #include "vk_engine.h"
 
+Mesh::Mesh(std::string name) :
+	m_name(name)
+{
+}
+
 Mesh::Mesh(std::span<uint32_t> indices, std::span<Vertex> vertices)
 {
+	createBuffers(indices, vertices);
+}
+
+void Mesh::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
+{
+	// shouldn't overwrite an existing mesh
+	assert(!m_indexBuffer);
+
 	const size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
 	const size_t indexBufferSize = indices.size() * sizeof(uint32_t);
 
@@ -12,7 +25,7 @@ Mesh::Mesh(std::span<uint32_t> indices, std::span<Vertex> vertices)
 		VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
 
 	//find the adress of the vertex buffer
-	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = m_vertexBuffer->getHandle()};
+	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = m_vertexBuffer->getHandle() };
 	m_vertexBufferAddress = m_pushConstants.vertexBufferAddress = vkGetBufferDeviceAddress(VulkanEngine::getDevice()->getHandle(), &deviceAdressInfo);
 
 	//create index buffer
@@ -46,4 +59,9 @@ Mesh::Mesh(std::span<uint32_t> indices, std::span<Vertex> vertices)
 		});
 
 	vmaUnmapMemory(VulkanEngine::get().m_allocator, staging.getAlloacation());
+}
+
+void Mesh::uploadSurfaceData(std::vector<GeoSurface>& surfaces)
+{
+	m_surfaces.insert(m_surfaces.begin(), surfaces.begin(), surfaces.end());
 }

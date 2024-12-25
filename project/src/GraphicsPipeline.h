@@ -35,6 +35,7 @@ public:
     void    setCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace);
     void    setColourAttachmentFormat(VkFormat format);
     void    setDepthFormat(VkFormat format);
+    void    enableDepthtest(bool depthWriteEnable, VkCompareOp op);
 
     GraphicsPipeline* buildPipeline();
 

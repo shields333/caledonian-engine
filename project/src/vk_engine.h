@@ -56,10 +56,9 @@ public:
 	std::vector<ComputeEffect> m_backgroundEffects;
 	int m_currentBackgroundEffect{ 0 };
 
-	std::unique_ptr<GraphicsPipeline> m_trianglePipeline;
 	std::unique_ptr<GraphicsPipeline> m_meshPipeline;
 
-	std::unique_ptr<Mesh> m_mesh;
+	std::vector<std::shared_ptr<Mesh>> m_testMeshes;
 
 	uint32_t m_frameCount = 3;
 
@@ -70,6 +69,7 @@ public:
 	std::vector<FrameData> m_frames;
 
 	std::unique_ptr<Image> m_drawImage;
+	std::unique_ptr<Image> m_depthImage;
 
 	std::unique_ptr<FencePool> m_fencePool;
 
@@ -78,7 +78,7 @@ public:
 	VmaAllocator m_allocator;
 
 	bool m_stopRendering{ false };
-	VkExtent2D m_windowExtent{ 1280 , 720 };
+	VkExtent2D m_windowExtent{ 1280, 720 };
 
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;// Vulkan window surface
 
@@ -129,6 +129,24 @@ private:
 	std::unique_ptr<CommandPool> m_cmdPool;
 	std::unique_ptr<CommandBuffer> m_cmdBuf;
 
+	struct DeletionQueue
+	{
+		std::deque<std::function<void()>> deletors;
+
+		void push_function(std::function<void()>&& function) {
+			deletors.push_back(function);
+		}
+
+		void flush() {
+			// reverse iterate the deletion queue to execute all the functions
+			for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
+				(*it)(); //call functors
+			}
+
+			deletors.clear();
+		}
+	}m_deleteionQueue;
+
 	VulkanEngine();
 	~VulkanEngine();
 
@@ -140,10 +158,9 @@ private:
 	void init_pipelines();
 	void init_background_pipelines();
 
-	void initTrianglePipeline();
 	void initMeshPipeline();
 
-	void initDefaultData();
+	void loadMeshes();
 
 	void drawGeometry(CommandBuffer &cmd);
 
