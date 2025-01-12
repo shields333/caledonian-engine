@@ -3,10 +3,35 @@
 #include "vk_engine.h"
 
 #include <VkBootstrap.h>
+#include <SDL.h>
 
-Swapchain::Swapchain(VkExtent2D extent, VkFormat format /*= VK_FORMAT_B8G8R8A8_UNORM*/) :
-    m_swapchainExtent(extent), m_swapchainImageFormat(format)
+Swapchain::Swapchain(VkFormat format /*= VK_FORMAT_B8G8R8A8_UNORM*/) :
+   m_swapchainImageFormat(format)
 {
+    createSwapchain();
+}
+
+Swapchain::~Swapchain()
+{
+    destroySwapchain();
+}
+
+Swapchain::Swapchain(Swapchain&& other) noexcept :
+    m_swapchainExtent(other.m_swapchainExtent), 
+    m_swapchainImageFormat(other.m_swapchainImageFormat),
+    m_swapchainImages(std::move(other.m_swapchainImages))
+{
+    m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
+}
+
+void Swapchain::createSwapchain()
+{
+
+    int w, h;
+    SDL_GetWindowSize(VulkanEngine::get().m_window, &w, &h);
+    m_swapchainExtent.width = w;
+    m_swapchainExtent.height = h;
+
     vkb::SwapchainBuilder swapchainBuilder{ VulkanEngine::get().m_physicalDevice, VulkanEngine::getDevice()->getHandle(), VulkanEngine::get().m_surface };
 
     vkb::Swapchain vkbSwapchain = swapchainBuilder
@@ -14,7 +39,7 @@ Swapchain::Swapchain(VkExtent2D extent, VkFormat format /*= VK_FORMAT_B8G8R8A8_U
         .set_desired_format(VkSurfaceFormatKHR{ .format = m_swapchainImageFormat, .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR })
         //use vsync present mode
         .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-        .set_desired_extent(extent.width, extent.height)
+        .set_desired_extent(m_swapchainExtent.width, m_swapchainExtent.height)
         .add_image_usage_flags(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT)
         .set_desired_min_image_count(3)
         .build()
@@ -29,16 +54,16 @@ Swapchain::Swapchain(VkExtent2D extent, VkFormat format /*= VK_FORMAT_B8G8R8A8_U
 
     m_swapchainImages.reserve(swapchainImages.size());
     for (int i = 0; i < swapchainImages.size(); i++) {
-        m_swapchainImages.emplace_back(swapchainImages[i], 
-            vkbSwapchain.image_format, 
-            vkbSwapchain.extent, 
+        m_swapchainImages.emplace_back(swapchainImages[i],
+            vkbSwapchain.image_format,
+            vkbSwapchain.extent,
             vkbSwapchain.image_usage_flags,
-            VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT, 
+            VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT,
             swapchainImageViews[i]);
     }
 }
 
-Swapchain::~Swapchain()
+void Swapchain::destroySwapchain()
 {
     // destroy swapchain resources
     m_swapchainImages.clear();
@@ -46,17 +71,22 @@ Swapchain::~Swapchain()
     vkDestroySwapchainKHR(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
 }
 
-Swapchain::Swapchain(Swapchain&& other) noexcept :
-    m_swapchainExtent(other.m_swapchainExtent), 
-    m_swapchainImageFormat(other.m_swapchainImageFormat),
-    m_swapchainImages(std::move(other.m_swapchainImages))
-{
-    m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
-}
-
 uint32_t Swapchain::acquireImage(uint64_t timeout, VkSemaphore semaphore)
 {
     uint32_t index = 0;
-    VK_CHECK(vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &index));
+    if (vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &index) == VK_ERROR_OUT_OF_DATE_KHR) {
+        resizeSwapchain();
+        VK_CHECK(vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &index));
+    }
+
     return index;
+}
+
+void Swapchain::resizeSwapchain()
+{
+    VulkanEngine::getDevice()->waitIdle();
+
+    destroySwapchain();
+
+    createSwapchain();
 }

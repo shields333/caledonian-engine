@@ -97,9 +97,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MinimalRebuild></MinimalRebuild>
       <Optimization>Disabled</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/Debug/cmake_pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SupportJustMyCode></SupportJustMyCode>
@@ -159,9 +157,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MinimalRebuild></MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/Release/cmake_pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SupportJustMyCode></SupportJustMyCode>
@@ -223,9 +219,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MinimalRebuild></MinimalRebuild>
       <Optimization>MinSpace</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/MinSizeRel/cmake_pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SupportJustMyCode></SupportJustMyCode>
@@ -288,9 +282,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MinimalRebuild></MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/RelWithDebInfo/cmake_pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SupportJustMyCode></SupportJustMyCode>
@@ -396,154 +388,44 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\cmake_pch.cxx">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/Debug/cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/Release/cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/MinSizeRel/cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/engine.dir/RelWithDebInfo/cmake_pch.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\main.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\main.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_types.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.h" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.cpp" />
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.cpp" />
+    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.h" />
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp">
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:/Documents/Visual Studio 2022/VulkanProject/src/CMakeFiles/engine.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-    </ClCompile>
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.h" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\Debug\cmake_pch.hxx" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\Release\cmake_pch.hxx" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\MinSizeRel\cmake_pch.hxx" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\src\CMakeFiles\engine.dir\RelWithDebInfo\cmake_pch.hxx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">

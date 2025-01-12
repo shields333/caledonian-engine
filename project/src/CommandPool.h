@@ -20,6 +20,8 @@ public:
 	void barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access);
 	void clearColourImage(Image& image, VkClearColorValue clearColour, VkImageSubresourceRange& range);
 	void blit(Image& srcImg, Image& dstImg);
+	void blit(Image& srcImg, Image& dstImg, VkExtent2D srcExtent, VkExtent2D dstExtent);
+	void copyToImage(Buffer& srcBuffer, Image& dstImg);
 	void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSets(std::vector<VkDescriptorSet> &sets, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);

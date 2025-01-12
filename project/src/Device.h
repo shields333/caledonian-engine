@@ -16,7 +16,7 @@ public:
 
 	VkDevice getHandle() const { return m_handle; }
 
-	void waitIdle();
+	void waitIdle() const;
 
 private:
 	VkDevice m_handle;

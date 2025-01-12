@@ -135,14 +135,19 @@ void CommandBuffer::clearColourImage(Image& image, VkClearColorValue clearColour
 
 void CommandBuffer::blit(Image& srcImg, Image& dstImg)
 {
+    blit(srcImg, dstImg, srcImg.getExtent(), dstImg.getExtent());
+}
+
+void CommandBuffer::blit(Image& srcImg, Image& dstImg, VkExtent2D srcExtent, VkExtent2D dstExtent)
+{
     VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
-    blitRegion.srcOffsets[1].x = srcImg.getExtent().width;
-    blitRegion.srcOffsets[1].y = srcImg.getExtent().height;
+    blitRegion.srcOffsets[1].x = srcExtent.width;
+    blitRegion.srcOffsets[1].y = srcExtent.height;
     blitRegion.srcOffsets[1].z = 1;
 
-    blitRegion.dstOffsets[1].x = dstImg.getExtent().width;
-    blitRegion.dstOffsets[1].y = dstImg.getExtent().height;
+    blitRegion.dstOffsets[1].x = dstExtent.width;
+    blitRegion.dstOffsets[1].y = dstExtent.height;
     blitRegion.dstOffsets[1].z = 1;
 
     blitRegion.srcSubresource.aspectMask = srcImg.getAspectFlags();
@@ -165,6 +170,26 @@ void CommandBuffer::blit(Image& srcImg, Image& dstImg)
     blitInfo.pRegions = &blitRegion;
 
     vkCmdBlitImage2(m_handle, &blitInfo);
+}
+
+void CommandBuffer::copyToImage(Buffer& srcBuffer, Image& dstImg)
+{
+    VkExtent3D dstExtent(dstImg.getExtent().width, dstImg.getExtent().height, 1);
+
+    VkBufferImageCopy copyRegion = {};
+    copyRegion.bufferOffset = 0;
+    copyRegion.bufferRowLength = 0;
+    copyRegion.bufferImageHeight = 0;
+
+    copyRegion.imageSubresource.aspectMask = dstImg.getAspectFlags();
+    copyRegion.imageSubresource.mipLevel = 0;
+    copyRegion.imageSubresource.baseArrayLayer = 0;
+    copyRegion.imageSubresource.layerCount = 1;
+    copyRegion.imageExtent = dstExtent;
+
+    vkCmdCopyBufferToImage(m_handle, srcBuffer.getHandle(), dstImg.getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        &copyRegion);
+
 }
 
 void CommandBuffer::bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint)

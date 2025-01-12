@@ -21,7 +21,7 @@ Device& Device::operator=(Device&& other) noexcept
 	return *this;
 }
 
-void Device::waitIdle()
+void Device::waitIdle() const
 {
 	vkDeviceWaitIdle(m_handle);
 }

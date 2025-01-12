@@ -6,7 +6,7 @@ class Image
 {
 public:
 	Image() = default;
-	Image(VkFormat format, VkExtent2D extent, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags);
+	Image(VkFormat format, VkExtent2D extent, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags, void* data = nullptr);
 	~Image();
 
 	Image(const Image& other) = delete;
@@ -25,6 +25,8 @@ public:
 	VkFormat			getFormat()	const		{ return m_format; }
 	VkImageAspectFlags	getAspectFlags() const	{ return m_aspectFlags; }
 	VkExtent2D			getExtent() const		{ return m_extent; }
+
+	void uploadData(void* data);
 
 protected:
 	VkImage			m_handle		= VK_NULL_HANDLE;

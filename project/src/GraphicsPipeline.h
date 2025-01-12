@@ -16,7 +16,7 @@ public:
 
 private:
     VkPipeline m_handle = VK_NULL_HANDLE;
-
+    // TODO: the layout should be a pointer to a map
     VkPipelineLayout m_layout = VK_NULL_HANDLE;
 };
 
@@ -36,6 +36,8 @@ public:
     void    setColourAttachmentFormat(VkFormat format);
     void    setDepthFormat(VkFormat format);
     void    enableDepthtest(bool depthWriteEnable, VkCompareOp op);
+    void    enableBlendingAdditive();
+    void    enableBlendingAlphablend();
 
     GraphicsPipeline* buildPipeline();
 

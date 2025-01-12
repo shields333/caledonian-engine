@@ -11,9 +11,9 @@ public:
 	Buffer(Buffer &&other) noexcept;
 	Buffer& operator=(Buffer&& other) noexcept;
 
-	VkBuffer getHandle() { return m_handle; }
-	VmaAllocation getAlloacation() { return m_allocation; }
-
+	VkBuffer					getHandle() const { return m_handle; }
+	const VmaAllocation&		getAlloacation() const { return m_allocation; }
+	const VmaAllocationInfo&	getInfo() const { return m_info; }
 private:
 	VkBuffer m_handle = VK_NULL_HANDLE;
 

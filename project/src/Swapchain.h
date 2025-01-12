@@ -8,7 +8,7 @@ class Swapchain
 {
 public:
 
-	Swapchain(VkExtent2D extent, VkFormat format = VK_FORMAT_B8G8R8A8_UNORM);
+	Swapchain(VkFormat format = VK_FORMAT_B8G8R8A8_UNORM);
 	~Swapchain();
 
 	Swapchain(const Swapchain& other) = delete;
@@ -19,12 +19,17 @@ public:
 
 	VkSwapchainKHR getHandle() const { return m_handle; }
 
-	const	VkExtent2D  m_swapchainExtent;
+	VkExtent2D  m_swapchainExtent;
 	const	VkFormat	m_swapchainImageFormat;
+
+	void createSwapchain();
+	void destroySwapchain();
 
 	std::vector<SwapchainImage>& getswapchainImages() { return m_swapchainImages; }
 
 	uint32_t acquireImage(uint64_t timeout, VkSemaphore semaphore = VK_NULL_HANDLE);
+
+	void resizeSwapchain();
 
 private:
 

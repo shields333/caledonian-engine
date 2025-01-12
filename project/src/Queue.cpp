@@ -44,6 +44,7 @@ void Queue::present(VkSwapchainKHR swapchain, uint32_t swapchainIndex, VkSemapho
 
 	presentInfo.pImageIndices = &swapchainIndex;
 
-	VK_CHECK(vkQueuePresentKHR(m_handle, &presentInfo));
+	if (vkQueuePresentKHR(m_handle, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR)
+		VulkanEngine::get().m_swapchain->resizeSwapchain();
 }
 

@@ -18,9 +18,14 @@ public:
 	Mesh(std::string name);
 	Mesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
+	struct GLTFMaterial {
+		MaterialInstance data;
+	};
+
 	struct GeoSurface {
 		uint32_t startIndex;
 		uint32_t count;
+		std::shared_ptr<GLTFMaterial> material;
 	};
 
 	// push constants for our mesh object draws
@@ -34,7 +39,9 @@ public:
 
 	GPUDrawPushConstants& getPushConstants() { return m_pushConstants; }
 	Buffer& getIndexBuffer() { return *m_indexBuffer; }
-	const std::vector<GeoSurface>& getSurfaces() const { return m_surfaces; }
+	std::vector<GeoSurface>& getSurfaces() { return m_surfaces; }
+	VkDeviceAddress getBufferAddress() { return m_vertexBufferAddress; }
+	std::string getName() { return m_name; }
 
 private:
 	std::string m_name;

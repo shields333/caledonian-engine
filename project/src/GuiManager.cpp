@@ -10,6 +10,8 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
 
+#include <SDL.h>
+
 GuiManager::GuiManager()
 {
 	// 1: create descriptor pool for IMGUI
@@ -102,6 +104,8 @@ void GuiManager::newFrame()
 	//ImGui::ShowDemoWindow();
 
 	if (ImGui::Begin("background")) {
+
+		ImGui::SliderFloat("Render Scale", &VulkanEngine::get().m_renderScale, 0.3f, 1.f);
 
 		ComputeEffect& selected = VulkanEngine::get().m_backgroundEffects[VulkanEngine::get().m_currentBackgroundEffect];
 

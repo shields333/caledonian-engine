@@ -12,10 +12,12 @@
 #include "FencePool.h"
 #include "Queue.h"
 #include "Image.h"
+#include "Sampler.h"
 #include "ComputePipeline.h"
 #include "GraphicsPipeline.h"
 #include "GuiManager.h"
 #include "Mesh.h"
+#include <camera.h>
 
 struct FrameData {
 
@@ -24,6 +26,19 @@ struct FrameData {
 
 	VkSemaphore swapchainSemaphore, renderSemaphore;
 	std::vector<Fence> fences;
+
+	DescriptorAllocatorGrowable m_frameDescriptors;
+
+	std::unique_ptr<Buffer> m_gpuSceneDataBuffer;
+};
+
+struct GPUSceneData {
+	glm::mat4 view;
+	glm::mat4 proj;
+	glm::mat4 viewproj;
+	glm::vec4 ambientColor;
+	glm::vec4 sunlightDirection; // w for sun power
+	glm::vec4 sunlightColor;
 };
 
 struct ComputePushConstants {
@@ -41,14 +56,69 @@ struct ComputeEffect {
 	ComputePushConstants data;
 };
 
+struct GLTFMetallic_Roughness {
+	std::unique_ptr<GraphicsPipeline> opaquePipeline;
+	std::unique_ptr<GraphicsPipeline> transparentPipeline;
+
+	VkDescriptorSetLayout materialLayout;
+
+	struct MaterialConstants {
+		glm::vec4 colorFactors;
+		glm::vec4 metal_rough_factors;
+		//padding, we need it anyway for uniform buffers
+		glm::vec4 extra[14];
+	};
+
+	struct MaterialResources {
+		Image* colorImage;
+		Sampler* colorSampler;
+		Image* metalRoughImage;
+		Sampler* metalRoughSampler;
+		Buffer* dataBuffer;
+		uint32_t dataBufferOffset;
+	};
+
+	DescriptorWriter writer;
+
+	void build_pipelines();
+	void clear_resources();
+
+	MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator);
+};
+
+struct MeshNode : public Node {
+
+	std::shared_ptr<Mesh> mesh;
+
+	virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
+};
+
+struct RenderObject {
+	uint32_t indexCount;
+	uint32_t firstIndex;
+	Buffer* indexBuffer;
+
+	MaterialInstance* material;
+
+	glm::mat4 transform;
+	VkDeviceAddress vertexBufferAddress;
+};
+
+struct DrawContext {
+	std::vector<RenderObject> OpaqueSurfaces;
+};
+
 class VulkanEngine 
 {
 public:
 
-	DescriptorAllocator m_globalDescriptorAllocator;
+	Camera m_mainCamera;
+
+	DescriptorAllocatorGrowable m_globalDescriptorAllocator;
 
 	VkDescriptorSet m_drawImageDescriptors;
 	VkDescriptorSetLayout m_drawImageDescriptorLayout;
+	VkDescriptorSetLayout m_singleImageDescriptorLayout;
 
 	std::unique_ptr<ComputePipeline> m_gradientPipeline;
 	std::unique_ptr<ComputePipeline> m_skyPipeline;
@@ -68,8 +138,27 @@ public:
 
 	std::vector<FrameData> m_frames;
 
+	GPUSceneData m_sceneData;
+	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
+
+	MaterialInstance defaultData;
+	GLTFMetallic_Roughness metalRoughMaterial;
+
+	VkExtent2D m_drawExtent;
+	float m_renderScale = 1.f;
+
 	std::unique_ptr<Image> m_drawImage;
 	std::unique_ptr<Image> m_depthImage;
+
+	std::unique_ptr<Buffer> m_globalUniform;
+
+	std::unique_ptr<Image> m_whiteImage;
+	std::unique_ptr<Image> m_blackImage;
+	std::unique_ptr<Image> m_greyImage;
+	std::unique_ptr<Image> m_errorCheckerboardImage;
+
+	std::unique_ptr<Sampler> m_defaultSamplerLinear;
+	std::unique_ptr<Sampler> m_defaultSamplerNearest;
 
 	std::unique_ptr<FencePool> m_fencePool;
 
@@ -92,9 +181,16 @@ public:
 
 	bool m_useValidationLayers = false;
 
+	bool resizeRequested;
+
 	struct SDL_Window* m_window{ nullptr };
 
 	std::unique_ptr<GuiManager> m_guiManager;
+
+	DrawContext mainDrawContext;
+	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
+
+	void update_scene();
 
 	static VulkanEngine& get();
 	static const Device* getDevice();
@@ -160,9 +256,9 @@ private:
 
 	void initMeshPipeline();
 
+	void initDefaultData();
 	void loadMeshes();
+	void createTextures();
 
 	void drawGeometry(CommandBuffer &cmd);
-
-	void destroySwapchain();
 };
