@@ -17,10 +17,10 @@ public:
 
 	void begin(VkCommandBufferUsageFlags flags = 0);
 	void end();
-	void barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access);
+	void barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access, uint32_t mipLevel = 0, uint32_t levelCount = 1);
 	void clearColourImage(Image& image, VkClearColorValue clearColour, VkImageSubresourceRange& range);
 	void blit(Image& srcImg, Image& dstImg);
-	void blit(Image& srcImg, Image& dstImg, VkExtent2D srcExtent, VkExtent2D dstExtent);
+	void blit(Image& srcImg, Image& dstImg, VkExtent3D srcExtent, VkExtent3D dstExtent, uint32_t srcMip = 0, uint32_t dstMip = 0);
 	void copyToImage(Buffer& srcBuffer, Image& dstImg);
 	void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint);
 	void bindDescriptorSet(VkDescriptorSet set, VkPipelineLayout layout, VkPipelineBindPoint bindPoint);

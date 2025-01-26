@@ -101,36 +101,43 @@ void CommandBuffer::end()
     VK_CHECK(vkEndCommandBuffer(m_handle));
 }
 
-void CommandBuffer::barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access)
+void CommandBuffer::barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access, uint32_t mipLevel /*= 0*/, uint32_t levelCount /*= 1*/)
 {
     VkImageMemoryBarrier2 imageBarrier{ .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
     imageBarrier.pNext = nullptr;
 
-    imageBarrier.srcStageMask  = image.m_srcStage;
-    imageBarrier.srcAccessMask = image.m_srcAccess;
-    imageBarrier.dstStageMask  = image.m_srcStage = stage;
-    imageBarrier.dstAccessMask = image.m_srcAccess = access;
+    std::vector<VkImageMemoryBarrier2> barriers(levelCount, imageBarrier);
 
-    imageBarrier.oldLayout = image.m_layout;
-    imageBarrier.newLayout = image.m_layout = newLayout;
+    for (int i = 0; i < levelCount; i++) {
+        auto mipmap = image.getMipmap(i);
 
-    VkImageAspectFlags aspectMask = image.getAspectFlags();
-    imageBarrier.subresourceRange = vkinit::image_subresource_range(aspectMask);
-    imageBarrier.image = image.getHandle();
+        barriers[i].srcStageMask = mipmap.srcStage;
+        barriers[i].srcAccessMask = mipmap.srcAccess;
+        barriers[i].dstStageMask = mipmap.srcStage = stage;
+        barriers[i].dstAccessMask = mipmap.srcAccess = access;
+
+        barriers[i].oldLayout = mipmap.layout;
+        barriers[i].newLayout = mipmap.layout = newLayout;
+
+        barriers[i].subresourceRange = vkinit::image_subresource_range(image.getAspectFlags());
+        barriers[i].subresourceRange.baseMipLevel = i + mipLevel;
+        barriers[i].subresourceRange.levelCount = 1;
+        barriers[i].image = image.getHandle();
+    }
 
     VkDependencyInfo depInfo{};
     depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
     depInfo.pNext = nullptr;
 
-    depInfo.imageMemoryBarrierCount = 1;
-    depInfo.pImageMemoryBarriers = &imageBarrier;
+    depInfo.imageMemoryBarrierCount = levelCount;
+    depInfo.pImageMemoryBarriers = barriers.data();
 
     vkCmdPipelineBarrier2(m_handle, &depInfo);
 }
 
 void CommandBuffer::clearColourImage(Image& image, VkClearColorValue clearColour, VkImageSubresourceRange& range)
 {
-    vkCmdClearColorImage(m_handle, image.getHandle(), image.m_layout, &clearColour, 1, &range);
+    vkCmdClearColorImage(m_handle, image.getHandle(), image.getMipmap(range.baseMipLevel).layout, &clearColour, 1, &range);
 }
 
 void CommandBuffer::blit(Image& srcImg, Image& dstImg)
@@ -138,27 +145,27 @@ void CommandBuffer::blit(Image& srcImg, Image& dstImg)
     blit(srcImg, dstImg, srcImg.getExtent(), dstImg.getExtent());
 }
 
-void CommandBuffer::blit(Image& srcImg, Image& dstImg, VkExtent2D srcExtent, VkExtent2D dstExtent)
+void CommandBuffer::blit(Image& srcImg, Image& dstImg, VkExtent3D srcExtent, VkExtent3D dstExtent, uint32_t srcMip /*= 0*/, uint32_t dstMip /*= 0*/)
 {
     VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
     blitRegion.srcOffsets[1].x = srcExtent.width;
     blitRegion.srcOffsets[1].y = srcExtent.height;
-    blitRegion.srcOffsets[1].z = 1;
+    blitRegion.srcOffsets[1].z = srcExtent.depth;
 
     blitRegion.dstOffsets[1].x = dstExtent.width;
     blitRegion.dstOffsets[1].y = dstExtent.height;
-    blitRegion.dstOffsets[1].z = 1;
+    blitRegion.dstOffsets[1].z = dstExtent.depth;
 
     blitRegion.srcSubresource.aspectMask = srcImg.getAspectFlags();
     blitRegion.srcSubresource.baseArrayLayer = 0;
     blitRegion.srcSubresource.layerCount = 1;
-    blitRegion.srcSubresource.mipLevel = 0;
+    blitRegion.srcSubresource.mipLevel = srcMip;
 
     blitRegion.dstSubresource.aspectMask = dstImg.getAspectFlags();
     blitRegion.dstSubresource.baseArrayLayer = 0;
     blitRegion.dstSubresource.layerCount = 1;
-    blitRegion.dstSubresource.mipLevel = 0;
+    blitRegion.dstSubresource.mipLevel = dstMip;
 
     VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
     blitInfo.dstImage = dstImg.getHandle();
@@ -258,7 +265,7 @@ void CommandBuffer::beginRendering(const Image* depth, const Image* colour) cons
     if (colour)
         colorAttachment = vkinit::attachment_info(colour->getViewHandle(), nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-    VkRenderingInfo renderInfo = vkinit::rendering_info(colour->getExtent(), 
+    VkRenderingInfo renderInfo = vkinit::rendering_info(colour->getExtent2D(), 
         colour ? &colorAttachment : nullptr,
         depth ?  &depthAttachment : nullptr);
 

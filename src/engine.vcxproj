@@ -426,6 +426,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.h" />
     <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp" />
     <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.h" />
+    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\SceneGraph.cpp" />
+    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\SceneGraph.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">

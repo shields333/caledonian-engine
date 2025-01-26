@@ -39,6 +39,8 @@ add_executable (engine
   GraphicsPipeline.h
   GuiManager.cpp
   GuiManager.h
+  SceneGraph.cpp
+  SceneGraph.h
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

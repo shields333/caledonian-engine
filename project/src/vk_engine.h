@@ -5,6 +5,7 @@
 
 #include <vk_types.h>
 #include <vk_descriptors.h>
+#include <vk_loader.h>
 
 #include "Device.h"
 #include "Swapchain.h"
@@ -17,7 +18,8 @@
 #include "GraphicsPipeline.h"
 #include "GuiManager.h"
 #include "Mesh.h"
-#include <camera.h>
+#include "camera.h"
+#include "SceneGraph.h"
 
 struct FrameData {
 
@@ -86,28 +88,6 @@ struct GLTFMetallic_Roughness {
 	MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator);
 };
 
-struct MeshNode : public Node {
-
-	std::shared_ptr<Mesh> mesh;
-
-	virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
-};
-
-struct RenderObject {
-	uint32_t indexCount;
-	uint32_t firstIndex;
-	Buffer* indexBuffer;
-
-	MaterialInstance* material;
-
-	glm::mat4 transform;
-	VkDeviceAddress vertexBufferAddress;
-};
-
-struct DrawContext {
-	std::vector<RenderObject> OpaqueSurfaces;
-};
-
 class VulkanEngine 
 {
 public:
@@ -128,7 +108,7 @@ public:
 
 	std::unique_ptr<GraphicsPipeline> m_meshPipeline;
 
-	std::vector<std::shared_ptr<Mesh>> m_testMeshes;
+	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
 
 	uint32_t m_frameCount = 3;
 
@@ -155,7 +135,7 @@ public:
 	std::unique_ptr<Image> m_whiteImage;
 	std::unique_ptr<Image> m_blackImage;
 	std::unique_ptr<Image> m_greyImage;
-	std::unique_ptr<Image> m_errorCheckerboardImage;
+	std::shared_ptr<Image> m_errorCheckerboardImage;
 
 	std::unique_ptr<Sampler> m_defaultSamplerLinear;
 	std::unique_ptr<Sampler> m_defaultSamplerNearest;
@@ -187,8 +167,7 @@ public:
 
 	std::unique_ptr<GuiManager> m_guiManager;
 
-	DrawContext mainDrawContext;
-	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
+	SceneGraph m_sceneGraph;
 
 	void update_scene();
 

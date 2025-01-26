@@ -196,12 +196,14 @@ void VulkanEngine::initSwapchain()
     drawImageUsages |= VK_IMAGE_USAGE_STORAGE_BIT;
     drawImageUsages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    m_drawImage = std::make_unique<Image>(VK_FORMAT_B10G11R11_UFLOAT_PACK32, m_swapchain->m_swapchainExtent, drawImageUsages, VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT);
+    m_drawImage = std::make_unique<Image>(VK_FORMAT_B10G11R11_UFLOAT_PACK32, VkExtent3D(m_swapchain->m_swapchainExtent.width, m_swapchain->m_swapchainExtent.height, 1),
+        drawImageUsages);
 
     VkImageUsageFlags depthImageUsages{};
     depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    m_depthImage = std::make_unique<Image>(VK_FORMAT_D32_SFLOAT, m_swapchain->m_swapchainExtent, depthImageUsages, VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT);
+    m_depthImage = std::make_unique<Image>(VK_FORMAT_D32_SFLOAT, VkExtent3D(m_swapchain->m_swapchainExtent.width, m_swapchain->m_swapchainExtent.height, 1), 
+        depthImageUsages);
 
     m_deleteionQueue.push_function([&]() {
         m_depthImage.reset();
@@ -423,25 +425,15 @@ void VulkanEngine::initDefaultData()
 
 void VulkanEngine::loadMeshes()
 {
-    m_testMeshes = loadGltfMeshes(this, "../project/assets/basicmesh.glb").value();
+    std::string structurePath = { "..\\project\\assets\\structure.glb" };
+    auto structureFile = loadGltf(structurePath);
 
-    for (auto& m : m_testMeshes) {
-        std::shared_ptr<MeshNode> newNode = std::make_shared<MeshNode>();
-        newNode->mesh = m;
+    assert(structureFile.has_value());
 
-        newNode->localTransform = glm::mat4{ 1.f };
-        newNode->worldTransform = glm::mat4{ 1.f };
-
-        for (auto& s : newNode->mesh->getSurfaces()) {
-            s.material = std::make_shared<Mesh::GLTFMaterial>(defaultData);
-        }
-
-        loadedNodes[m->getName()] = std::move(newNode);
-    }
+    loadedScenes["structure"] = *structureFile;
 
     m_deleteionQueue.push_function([&]() {
-        loadedNodes.clear();
-        m_testMeshes.clear();
+        loadedScenes.clear();
         });
 }
 
@@ -449,16 +441,16 @@ void VulkanEngine::createTextures()
 {
     //3 default textures, white, grey, black. 1 pixel each
     uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
-    m_whiteImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent2D{ 1, 1 },
-        VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT, (void*)&white);
+    m_whiteImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
+        VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&white);
 
     uint32_t grey = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
-    m_greyImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent2D{ 1, 1 },
-        VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT, (void*)&grey);
+    m_greyImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
+        VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&grey);
 
     uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
-    m_blackImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent2D{ 1, 1 },
-        VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT, (void*)&black);
+    m_blackImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
+        VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&black);
 
     //checkerboard image
     uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
@@ -468,8 +460,8 @@ void VulkanEngine::createTextures()
             pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
         }
     }
-    m_errorCheckerboardImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent2D{ 16, 16 },
-        VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT, (void*)&magenta);
+    m_errorCheckerboardImage = std::make_shared<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 16, 16, 1 },
+        VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&magenta);
 
     VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
@@ -498,13 +490,13 @@ void VulkanEngine::createTextures()
 
 void VulkanEngine::update_scene()
 {
-    mainDrawContext.OpaqueSurfaces.clear();
-
-    loadedNodes["Suzanne"]->Draw(glm::mat4{ 1.f }, mainDrawContext);
-
+    
     m_mainCamera.update();
 
     glm::mat4 view = m_mainCamera.getViewMatrix();
+
+    m_sceneGraph.updateScene();
+    loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_sceneGraph.getContext());
 
     // camera projection
     glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_windowExtent.width / (float)m_windowExtent.height, 10000.f, 0.1f);
@@ -521,14 +513,6 @@ void VulkanEngine::update_scene()
     m_sceneData.ambientColor = glm::vec4(.1f);
     m_sceneData.sunlightColor = glm::vec4(1.f);
     m_sceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
-
-    for (int x = -3; x < 3; x++) {
-
-        glm::mat4 scale = glm::scale(glm::vec3{ 0.2 });
-        glm::mat4 translation = glm::translate(glm::vec3{ x, 1, 0 });
-
-        loadedNodes["Cube"]->Draw(translation * scale, mainDrawContext);
-    }
 }
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)
@@ -554,32 +538,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     cmd.setViewport(m_drawExtent);
     cmd.setScissor(m_drawExtent);
 
-    for (const RenderObject& draw : mainDrawContext.OpaqueSurfaces) {
-        
-        std::vector<VkDescriptorSet> sets = { globalDescriptor, draw.material->materialSet };
-
-        // bind mesh pipeline
-        cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-        cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-        cmd.bindIndexBuffer(*draw.indexBuffer);
-
-        Mesh::GPUDrawPushConstants pushConstants;
-        pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
-        pushConstants.worldMatrix = draw.transform;
-        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
-
-        cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, 0);
-    }
-
-    ////bind a texture
-    //VkDescriptorSet imageSet = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_device->getHandle(), m_singleImageDescriptorLayout);
-    //{
-    //    DescriptorWriter writer;
-    //    writer.write_image(0, m_errorCheckerboardImage->getViewHandle(), m_defaultSamplerNearest->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-    //    writer.update_set(m_device->getHandle(), imageSet);
-    //}
+    m_sceneGraph.drawScene(cmd, globalDescriptor);
 
     cmd.endRendering();
 }
@@ -634,7 +593,7 @@ void VulkanEngine::recordCommands()
     cmd->barrier(swapchainImage, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
     // copy offscreen image to swapchain image
-    cmd->blit(*m_drawImage, swapchainImage, m_drawExtent, swapchainImage.getExtent());
+    cmd->blit(*m_drawImage, swapchainImage, VkExtent3D(m_drawExtent.width, m_drawExtent.height, 1), swapchainImage.getExtent());
 
     // begin UI pass
     cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
@@ -781,25 +740,4 @@ MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const
     writer.update_set(VulkanEngine::getDevice()->getHandle(), matData.materialSet);
 
     return matData;
-}
-
-void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
-{
-    glm::mat4 nodeMatrix = topMatrix * worldTransform;
-
-    for (auto& s : mesh->getSurfaces()) {
-        RenderObject def;
-        def.indexCount = s.count;
-        def.firstIndex = s.startIndex;
-        def.indexBuffer = &mesh->getIndexBuffer();
-        def.material = &s.material->data;
-
-        def.transform = nodeMatrix;
-        def.vertexBufferAddress = mesh->getBufferAddress();
-
-        ctx.OpaqueSurfaces.push_back(def);
-    }
-
-    // recurse down
-    Node::Draw(topMatrix, ctx);
 }
