@@ -219,6 +219,7 @@ void VulkanEngine::initCommandPools()
     for (auto& frame : m_frames) {
         frame.commandPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
         frame.mainCommandBuffer = frame.commandPool->requestCommandBuffer();
+        frame.m_gpuSceneDataBuffer = std::make_unique<Buffer>(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     }
 
     m_cmdPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
@@ -430,9 +431,10 @@ void VulkanEngine::loadMeshes()
 
     assert(structureFile.has_value());
 
-    loadedScenes["structure"] = *structureFile;
+    m_activeScene = loadedScenes["structure"] = *structureFile;
 
     m_deleteionQueue.push_function([&]() {
+        m_activeScene.reset();
         loadedScenes.clear();
         });
 }
@@ -493,20 +495,10 @@ void VulkanEngine::update_scene()
     
     m_mainCamera.update();
 
-    glm::mat4 view = m_mainCamera.getViewMatrix();
+    m_activeScene->updateContext(glm::mat4{ 1.f });
 
-    m_sceneGraph.updateScene();
-    loadedScenes["structure"]->Draw(glm::mat4{ 1.f }, m_sceneGraph.getContext());
-
-    // camera projection
-    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)m_windowExtent.width / (float)m_windowExtent.height, 10000.f, 0.1f);
-
-    // invert the Y direction on projection matrix so that we are more similar
-    // to opengl and gltf axis
-    projection[1][1] *= -1;
-
-    m_sceneData.view = view;
-    m_sceneData.proj = projection;
+    m_sceneData.view = m_mainCamera.getViewMatrix();
+    m_sceneData.proj = m_mainCamera.getProjectionMatrix();
     m_sceneData.viewproj = m_sceneData.proj * m_sceneData.view;
 
     //some default lighting parameters
@@ -517,9 +509,6 @@ void VulkanEngine::update_scene()
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)
 {
-    //allocate a new uniform buffer for the scene data
-    m_frames[m_frameNumber].m_gpuSceneDataBuffer = std::make_unique<Buffer>(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-
     //write the buffer
     GPUSceneData* sceneUniformData = (GPUSceneData*)m_frames[m_frameNumber].m_gpuSceneDataBuffer->getAlloacation()->GetMappedData();
     *sceneUniformData = m_sceneData;
@@ -538,7 +527,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     cmd.setViewport(m_drawExtent);
     cmd.setScissor(m_drawExtent);
 
-    m_sceneGraph.drawScene(cmd, globalDescriptor);
+    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.proj);
 
     cmd.endRendering();
 }

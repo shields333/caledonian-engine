@@ -19,7 +19,6 @@
 #include "GuiManager.h"
 #include "Mesh.h"
 #include "camera.h"
-#include "SceneGraph.h"
 
 struct FrameData {
 
@@ -109,6 +108,7 @@ public:
 	std::unique_ptr<GraphicsPipeline> m_meshPipeline;
 
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
+	std::shared_ptr<LoadedGLTF> m_activeScene;
 
 	uint32_t m_frameCount = 3;
 
@@ -166,8 +166,6 @@ public:
 	struct SDL_Window* m_window{ nullptr };
 
 	std::unique_ptr<GuiManager> m_guiManager;
-
-	SceneGraph m_sceneGraph;
 
 	void update_scene();
 

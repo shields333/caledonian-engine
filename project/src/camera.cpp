@@ -2,6 +2,8 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include "vk_engine.h"
+
 void Camera::update()
 {
     glm::mat4 cameraRotation = getRotationMatrix();
@@ -38,6 +40,19 @@ glm::mat4 Camera::getViewMatrix()
     glm::mat4 cameraTranslation = glm::translate(glm::mat4(1.f), position);
     glm::mat4 cameraRotation = getRotationMatrix();
     return glm::inverse(cameraTranslation * cameraRotation);
+}
+
+glm::mat4 Camera::getProjectionMatrix()
+{
+    auto& engine = VulkanEngine::get();
+    // camera projection
+    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)engine.m_windowExtent.width / (float)engine.m_windowExtent.height, 10000.f, 0.1f);
+
+    // invert the Y direction on projection matrix so that we are more similar
+    // to opengl and gltf axis
+    projection[1][1] *= -1;
+
+    return projection;
 }
 
 glm::mat4 Camera::getRotationMatrix()

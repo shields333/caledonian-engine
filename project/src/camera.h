@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vk_types.h>
 #include <SDL_events.h>
 
@@ -10,7 +12,10 @@ public:
     // horizontal rotation
     float yaw{ 0.f };
 
+    float fov = 70.f;
+
     glm::mat4 getViewMatrix();
+    glm::mat4 getProjectionMatrix();
     glm::mat4 getRotationMatrix();
 
     void processSDLEvent(SDL_Event& e);
