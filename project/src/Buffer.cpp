@@ -9,7 +9,7 @@ Buffer::Buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memory
 	bufferInfo.pNext = nullptr;
 	bufferInfo.size = allocSize;
 
-	bufferInfo.usage = usage;
+	bufferInfo.usage = usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT ;
 
 	VmaAllocationCreateInfo vmaallocInfo = {};
 	vmaallocInfo.usage = memoryUsage;
@@ -18,6 +18,10 @@ Buffer::Buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memory
 	// allocate the buffer
 	VK_CHECK(vmaCreateBuffer(VulkanEngine::get().m_allocator, &bufferInfo, &vmaallocInfo, &m_handle, &m_allocation,
 		&m_info));
+
+	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = m_handle };
+	m_address = vkGetBufferDeviceAddress(VulkanEngine::getDevice()->getHandle(), &deviceAdressInfo);
+
 }
 
 Buffer::~Buffer()

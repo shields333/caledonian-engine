@@ -24,10 +24,6 @@ void Mesh::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices
 	m_vertexBuffer = std::make_unique<Buffer>(vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 		VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
 
-	//find the adress of the vertex buffer
-	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = m_vertexBuffer->getHandle() };
-	m_vertexBufferAddress = m_pushConstants.vertexBufferAddress = vkGetBufferDeviceAddress(VulkanEngine::getDevice()->getHandle(), &deviceAdressInfo);
-
 	//create index buffer
 	m_indexBuffer = std::make_unique<Buffer>(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 		VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
@@ -64,4 +60,10 @@ void Mesh::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices
 void Mesh::uploadSurfaceData(std::vector<GeoSurface>& surfaces)
 {
 	m_surfaces.insert(m_surfaces.begin(), surfaces.begin(), surfaces.end());
+}
+
+void Mesh::setBuffers(std::shared_ptr<Buffer> vertexBuf, std::shared_ptr<Buffer> indexBuf)
+{
+	m_vertexBuffer = vertexBuf;
+	m_indexBuffer = indexBuf;
 }

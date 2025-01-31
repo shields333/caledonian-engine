@@ -146,6 +146,8 @@ void VulkanEngine::initVulkan()
     VkPhysicalDeviceVulkan12Features features12{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
     features12.bufferDeviceAddress = true;
     features12.descriptorIndexing = true;
+    features12.descriptorBindingPartiallyBound = true;
+    features12.drawIndirectCount = true;
 
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
@@ -492,7 +494,9 @@ void VulkanEngine::createTextures()
 
 void VulkanEngine::update_scene()
 {
-    
+    //begin clock
+    auto start = std::chrono::system_clock::now();
+
     m_mainCamera.update();
 
     m_activeScene->updateContext(glm::mat4{ 1.f });
@@ -505,10 +509,23 @@ void VulkanEngine::update_scene()
     m_sceneData.ambientColor = glm::vec4(.1f);
     m_sceneData.sunlightColor = glm::vec4(1.f);
     m_sceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
+
+    auto end = std::chrono::system_clock::now();
+
+    //convert to microseconds (integer), and then come back to miliseconds
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    m_stats.scene_update_time = elapsed.count() / 1000.f;
+
 }
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)
 {
+    //reset counters
+    m_stats.drawcall_count = 0;
+
+    //begin clock
+    auto start = std::chrono::system_clock::now();
+
     //write the buffer
     GPUSceneData* sceneUniformData = (GPUSceneData*)m_frames[m_frameNumber].m_gpuSceneDataBuffer->getAlloacation()->GetMappedData();
     *sceneUniformData = m_sceneData;
@@ -527,9 +544,15 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     cmd.setViewport(m_drawExtent);
     cmd.setScissor(m_drawExtent);
 
-    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.proj);
+    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj);
 
     cmd.endRendering();
+
+    auto end = std::chrono::system_clock::now();
+
+    //convert to microseconds (integer), and then come back to miliseconds
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    m_stats.mesh_draw_time = elapsed.count() / 1000.f;
 }
 
 void VulkanEngine::recordCommands()
@@ -619,6 +642,9 @@ void VulkanEngine::run()
 
     // main loop
     while (!bQuit) {
+        //begin clock
+        auto start = std::chrono::system_clock::now();
+
         // Handle events on queue
         while (SDL_PollEvent(&e) != 0) {
             // close the window when user alt-f4s or clicks the X button or escape key
@@ -652,6 +678,14 @@ void VulkanEngine::run()
 
         recordCommands();
         submitFrame();
+
+        //get clock again, compare with start clock
+        auto end = std::chrono::system_clock::now();
+
+        //convert to microseconds (integer), and then come back to miliseconds
+        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        m_stats.frametime = elapsed.count() / 1000.f;
+
     }
 
     delete sm_loadedEngine;

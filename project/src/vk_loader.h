@@ -17,7 +17,7 @@ class CommandBuffer;
 struct RenderObject {
     uint32_t indexCount;
     uint32_t firstIndex;
-    Buffer* indexBuffer;
+    const Buffer* indexBuffer;
 
     MaterialInstance* material;
 
@@ -81,6 +81,9 @@ struct LoadedGLTF {
     std::unordered_map<std::string, std::shared_ptr<Image>> images;
     std::unordered_map<std::string, std::shared_ptr<Mesh::GLTFMaterial>> materials;
 
+    std::shared_ptr<Buffer> m_indexBuffer;
+    std::shared_ptr<Buffer> m_vertexBuffer;
+
     // nodes that dont have a parent, for iterating through the file in tree order
     std::vector<std::shared_ptr<Node>> topNodes;
 
@@ -92,6 +95,7 @@ struct LoadedGLTF {
 
     ~LoadedGLTF() { clearAll(); };
 
+    void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
     void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum);
 

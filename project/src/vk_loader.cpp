@@ -275,6 +275,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
     std::vector<Mesh::GeoSurface> surfaces;
+    size_t firstInstance = 0;
 
     for (fastgltf::Mesh& mesh : gltf.meshes) {
         std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
@@ -282,18 +283,21 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         file.meshes[mesh.name.c_str()] = newmesh;
 
         // clear the mesh arrays each mesh, we dont want to merge them by error
-        indices.clear();
-        vertices.clear();
+        //indices.clear();
+        //vertices.clear();
         surfaces.clear();
 
         surfaces.reserve(mesh.primitives.size());
 
         for (auto&& p : mesh.primitives) {
             Mesh::GeoSurface newSurface;
-            newSurface.startIndex = (uint32_t)indices.size();
-            newSurface.count = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
+            newSurface.indirectCommand.firstIndex = (uint32_t)indices.size();
+            newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
+            newSurface.indirectCommand.vertexOffset = vertices.size();
+            newSurface.indirectCommand.instanceCount = 1;
+            newSurface.indirectCommand.firstInstance = firstInstance++;
 
-            size_t initial_vtx = vertices.size();
+            size_t initial_vtx = newSurface.indirectCommand.vertexOffset;
 
             // load indexes
             {
@@ -377,8 +381,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         }
 
         newmesh->uploadSurfaceData(surfaces);
-        newmesh->createBuffers(indices, vertices);
     }
+    scene->createBuffers(indices, vertices);
 
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {
@@ -480,19 +484,68 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 
     for (auto& s : mesh->getSurfaces()) {
         RenderObject def;
-        def.indexCount = s.count;
-        def.firstIndex = s.startIndex;
+        def.indexCount = s.indirectCommand.indexCount;
+        def.firstIndex = s.indirectCommand.firstIndex;
         def.indexBuffer = &mesh->getIndexBuffer();
         def.material = &s.material->data;
         def.bounds = s.bounds;
         def.transform = nodeMatrix;
-        def.vertexBufferAddress = mesh->getBufferAddress();
+        def.vertexBufferAddress = mesh->getVertexBuffer().getAddress();
 
         ctx.OpaqueSurfaces.push_back(def);
     }
 
     // recurse down
     Node::Draw(topMatrix, ctx);
+}
+
+void LoadedGLTF::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
+{
+    // shouldn't overwrite an existing mesh
+    assert(!m_indexBuffer);
+
+    const size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
+    const size_t indexBufferSize = indices.size() * sizeof(uint32_t);
+
+    //create vertex buffer
+    m_vertexBuffer = std::make_shared<Buffer>(vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
+
+    //create index buffer
+    m_indexBuffer = std::make_shared<Buffer>(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
+
+    Buffer staging(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+    void* data;
+    vmaMapMemory(VulkanEngine::get().m_allocator, staging.getAlloacation(), &data);
+
+    // copy vertex buffer
+    memcpy(data, vertices.data(), vertexBufferSize);
+    // copy index buffer
+    memcpy((char*)data + vertexBufferSize, indices.data(), indexBufferSize);
+
+    VulkanEngine::get().immediateSubmit([&](VkCommandBuffer cmd) {
+        VkBufferCopy vertexCopy{ 0 };
+        vertexCopy.dstOffset = 0;
+        vertexCopy.srcOffset = 0;
+        vertexCopy.size = vertexBufferSize;
+
+        vkCmdCopyBuffer(cmd, staging.getHandle(), m_vertexBuffer->getHandle(), 1, &vertexCopy);
+
+        VkBufferCopy indexCopy{ 0 };
+        indexCopy.dstOffset = 0;
+        indexCopy.srcOffset = vertexBufferSize;
+        indexCopy.size = indexBufferSize;
+
+        vkCmdCopyBuffer(cmd, staging.getHandle(), m_indexBuffer->getHandle(), 1, &indexCopy);
+        });
+
+    vmaUnmapMemory(VulkanEngine::get().m_allocator, staging.getAlloacation());
+
+    for (auto& mesh : meshes)
+        mesh.second->setBuffers(m_vertexBuffer, m_indexBuffer);
+    
 }
 
 void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
@@ -520,19 +573,14 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     std::sort(opaque_draws.begin(), opaque_draws.end(), [&](const auto& iA, const auto& iB) {
         const RenderObject& A = m_drawContext.OpaqueSurfaces[iA];
         const RenderObject& B = m_drawContext.OpaqueSurfaces[iB];
-        if (A.material == B.material) {
-            return A.indexBuffer < B.indexBuffer;
-        }
-        else {
-            return A.material < B.material;
-        }
+        return A.material < B.material;
         });
 
     //defined outside of the draw function, this is the state we will try to skip
     GraphicsPipeline* lastPipeline = nullptr;
     MaterialInstance* lastMaterial = nullptr;
-    Buffer* lastIndexBuffer = nullptr;
 
+    cmd.bindIndexBuffer(*m_indexBuffer);
 
     auto draw = [&](const RenderObject& draw) {
 
@@ -548,18 +596,13 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
             lastMaterial = draw.material;
         }
 
-        if (lastIndexBuffer != draw.indexBuffer) {
-            cmd.bindIndexBuffer(*draw.indexBuffer);
-            lastIndexBuffer = draw.indexBuffer;
-        }
-
         Mesh::GPUDrawPushConstants pushConstants;
         pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
         pushConstants.worldMatrix = draw.transform;
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
 
         cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, 0);
-        };
+    };
 
     for (auto& r : opaque_draws) {
         draw(m_drawContext.OpaqueSurfaces[r]);
@@ -568,6 +611,10 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     for (auto& r : m_drawContext.TransparentSurfaces) {
         draw(r);
     }
+
+    //add counters for draws
+    VulkanEngine::get().m_stats.drawcall_count += opaque_draws.size() + m_drawContext.TransparentSurfaces.size();
+
 }
 
 void LoadedGLTF::clearAll()

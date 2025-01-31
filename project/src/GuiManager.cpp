@@ -100,23 +100,12 @@ void GuiManager::newFrame()
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	//some imgui UI to test
-	//ImGui::ShowDemoWindow();
-
-	if (ImGui::Begin("background")) {
-
-		ImGui::SliderFloat("Render Scale", &VulkanEngine::get().m_renderScale, 0.3f, 1.f);
-
-		ComputeEffect& selected = VulkanEngine::get().m_backgroundEffects[VulkanEngine::get().m_currentBackgroundEffect];
-
-		ImGui::Text("Selected effect: ", selected.name);
-
-		ImGui::SliderInt("Effect Index", &VulkanEngine::get().m_currentBackgroundEffect, 0, VulkanEngine::get().m_backgroundEffects.size() - 1);
-
-		ImGui::InputFloat4("data1", (float*)&selected.data.data1);
-		ImGui::InputFloat4("data2", (float*)&selected.data.data2);
-		ImGui::InputFloat4("data3", (float*)&selected.data.data3);
-		ImGui::InputFloat4("data4", (float*)&selected.data.data4);
+	if (ImGui::Begin("Stats")) {
+		auto& engine = VulkanEngine::get();
+		ImGui::Text("frametime %f ms", engine.m_stats.frametime);
+		ImGui::Text("draw time %f ms", engine.m_stats.mesh_draw_time);
+		ImGui::Text("update time %f ms", engine.m_stats.scene_update_time);
+		ImGui::Text("draws %i", engine.m_stats.drawcall_count);
 	}
 	ImGui::End();
 

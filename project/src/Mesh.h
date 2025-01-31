@@ -29,8 +29,7 @@ public:
 	};
 
 	struct GeoSurface {
-		uint32_t startIndex;
-		uint32_t count;
+		VkDrawIndexedIndirectCommand indirectCommand;
 		Bounds bounds;
 		std::shared_ptr<GLTFMaterial> material;
 	};
@@ -44,18 +43,18 @@ public:
 	void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
 	void uploadSurfaceData(std::vector<GeoSurface>& surfaces);
 
+	void setBuffers(std::shared_ptr<Buffer> vertexBuf, std::shared_ptr<Buffer> indexBuf);
 	GPUDrawPushConstants& getPushConstants() { return m_pushConstants; }
-	Buffer& getIndexBuffer() { return *m_indexBuffer; }
+	const Buffer& getIndexBuffer() const { return *m_indexBuffer; }
+	const Buffer& getVertexBuffer() const { return *m_vertexBuffer; }
 	std::vector<GeoSurface>& getSurfaces() { return m_surfaces; }
-	VkDeviceAddress getBufferAddress() { return m_vertexBufferAddress; }
 	std::string getName() { return m_name; }
 
 private:
 	std::string m_name;
 
-	std::unique_ptr<Buffer> m_indexBuffer;
-	std::unique_ptr<Buffer> m_vertexBuffer;
-	VkDeviceAddress			m_vertexBufferAddress;
+	std::shared_ptr<Buffer> m_indexBuffer;
+	std::shared_ptr<Buffer> m_vertexBuffer;
 	
 	std::vector<GeoSurface> m_surfaces;
 
