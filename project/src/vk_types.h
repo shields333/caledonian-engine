@@ -40,7 +40,7 @@ enum class MaterialPass :uint8_t {
 
 struct MaterialInstance {
     GraphicsPipeline* pipeline;
-    VkDescriptorSet materialSet;
+    VkDeviceAddress materialAddress;
     MaterialPass passType;
 };
 

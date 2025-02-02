@@ -18,11 +18,9 @@ struct GLTFMetallic_Roughness {
     std::unique_ptr<GraphicsPipeline> opaquePipeline;
     std::unique_ptr<GraphicsPipeline> transparentPipeline;
 
-    VkDescriptorSetLayout m_materialLayout;
-
-    struct alignas (64) MaterialConstants {
+    struct alignas (16) MaterialConstants {
         glm::vec4 colorFactors;
-        glm::vec4 metal_rough_factors;
+        glm::vec2 metal_rough_factors;
         uint32_t colourID;
     };
 
@@ -32,7 +30,6 @@ struct GLTFMetallic_Roughness {
         size_t metalRoughnessID;
         Sampler* metalRoughSampler;
         Buffer* dataBuffer;
-        uint32_t dataBufferOffset;
     };
 
     DescriptorWriter writer;
@@ -40,12 +37,13 @@ struct GLTFMetallic_Roughness {
     void build_pipelines(VkDescriptorSetLayout textureLayout);
     void clear_resources();
 
-    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator);
+    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources);
 };
 
 struct RenderObject {
     uint32_t indexCount;
     uint32_t firstIndex;
+    uint32_t firstInstance;
     const Buffer* indexBuffer;
 
     MaterialInstance* material;
@@ -53,6 +51,7 @@ struct RenderObject {
     Mesh::Bounds bounds;
     glm::mat4 transform;
     VkDeviceAddress vertexBufferAddress;
+    VkDeviceAddress materialBufferAddress;
 };
 
 struct DrawContext {

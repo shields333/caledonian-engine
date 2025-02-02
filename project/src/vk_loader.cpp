@@ -237,7 +237,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
     // create buffer to hold the material data
     file.materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
     GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.materialDataBuffer->getInfo().pMappedData;
 
@@ -261,7 +261,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
         // set the uniform buffer for the material data
         materialResources.dataBuffer = file.materialDataBuffer.get();
-        materialResources.dataBufferOffset = data_index * sizeof(GLTFMetallic_Roughness::MaterialConstants);
         // grab textures from gltf file
         if (mat.pbrData.baseColorTexture.has_value()) {
             size_t img = gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].imageIndex.value();
@@ -285,7 +284,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         sceneMaterialConstants[data_index] = constants;
 
         // build material
-        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources, file.descriptorPool);
+        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources);
 
         data_index++;
     }
@@ -315,7 +314,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
             newSurface.indirectCommand.vertexOffset = vertices.size();
             newSurface.indirectCommand.instanceCount = 1;
-            newSurface.indirectCommand.firstInstance = firstInstance++;
 
             size_t initial_vtx = newSurface.indirectCommand.vertexOffset;
 
@@ -380,9 +378,11 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
             if (p.materialIndex.has_value()) {
                 newSurface.material = materials[p.materialIndex.value()];
+                newSurface.indirectCommand.firstInstance = p.materialIndex.value();
             }
             else {
                 newSurface.material = materials[0];
+                newSurface.indirectCommand.firstInstance = 0;
             }
 
             //loop the vertices of this surface, find min/max bounds
@@ -506,11 +506,13 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
         RenderObject def;
         def.indexCount = s.indirectCommand.indexCount;
         def.firstIndex = s.indirectCommand.firstIndex;
+        def.firstInstance = s.indirectCommand.firstInstance;
         def.indexBuffer = &mesh->getIndexBuffer();
         def.material = &s.material->data;
         def.bounds = s.bounds;
         def.transform = nodeMatrix;
         def.vertexBufferAddress = mesh->getVertexBuffer().getAddress();
+        def.materialBufferAddress = s.material->data.materialAddress;
 
         if (s.material->data.passType == MaterialPass::Transparent)
             ctx.TransparentSurfaces.push_back(def);
@@ -601,34 +603,29 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
     //defined outside of the draw function, this is the state we will try to skip
     GraphicsPipeline* lastPipeline = nullptr;
-    MaterialInstance* lastMaterial = nullptr;
 
     cmd.bindIndexBuffer(*m_indexBuffer);
 
     auto draw = [&](const RenderObject& draw) {
+        if (lastPipeline != draw.material->pipeline) {
+            // bind mesh pipeline
+            cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
-        if (lastMaterial != draw.material) {
-            std::vector<VkDescriptorSet> sets = { globalDescriptor, draw.material->materialSet, m_textureSet };
+            std::vector<VkDescriptorSet> sets = { globalDescriptor, m_textureSet };
 
-            if (lastPipeline != draw.material->pipeline) {
-                // bind mesh pipeline
-                cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-               // cmd.bindDescriptorSet(m_textureSet, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-                lastPipeline = draw.material->pipeline;
-            }
             cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-            lastMaterial = draw.material;
+
+            lastPipeline = draw.material->pipeline;
         }
 
         Mesh::GPUDrawPushConstants pushConstants;
         pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
         pushConstants.worldMatrix = draw.transform;
+        pushConstants.materialBufferAddress = draw.materialBufferAddress;
 
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
-        cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, 0);
+        cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, draw.firstInstance);
     };
 
     for (auto& r : opaque_draws) {
@@ -673,9 +670,7 @@ void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout
     DescriptorLayoutBuilder layoutBuilder;
     layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    m_materialLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, m_materialLayout, textureLayout };
+    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, textureLayout };
 
     // build the stage-create-info for both vertex and fragment stages. This lets
     // the pipeline know the shader modules per stage
@@ -705,11 +700,9 @@ void GLTFMetallic_Roughness::clear_resources()
 {
     opaquePipeline.reset();
     transparentPipeline.reset();
-
-    vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_materialLayout, nullptr);
 }
 
-MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator)
+MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources)
 {
     MaterialInstance matData;
     matData.passType = pass;
@@ -720,12 +713,7 @@ MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const
         matData.pipeline = opaquePipeline.get();
     }
 
-    matData.materialSet = descriptorAllocator.allocate(m_materialLayout);
-
-    writer.clear();
-    writer.write_buffer(0, resources.dataBuffer->getHandle(), sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    writer.update_set(VulkanEngine::getDevice()->getHandle(), matData.materialSet);
+    matData.materialAddress = resources.dataBuffer->getAddress();
 
     return matData;
 }

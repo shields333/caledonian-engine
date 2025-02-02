@@ -7,6 +7,7 @@
 layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec2 outUV;
+layout (location = 3) out uint outColourID;
 
 void main() 
 {
@@ -16,8 +17,12 @@ void main()
 
 	gl_Position =  sceneData.viewproj * pushConstants.render_matrix *position;
 
+	GLTFMaterialData material = pushConstants.materialBuffer.materials[gl_BaseInstance];
+
 	outNormal = (pushConstants.render_matrix * vec4(v.normal, 0.f)).xyz;
-	outColor = v.color.xyz * materialData.colorFactors.xyz;	
+	outColor = v.color.xyz * material.colorFactors.xyz;	
 	outUV.x = v.uv_x;
 	outUV.y = v.uv_y;
+
+	outColourID = material.colourID;
 }

@@ -150,6 +150,9 @@ void VulkanEngine::initVulkan()
     features12.drawIndirectCount = true;
     features12.runtimeDescriptorArray = true;
 
+    VkPhysicalDeviceVulkan11Features features11{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };
+    features11.shaderDrawParameters = true;
+
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
     vkb::PhysicalDeviceSelector selector{ vkbInst };
@@ -157,6 +160,7 @@ void VulkanEngine::initVulkan()
         .set_minimum_version(1, 3)
         .set_required_features_13(features)
         .set_required_features_12(features12)
+        .set_required_features_11(features11)
         .set_surface(m_surface)
         .select()
         .value();

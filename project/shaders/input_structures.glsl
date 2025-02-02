@@ -11,13 +11,7 @@ layout(set = 0, binding = 0) uniform  SceneData{
 	vec4 sunlightColor;
 } sceneData;
 
-layout(set = 1, binding = 0) uniform GLTFMaterialData{   
-	vec4 colorFactors;
-	vec4 metal_rough_factors;
-	uint colourID;
-} materialData;
-
-layout(set = 2, binding = 0) uniform sampler2D colorTex[];
+layout(set = 1, binding = 0) uniform sampler2D colorTex[];
 
 struct Vertex {
 
@@ -32,9 +26,20 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer{
 	Vertex vertices[];
 };
 
+struct GLTFMaterialData{   
+	vec4 colorFactors;
+	vec2 metal_rough_factors;
+	uint colourID;
+};
+
+layout(buffer_reference, std430) readonly buffer MaterialBuffer{ 
+	GLTFMaterialData materials[];
+};
+
 //push constants block
 layout( push_constant ) uniform Constants
 {
 	mat4 render_matrix;
 	VertexBuffer vertexBuffer;
+	MaterialBuffer materialBuffer;
 } pushConstants;

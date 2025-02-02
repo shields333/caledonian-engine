@@ -38,6 +38,7 @@ public:
 	struct GPUDrawPushConstants {
 		glm::mat4 worldMatrix;
 		VkDeviceAddress vertexBufferAddress;
+		VkDeviceAddress materialBufferAddress;
 	};
 
 	void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
