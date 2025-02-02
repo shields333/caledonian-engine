@@ -1,10 +1,13 @@
 ﻿#include <vk_descriptors.h>
 
-void DescriptorLayoutBuilder::add_binding(uint32_t binding, VkDescriptorType type)
+#include <Image.h>
+#include "vk_engine.h"
+
+void DescriptorLayoutBuilder::add_binding(uint32_t binding, VkDescriptorType type, uint32_t count /*= 1*/)
 {
     VkDescriptorSetLayoutBinding newbind{};
     newbind.binding = binding;
-    newbind.descriptorCount = 1;
+    newbind.descriptorCount = count;
     newbind.descriptorType = type;
 
     bindings.push_back(newbind);
@@ -115,10 +118,10 @@ void DescriptorAllocatorGrowable::destroy_pools(VkDevice device)
     fullPools.clear();
 }
 
-VkDescriptorSet DescriptorAllocatorGrowable::allocate(VkDevice device, VkDescriptorSetLayout layout, void* pNext)
+VkDescriptorSet DescriptorAllocatorGrowable::allocate(VkDescriptorSetLayout layout, void* pNext)
 {
     //get or create a pool to allocate from
-    VkDescriptorPool poolToUse = get_pool(device);
+    VkDescriptorPool poolToUse = get_pool(VulkanEngine::getDevice()->getHandle());
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.pNext = pNext;
@@ -128,17 +131,17 @@ VkDescriptorSet DescriptorAllocatorGrowable::allocate(VkDevice device, VkDescrip
     allocInfo.pSetLayouts = &layout;
 
     VkDescriptorSet ds;
-    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &ds);
+    VkResult result = vkAllocateDescriptorSets(VulkanEngine::getDevice()->getHandle(), &allocInfo, &ds);
 
     //allocation failed. Try again
     if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL) {
 
         fullPools.push_back(poolToUse);
 
-        poolToUse = get_pool(device);
+        poolToUse = get_pool(VulkanEngine::getDevice()->getHandle());
         allocInfo.descriptorPool = poolToUse;
 
-        VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &ds));
+        VK_CHECK(vkAllocateDescriptorSets(VulkanEngine::getDevice()->getHandle(), &allocInfo, &ds));
     }
 
     readyPools.push_back(poolToUse);
@@ -179,6 +182,27 @@ void DescriptorWriter::write_image(int binding, VkImageView image, VkSampler sam
     write.descriptorCount = 1;
     write.descriptorType = type;
     write.pImageInfo = &info;
+
+    writes.push_back(write);
+}
+
+void DescriptorWriter::writeImageArray(int binding, std::vector<std::shared_ptr<Image>>& images, VkSampler sampler, VkImageLayout layout, VkDescriptorType type)
+{
+
+    for (int i = 0; i < images.size(); i++) {
+        imageInfos.emplace_back(VkDescriptorImageInfo{
+        .sampler = sampler,
+        .imageView = images[i]->getViewHandle(),
+        .imageLayout = layout
+            });
+    }
+    VkWriteDescriptorSet write = { .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+
+    write.dstBinding = binding;
+    write.dstSet = VK_NULL_HANDLE; //left empty for now until we need to write it
+    write.descriptorCount = images.size();
+    write.descriptorType = type;
+    write.pImageInfo = &imageInfos.front();
 
     writes.push_back(write);
 }

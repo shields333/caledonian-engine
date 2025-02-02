@@ -103,9 +103,9 @@ void VulkanEngine::init()
 
     init_descriptors();
 
-    init_pipelines();
-
     initDefaultData();
+
+    init_pipelines();
 
     m_guiManager = std::make_unique<GuiManager>();
 
@@ -148,6 +148,7 @@ void VulkanEngine::initVulkan()
     features12.descriptorIndexing = true;
     features12.descriptorBindingPartiallyBound = true;
     features12.drawIndirectCount = true;
+    features12.runtimeDescriptorArray = true;
 
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
@@ -274,7 +275,7 @@ void VulkanEngine::init_descriptors()
     }
 
     //allocate a descriptor set for our draw image
-    m_drawImageDescriptors = m_globalDescriptorAllocator.allocate(m_device->getHandle(), m_drawImageDescriptorLayout);
+    m_drawImageDescriptors = m_globalDescriptorAllocator.allocate(m_drawImageDescriptorLayout);
 
     DescriptorWriter writer;
     writer.write_image(0, m_drawImage->getViewHandle(), VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
@@ -322,8 +323,6 @@ void VulkanEngine::init_pipelines()
 {
     initMeshPipeline();
     init_background_pipelines();
-
-    metalRoughMaterial.build_pipelines();
 }
 
 void VulkanEngine::init_background_pipelines()
@@ -365,57 +364,16 @@ void VulkanEngine::init_background_pipelines()
 
 void VulkanEngine::initMeshPipeline()
 {
-    std::vector <VkPushConstantRange> pushConstant(1);
-    pushConstant[0].offset = 0;
-    pushConstant[0].size = sizeof(Mesh::GPUDrawPushConstants);
-    pushConstant[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    std::vector<VkDescriptorSetLayout> layouts = { m_singleImageDescriptorLayout };
-
-    PipelineBuilder builder;
-
-    builder.setShaders("../project/shaders/coloured_triangle_mesh.vert.spv", "../project/shaders/texImage.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstant);
-    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
-    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-
-    builder.setColourAttachmentFormat(m_drawImage->getFormat());
-    builder.setDepthFormat(m_depthImage->getFormat());
-    builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
-    //builder.enableBlendingAdditive();
-
-    m_meshPipeline.reset(builder.buildPipeline());
-
-    m_deleteionQueue.push_function([&]() {
-        m_meshPipeline.reset();
-        });
 }
 
 void VulkanEngine::initDefaultData()
 {
     createTextures();
 
-    GLTFMetallic_Roughness::MaterialResources materialResources = {};
-    //default the material textures
-    materialResources.colorImage = m_whiteImage.get();
-    materialResources.colorSampler = m_defaultSamplerLinear.get();
-    materialResources.metalRoughImage = m_whiteImage.get();
-    materialResources.metalRoughSampler = m_defaultSamplerLinear.get();
-
-    //set the uniform buffer for the material data
-    materialResources.dataBuffer = m_globalUniform.get();
-
     //write the buffer
-    GLTFMetallic_Roughness::MaterialConstants* sceneUniformData = (GLTFMetallic_Roughness::MaterialConstants*)materialResources.dataBuffer->getAlloacation()->GetMappedData();
+    GLTFMetallic_Roughness::MaterialConstants* sceneUniformData = (GLTFMetallic_Roughness::MaterialConstants*)m_globalUniform.get()->getAlloacation()->GetMappedData();
     sceneUniformData->colorFactors = glm::vec4{ 1,1,1,1 };
     sceneUniformData->metal_rough_factors = glm::vec4{ 1,0.5,0,0 };
-
-    m_deleteionQueue.push_function([=, this]() {
-        metalRoughMaterial.clear_resources();
-        });
-
-    defaultData = metalRoughMaterial.write_material(MaterialPass::MainColor, materialResources, m_globalDescriptorAllocator);
 
     loadMeshes();
 
@@ -531,7 +489,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     *sceneUniformData = m_sceneData;
 
     //create a descriptor set that binds that buffer and update it
-    VkDescriptorSet globalDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_device->getHandle(), m_gpuSceneDataDescriptorLayout);
+    VkDescriptorSet globalDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_gpuSceneDataDescriptorLayout);
 
     DescriptorWriter writer;
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -689,78 +647,4 @@ void VulkanEngine::run()
     }
 
     delete sm_loadedEngine;
-}
-
-void GLTFMetallic_Roughness::build_pipelines()
-{
-    VkPushConstantRange matrixRange{};
-    matrixRange.offset = 0;
-    matrixRange.size = sizeof(Mesh::GPUDrawPushConstants);
-    matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    std::vector<VkPushConstantRange> pushConstants = { matrixRange };
-
-    DescriptorLayoutBuilder layoutBuilder;
-    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    layoutBuilder.add_binding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    layoutBuilder.add_binding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-    materialLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, materialLayout };
-
-    // build the stage-create-info for both vertex and fragment stages. This lets
-    // the pipeline know the shader modules per stage
-    PipelineBuilder builder;
-
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants);
-    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
-    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-
-    builder.setColourAttachmentFormat(VulkanEngine::get().m_drawImage->getFormat());
-    builder.setDepthFormat(VulkanEngine::get().m_depthImage->getFormat());
-    builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
-
-    opaquePipeline.reset(builder.buildPipeline());
-
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants); // TODO: creating duplicate layout to avoid validation warnings
-    builder.enableBlendingAdditive();
-    builder.enableDepthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
-
-    transparentPipeline.reset(builder.buildPipeline());
-}
-
-void GLTFMetallic_Roughness::clear_resources()
-{
-    opaquePipeline.reset();
-    transparentPipeline.reset();
-
-    vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), materialLayout, nullptr);
-}
-
-MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator)
-{
-    MaterialInstance matData;
-    matData.passType = pass;
-    if (pass == MaterialPass::Transparent) {
-        matData.pipeline = transparentPipeline.get();
-    }
-    else {
-        matData.pipeline = opaquePipeline.get();
-    }
-
-    matData.materialSet = descriptorAllocator.allocate(VulkanEngine::getDevice()->getHandle(), materialLayout);
-
-
-    writer.clear();
-    writer.write_buffer(0, resources.dataBuffer->getHandle(), sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    writer.write_image(1, resources.colorImage->getViewHandle(), resources.colorSampler->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    writer.write_image(2, resources.metalRoughImage->getViewHandle(), resources.metalRoughSampler->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-    writer.update_set(VulkanEngine::getDevice()->getHandle(), matData.materialSet);
-
-    return matData;
 }

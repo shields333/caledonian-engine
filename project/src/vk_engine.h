@@ -57,36 +57,6 @@ struct ComputeEffect {
 	ComputePushConstants data;
 };
 
-struct GLTFMetallic_Roughness {
-	std::unique_ptr<GraphicsPipeline> opaquePipeline;
-	std::unique_ptr<GraphicsPipeline> transparentPipeline;
-
-	VkDescriptorSetLayout materialLayout;
-
-	struct MaterialConstants {
-		glm::vec4 colorFactors;
-		glm::vec4 metal_rough_factors;
-		//padding, we need it anyway for uniform buffers
-		glm::vec4 extra[14];
-	};
-
-	struct MaterialResources {
-		Image* colorImage;
-		Sampler* colorSampler;
-		Image* metalRoughImage;
-		Sampler* metalRoughSampler;
-		Buffer* dataBuffer;
-		uint32_t dataBufferOffset;
-	};
-
-	DescriptorWriter writer;
-
-	void build_pipelines();
-	void clear_resources();
-
-	MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator);
-};
-
 struct EngineStats {
 	float frametime;
 	int drawcall_count;
@@ -113,8 +83,6 @@ public:
 	std::vector<ComputeEffect> m_backgroundEffects;
 	int m_currentBackgroundEffect{ 0 };
 
-	std::unique_ptr<GraphicsPipeline> m_meshPipeline;
-
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
 	std::shared_ptr<LoadedGLTF> m_activeScene;
 
@@ -129,9 +97,6 @@ public:
 	GPUSceneData m_sceneData;
 	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
 
-	MaterialInstance defaultData;
-	GLTFMetallic_Roughness metalRoughMaterial;
-
 	VkExtent2D m_drawExtent;
 	float m_renderScale = 1.f;
 
@@ -140,9 +105,9 @@ public:
 
 	std::unique_ptr<Buffer> m_globalUniform;
 
-	std::unique_ptr<Image> m_whiteImage;
-	std::unique_ptr<Image> m_blackImage;
-	std::unique_ptr<Image> m_greyImage;
+	std::shared_ptr<Image> m_whiteImage;
+	std::shared_ptr<Image> m_blackImage;
+	std::shared_ptr<Image> m_greyImage;
 	std::shared_ptr<Image> m_errorCheckerboardImage;
 
 	std::unique_ptr<Sampler> m_defaultSamplerLinear;

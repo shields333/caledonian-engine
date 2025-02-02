@@ -175,7 +175,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     }
 
     // we can estimate the descriptors we will need accurately
-    std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = { { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
+    std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = { { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 } };
 
@@ -202,13 +202,15 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     std::vector<std::shared_ptr<Image>> images;
     std::vector<std::shared_ptr<Mesh::GLTFMaterial>> materials;
 
+    images.push_back(VulkanEngine::get().m_whiteImage);
+
     // load all textures
     for (fastgltf::Image& image : gltf.images) {
         std::optional<std::shared_ptr<Image>> img = load_image(gltf, image);
 
         if (img.has_value()) {
-            images.push_back(*img);
             file.images[image.name.c_str()] = *img;
+            images.push_back(img.value());
         }
         else {
             // we failed to load, so lets give the slot a default error texture to not
@@ -217,6 +219,21 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             std::cout << "gltf failed to load texture " << image.name << std::endl;
         }
     }
+
+    // create texture array descriptor layout
+    DescriptorLayoutBuilder layoutBuilder;
+    layoutBuilder.clear();
+    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images.size());
+    file.m_textureLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    file.m_textureSet = file.descriptorPool.allocate(file.m_textureLayout);
+
+    //write the texture array to its descriptor set
+    DescriptorWriter writer;
+    writer.writeImageArray(0, images, file.samplers[0].getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.update_set(VulkanEngine::getDevice()->getHandle(), file.m_textureSet);
+
+    file.metalRoughMaterial.build_pipelines(file.m_textureLayout);
 
     // create buffer to hold the material data
     file.materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
@@ -230,17 +247,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         materials.push_back(newMat);
         file.materials[mat.name.c_str()] = newMat;
 
-        GLTFMetallic_Roughness::MaterialConstants constants;
-        constants.colorFactors.x = mat.pbrData.baseColorFactor[0];
-        constants.colorFactors.y = mat.pbrData.baseColorFactor[1];
-        constants.colorFactors.z = mat.pbrData.baseColorFactor[2];
-        constants.colorFactors.w = mat.pbrData.baseColorFactor[3];
-
-        constants.metal_rough_factors.x = mat.pbrData.metallicFactor;
-        constants.metal_rough_factors.y = mat.pbrData.roughnessFactor;
-        // write material parameters to buffer
-        sceneMaterialConstants[data_index] = constants;
-
         MaterialPass passType = MaterialPass::MainColor;
         if (mat.alphaMode == fastgltf::AlphaMode::Blend) {
             passType = MaterialPass::Transparent;
@@ -248,9 +254,9 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
         GLTFMetallic_Roughness::MaterialResources materialResources;
         // default the material textures
-        materialResources.colorImage = VulkanEngine::get().m_whiteImage.get();
+        materialResources.colourID = 0;
         materialResources.colorSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
-        materialResources.metalRoughImage = VulkanEngine::get().m_whiteImage.get();
+        materialResources.metalRoughnessID = 0;
         materialResources.metalRoughSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
 
         // set the uniform buffer for the material data
@@ -261,11 +267,25 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             size_t img = gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].imageIndex.value();
             size_t sampler = gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.value();
 
-            materialResources.colorImage = images[img].get();
+            materialResources.colourID = img+1;
             materialResources.colorSampler = &file.samplers[sampler];
         }
+
+        GLTFMetallic_Roughness::MaterialConstants constants;
+        constants.colorFactors.x = mat.pbrData.baseColorFactor[0];
+        constants.colorFactors.y = mat.pbrData.baseColorFactor[1];
+        constants.colorFactors.z = mat.pbrData.baseColorFactor[2];
+        constants.colorFactors.w = mat.pbrData.baseColorFactor[3];
+
+        constants.metal_rough_factors.x = mat.pbrData.metallicFactor;
+        constants.metal_rough_factors.y = mat.pbrData.roughnessFactor;
+
+        constants.colourID = materialResources.colourID;
+        // write material parameters to buffer
+        sceneMaterialConstants[data_index] = constants;
+
         // build material
-        newMat->data = VulkanEngine::get().metalRoughMaterial.write_material(passType, materialResources, file.descriptorPool);
+        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources, file.descriptorPool);
 
         data_index++;
     }
@@ -492,7 +512,10 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
         def.transform = nodeMatrix;
         def.vertexBufferAddress = mesh->getVertexBuffer().getAddress();
 
-        ctx.OpaqueSurfaces.push_back(def);
+        if (s.material->data.passType == MaterialPass::Transparent)
+            ctx.TransparentSurfaces.push_back(def);
+        else
+            ctx.OpaqueSurfaces.push_back(def);
     }
 
     // recurse down
@@ -585,11 +608,14 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     auto draw = [&](const RenderObject& draw) {
 
         if (lastMaterial != draw.material) {
-            std::vector<VkDescriptorSet> sets = { globalDescriptor, draw.material->materialSet };
+            std::vector<VkDescriptorSet> sets = { globalDescriptor, draw.material->materialSet, m_textureSet };
 
             if (lastPipeline != draw.material->pipeline) {
                 // bind mesh pipeline
                 cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+               // cmd.bindDescriptorSet(m_textureSet, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
                 lastPipeline = draw.material->pipeline;
             }
             cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
@@ -599,7 +625,8 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         Mesh::GPUDrawPushConstants pushConstants;
         pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
         pushConstants.worldMatrix = draw.transform;
-        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VK_SHADER_STAGE_VERTEX_BIT);
+
+        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
         cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, 0);
     };
@@ -622,6 +649,9 @@ void LoadedGLTF::clearAll()
     descriptorPool.destroy_pools(VulkanEngine::getDevice()->getHandle());
     materialDataBuffer.reset();
 
+    metalRoughMaterial.clear_resources();
+    vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_textureLayout, nullptr);
+
     meshes.clear();
     nodes.clear();
     images.clear();
@@ -629,4 +659,73 @@ void LoadedGLTF::clearAll()
 
     topNodes.clear();
     samplers.clear();
+}
+
+void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout)
+{
+    VkPushConstantRange matrixRange{};
+    matrixRange.offset = 0;
+    matrixRange.size = sizeof(Mesh::GPUDrawPushConstants);
+    matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::vector<VkPushConstantRange> pushConstants = { matrixRange };
+
+    DescriptorLayoutBuilder layoutBuilder;
+    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    m_materialLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, m_materialLayout, textureLayout };
+
+    // build the stage-create-info for both vertex and fragment stages. This lets
+    // the pipeline know the shader modules per stage
+    PipelineBuilder builder;
+
+    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
+    builder.createPipelineLayout(&layouts, &pushConstants);
+    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
+    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+
+    builder.setColourAttachmentFormat(VulkanEngine::get().m_drawImage->getFormat());
+    builder.setDepthFormat(VulkanEngine::get().m_depthImage->getFormat());
+    builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
+
+    opaquePipeline.reset(builder.buildPipeline());
+
+    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
+    builder.createPipelineLayout(&layouts, &pushConstants); // TODO: creating duplicate layout to avoid validation warnings
+    builder.enableBlendingAdditive();
+    builder.enableDepthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
+
+    transparentPipeline.reset(builder.buildPipeline());
+}
+
+void GLTFMetallic_Roughness::clear_resources()
+{
+    opaquePipeline.reset();
+    transparentPipeline.reset();
+
+    vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_materialLayout, nullptr);
+}
+
+MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator)
+{
+    MaterialInstance matData;
+    matData.passType = pass;
+    if (pass == MaterialPass::Transparent) {
+        matData.pipeline = transparentPipeline.get();
+    }
+    else {
+        matData.pipeline = opaquePipeline.get();
+    }
+
+    matData.materialSet = descriptorAllocator.allocate(m_materialLayout);
+
+    writer.clear();
+    writer.write_buffer(0, resources.dataBuffer->getHandle(), sizeof(MaterialConstants), resources.dataBufferOffset, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    writer.update_set(VulkanEngine::getDevice()->getHandle(), matData.materialSet);
+
+    return matData;
 }

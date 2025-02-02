@@ -1,3 +1,6 @@
+#extension GL_EXT_nonuniform_qualifier : require
+#extension GL_EXT_buffer_reference : require
+
 layout(set = 0, binding = 0) uniform  SceneData{   
 
 	mat4 view;
@@ -9,11 +12,29 @@ layout(set = 0, binding = 0) uniform  SceneData{
 } sceneData;
 
 layout(set = 1, binding = 0) uniform GLTFMaterialData{   
-
 	vec4 colorFactors;
 	vec4 metal_rough_factors;
-	
+	uint colourID;
 } materialData;
 
-layout(set = 1, binding = 1) uniform sampler2D colorTex;
-layout(set = 1, binding = 2) uniform sampler2D metalRoughTex;
+layout(set = 2, binding = 0) uniform sampler2D colorTex[];
+
+struct Vertex {
+
+	vec3 position;
+	float uv_x;
+	vec3 normal;
+	float uv_y;
+	vec4 color;
+}; 
+
+layout(buffer_reference, std430) readonly buffer VertexBuffer{ 
+	Vertex vertices[];
+};
+
+//push constants block
+layout( push_constant ) uniform Constants
+{
+	mat4 render_matrix;
+	VertexBuffer vertexBuffer;
+} pushConstants;

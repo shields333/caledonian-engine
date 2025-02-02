@@ -14,6 +14,35 @@
 class VulkanEngine;
 class CommandBuffer;
 
+struct GLTFMetallic_Roughness {
+    std::unique_ptr<GraphicsPipeline> opaquePipeline;
+    std::unique_ptr<GraphicsPipeline> transparentPipeline;
+
+    VkDescriptorSetLayout m_materialLayout;
+
+    struct alignas (64) MaterialConstants {
+        glm::vec4 colorFactors;
+        glm::vec4 metal_rough_factors;
+        uint32_t colourID;
+    };
+
+    struct MaterialResources {
+        size_t colourID;
+        Sampler* colorSampler;
+        size_t metalRoughnessID;
+        Sampler* metalRoughSampler;
+        Buffer* dataBuffer;
+        uint32_t dataBufferOffset;
+    };
+
+    DescriptorWriter writer;
+
+    void build_pipelines(VkDescriptorSetLayout textureLayout);
+    void clear_resources();
+
+    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, DescriptorAllocatorGrowable& descriptorAllocator);
+};
+
 struct RenderObject {
     uint32_t indexCount;
     uint32_t firstIndex;
@@ -88,6 +117,11 @@ struct LoadedGLTF {
     std::vector<std::shared_ptr<Node>> topNodes;
 
     std::vector<Sampler> samplers;
+
+    VkDescriptorSetLayout m_textureLayout;
+    VkDescriptorSet		  m_textureSet;
+
+    GLTFMetallic_Roughness metalRoughMaterial;
 
     DescriptorAllocatorGrowable descriptorPool;
 
