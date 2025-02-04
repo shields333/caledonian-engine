@@ -36,8 +36,8 @@ public:
 
 	// push constants for our mesh object draws
 	struct GPUDrawPushConstants {
-		glm::mat4 worldMatrix;
 		VkDeviceAddress vertexBufferAddress;
+		VkDeviceAddress objectBufferAddress;
 		VkDeviceAddress materialBufferAddress;
 	};
 
@@ -60,7 +60,8 @@ private:
 	std::vector<GeoSurface> m_surfaces;
 
 	GPUDrawPushConstants m_pushConstants{
-		.worldMatrix = glm::mat4{ 1.f },
-		.vertexBufferAddress = 0
+		.vertexBufferAddress = 0,
+		.objectBufferAddress = 0,
+		.materialBufferAddress = 0
 	};
 };

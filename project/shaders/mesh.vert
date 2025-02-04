@@ -12,14 +12,15 @@ layout (location = 3) out uint outColourID;
 void main() 
 {
 	Vertex v = pushConstants.vertexBuffer.vertices[gl_VertexIndex];
-	
+	ObjectData objectData = pushConstants.objectBuffer.data[gl_BaseInstance];
+
 	vec4 position = vec4(v.position, 1.0f);
 
-	gl_Position =  sceneData.viewproj * pushConstants.render_matrix *position;
+	gl_Position =  sceneData.viewproj * objectData.modelMatrix * position;
 
-	GLTFMaterialData material = pushConstants.materialBuffer.materials[gl_BaseInstance];
+	GLTFMaterialData material = pushConstants.materialBuffer.materials[objectData.materialID];
 
-	outNormal = (pushConstants.render_matrix * vec4(v.normal, 0.f)).xyz;
+	outNormal = (objectData.modelMatrix * vec4(v.normal, 0.f)).xyz;
 	outColor = v.color.xyz * material.colorFactors.xyz;	
 	outUV.x = v.uv_x;
 	outUV.y = v.uv_y;

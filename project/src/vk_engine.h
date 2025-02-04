@@ -31,6 +31,7 @@ struct FrameData {
 	DescriptorAllocatorGrowable m_frameDescriptors;
 
 	std::unique_ptr<Buffer> m_gpuSceneDataBuffer;
+	std::unique_ptr<Buffer> m_objectDataBuffer;
 };
 
 struct GPUSceneData {

@@ -37,19 +37,21 @@ struct GLTFMetallic_Roughness {
     void build_pipelines(VkDescriptorSetLayout textureLayout);
     void clear_resources();
 
-    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources);
+    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, uint32_t id);
 };
 
 struct RenderObject {
     uint32_t indexCount;
     uint32_t firstIndex;
     uint32_t firstInstance;
+
     const Buffer* indexBuffer;
 
     MaterialInstance* material;
 
     Mesh::Bounds bounds;
     glm::mat4 transform;
+
     VkDeviceAddress vertexBufferAddress;
     VkDeviceAddress materialBufferAddress;
 };
@@ -57,6 +59,11 @@ struct RenderObject {
 struct DrawContext {
     std::vector<RenderObject> OpaqueSurfaces;
     std::vector<RenderObject> TransparentSurfaces;
+};
+
+struct alignas (16) ObjectData {
+    glm::mat4 modelMatrix;
+    glm::uint materialID;
 };
 
 // base class for a renderable dynamic object
@@ -117,6 +124,8 @@ struct LoadedGLTF {
 
     std::vector<Sampler> samplers;
 
+    uint32_t m_objectCount = 0;
+
     VkDescriptorSetLayout m_textureLayout;
     VkDescriptorSet		  m_textureSet;
 
@@ -130,7 +139,7 @@ struct LoadedGLTF {
 
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
-    void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum);
+    void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer);
 
     DrawContext& getContext() { return m_drawContext; }
 

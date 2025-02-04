@@ -42,5 +42,6 @@ struct MaterialInstance {
     GraphicsPipeline* pipeline;
     VkDeviceAddress materialAddress;
     MaterialPass passType;
+    uint32_t matID;
 };
 

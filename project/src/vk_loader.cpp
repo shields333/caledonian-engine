@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "vk_mem_alloc.h"
+
 #include "vk_engine.h"
 #include "vk_initializers.h"
 #include "vk_types.h"
@@ -284,9 +286,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         sceneMaterialConstants[data_index] = constants;
 
         // build material
-        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources);
-
-        data_index++;
+        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources, data_index++);
     }
 
     // use the same vectors for all meshes so that the memory doesnt reallocate as
@@ -294,7 +294,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
     std::vector<Mesh::GeoSurface> surfaces;
-    size_t firstInstance = 0;
 
     for (fastgltf::Mesh& mesh : gltf.meshes) {
         std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
@@ -378,11 +377,9 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
             if (p.materialIndex.has_value()) {
                 newSurface.material = materials[p.materialIndex.value()];
-                newSurface.indirectCommand.firstInstance = p.materialIndex.value();
             }
             else {
                 newSurface.material = materials[0];
-                newSurface.indirectCommand.firstInstance = 0;
             }
 
             //loop the vertices of this surface, find min/max bounds
@@ -412,6 +409,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         if (node.meshIndex.has_value()) {
             newNode = std::make_shared<MeshNode>();
             static_cast<MeshNode*>(newNode.get())->mesh = meshes[*node.meshIndex];
+            scene->m_objectCount += meshes[*node.meshIndex]->getSurfaces().size();
         }
         else {
             newNode = std::make_shared<Node>();
@@ -506,7 +504,6 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
         RenderObject def;
         def.indexCount = s.indirectCommand.indexCount;
         def.firstIndex = s.indirectCommand.firstIndex;
-        def.firstInstance = s.indirectCommand.firstInstance;
         def.indexBuffer = &mesh->getIndexBuffer();
         def.material = &s.material->data;
         def.bounds = s.bounds;
@@ -584,7 +581,7 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum)
+void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer)
 {
     std::vector<uint32_t> opaque_draws;
     opaque_draws.reserve(m_drawContext.OpaqueSurfaces.size());
@@ -620,13 +617,30 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
         Mesh::GPUDrawPushConstants pushConstants;
         pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
-        pushConstants.worldMatrix = draw.transform;
+        pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
         pushConstants.materialBufferAddress = draw.materialBufferAddress;
 
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
         cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, draw.firstInstance);
     };
+
+    //TODO: create map function to Buffer
+    ObjectData* data = (ObjectData*)objectDataBuffer.getInfo().pMappedData;
+
+    // write per draw data into the buffer
+    int i = 0;
+    for (; i < opaque_draws.size(); i++) {
+        data[i].modelMatrix = m_drawContext.OpaqueSurfaces[opaque_draws[i]].transform;
+        data[i].materialID = m_drawContext.OpaqueSurfaces[opaque_draws[i]].material->matID;
+        m_drawContext.OpaqueSurfaces[opaque_draws[i]].firstInstance = i;
+    }
+
+    for (int j = 0; i < opaque_draws.size() + m_drawContext.TransparentSurfaces.size(); i++, j++) {
+        data[i].modelMatrix = m_drawContext.TransparentSurfaces[j].transform;
+        data[i].materialID = m_drawContext.TransparentSurfaces[j].material->matID;
+        m_drawContext.TransparentSurfaces[j].firstInstance = i;
+    }
 
     for (auto& r : opaque_draws) {
         draw(m_drawContext.OpaqueSurfaces[r]);
@@ -702,7 +716,7 @@ void GLTFMetallic_Roughness::clear_resources()
     transparentPipeline.reset();
 }
 
-MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources)
+MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources, uint32_t id)
 {
     MaterialInstance matData;
     matData.passType = pass;
@@ -714,6 +728,7 @@ MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const
     }
 
     matData.materialAddress = resources.dataBuffer->getAddress();
+    matData.matID = id;
 
     return matData;
 }

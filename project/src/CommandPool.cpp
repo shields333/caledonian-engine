@@ -287,3 +287,8 @@ void CommandBuffer::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uin
     vkCmdDrawIndexed(m_handle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
+void CommandBuffer::drawIndirect(Buffer& drawsBuffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride)
+{
+    vkCmdDrawIndexedIndirect(m_handle, drawsBuffer.getHandle(), offset, drawCount, stride);
+}
+

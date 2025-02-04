@@ -381,6 +381,9 @@ void VulkanEngine::initDefaultData()
 
     loadMeshes();
 
+    for (auto& frame : m_frames)
+        frame.m_objectDataBuffer = std::make_unique<Buffer>(sizeof(ObjectData) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
+
     m_mainCamera.velocity = glm::vec3(0.f);
     m_mainCamera.position = glm::vec3(0, 0, 5);
 
@@ -506,7 +509,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     cmd.setViewport(m_drawExtent);
     cmd.setScissor(m_drawExtent);
 
-    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj);
+    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer);
 
     cmd.endRendering();
 

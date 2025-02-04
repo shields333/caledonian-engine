@@ -26,6 +26,15 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer{
 	Vertex vertices[];
 };
 
+struct ObjectData{
+	mat4 modelMatrix;
+	uint materialID;
+};
+
+layout(buffer_reference, std430) readonly buffer ObjectBuffer{
+	ObjectData data[];
+};
+
 struct GLTFMaterialData{   
 	vec4 colorFactors;
 	vec2 metal_rough_factors;
@@ -39,7 +48,7 @@ layout(buffer_reference, std430) readonly buffer MaterialBuffer{
 //push constants block
 layout( push_constant ) uniform Constants
 {
-	mat4 render_matrix;
 	VertexBuffer vertexBuffer;
+	ObjectBuffer objectBuffer;
 	MaterialBuffer materialBuffer;
 } pushConstants;
