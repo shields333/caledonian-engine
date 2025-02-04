@@ -32,6 +32,7 @@ struct FrameData {
 
 	std::unique_ptr<Buffer> m_gpuSceneDataBuffer;
 	std::unique_ptr<Buffer> m_objectDataBuffer;
+	std::unique_ptr<Buffer> m_drawsBuffer;
 };
 
 struct GPUSceneData {

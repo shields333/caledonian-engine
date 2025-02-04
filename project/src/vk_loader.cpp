@@ -311,10 +311,10 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             Mesh::GeoSurface newSurface;
             newSurface.indirectCommand.firstIndex = (uint32_t)indices.size();
             newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
-            newSurface.indirectCommand.vertexOffset = vertices.size();
+            newSurface.indirectCommand.vertexOffset = 0;
             newSurface.indirectCommand.instanceCount = 1;
 
-            size_t initial_vtx = newSurface.indirectCommand.vertexOffset;
+            size_t initial_vtx = vertices.size();
 
             // load indexes
             {
@@ -502,8 +502,7 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 
     for (auto& s : mesh->getSurfaces()) {
         RenderObject def;
-        def.indexCount = s.indirectCommand.indexCount;
-        def.firstIndex = s.indirectCommand.firstIndex;
+        def.drawCmd = s.indirectCommand;
         def.indexBuffer = &mesh->getIndexBuffer();
         def.material = &s.material->data;
         def.bounds = s.bounds;
@@ -581,7 +580,7 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer)
+void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer)
 {
     std::vector<uint32_t> opaque_draws;
     opaque_draws.reserve(m_drawContext.OpaqueSurfaces.size());
@@ -622,33 +621,58 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
-        cmd.drawIndexed(draw.indexCount, 1, draw.firstIndex, 0, draw.firstInstance);
+        cmd.drawIndexed(draw.drawCmd.indexCount, draw.drawCmd.instanceCount, draw.drawCmd.firstIndex, draw.drawCmd.vertexOffset, draw.drawCmd.firstInstance);
     };
 
     //TODO: create map function to Buffer
     ObjectData* data = (ObjectData*)objectDataBuffer.getInfo().pMappedData;
+    VkDrawIndexedIndirectCommand* drawCmds = (VkDrawIndexedIndirectCommand*)drawsBuffer.getInfo().pMappedData;
 
     // write per draw data into the buffer
     int i = 0;
     for (; i < opaque_draws.size(); i++) {
         data[i].modelMatrix = m_drawContext.OpaqueSurfaces[opaque_draws[i]].transform;
         data[i].materialID = m_drawContext.OpaqueSurfaces[opaque_draws[i]].material->matID;
-        m_drawContext.OpaqueSurfaces[opaque_draws[i]].firstInstance = i;
+        m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd.firstInstance = i;
+        drawCmds[i] = m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd;
     }
 
     for (int j = 0; i < opaque_draws.size() + m_drawContext.TransparentSurfaces.size(); i++, j++) {
         data[i].modelMatrix = m_drawContext.TransparentSurfaces[j].transform;
         data[i].materialID = m_drawContext.TransparentSurfaces[j].material->matID;
-        m_drawContext.TransparentSurfaces[j].firstInstance = i;
+        m_drawContext.TransparentSurfaces[j].drawCmd.firstInstance = i;
+        drawCmds[i] = m_drawContext.TransparentSurfaces[j].drawCmd;
     }
 
-    for (auto& r : opaque_draws) {
-        draw(m_drawContext.OpaqueSurfaces[r]);
-    }
+    //for (auto& r : opaque_draws) {
+    //    draw(m_drawContext.OpaqueSurfaces[r]);
+    //}
 
-    for (auto& r : m_drawContext.TransparentSurfaces) {
-        draw(r);
-    }
+    //for (auto& r : m_drawContext.TransparentSurfaces) {
+    //    draw(r);
+    //}
+
+    auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize offset, uint32_t drawCount) {
+        // bind mesh pipeline
+        cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        // bind descriptor sets
+        std::vector<VkDescriptorSet> sets = { globalDescriptor, m_textureSet };
+        cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+        Mesh::GPUDrawPushConstants pushConstants;
+        pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
+        pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
+        pushConstants.materialBufferAddress = draw.materialBufferAddress;
+        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
+
+        cmd.drawIndirect(drawsBuffer, offset, drawCount, sizeof(VkDrawIndexedIndirectCommand));
+        };
+
+    drawIndirect(m_drawContext.OpaqueSurfaces[0], 0, opaque_draws.size());
+
+    drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(VkDrawIndexedIndirectCommand) * opaque_draws.size(), m_drawContext.TransparentSurfaces.size());
+
 
     //add counters for draws
     VulkanEngine::get().m_stats.drawcall_count += opaque_draws.size() + m_drawContext.TransparentSurfaces.size();

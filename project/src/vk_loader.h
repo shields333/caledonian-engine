@@ -41,9 +41,7 @@ struct GLTFMetallic_Roughness {
 };
 
 struct RenderObject {
-    uint32_t indexCount;
-    uint32_t firstIndex;
-    uint32_t firstInstance;
+    VkDrawIndexedIndirectCommand drawCmd;
 
     const Buffer* indexBuffer;
 
@@ -139,7 +137,7 @@ struct LoadedGLTF {
 
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
-    void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer);
+    void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer);
 
     DrawContext& getContext() { return m_drawContext; }
 

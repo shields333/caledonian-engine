@@ -138,9 +138,9 @@ void VulkanEngine::initVulkan()
     SDL_Vulkan_CreateSurface(m_window, m_instance, &m_surface);
 
     //vulkan 1.3 features
-    VkPhysicalDeviceVulkan13Features features{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
-    features.dynamicRendering = true;
-    features.synchronization2 = true;
+    VkPhysicalDeviceVulkan13Features features13{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
 
     //vulkan 1.2 features
     VkPhysicalDeviceVulkan12Features features12{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
@@ -153,14 +153,18 @@ void VulkanEngine::initVulkan()
     VkPhysicalDeviceVulkan11Features features11{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };
     features11.shaderDrawParameters = true;
 
+    VkPhysicalDeviceFeatures features = {};
+    features.multiDrawIndirect = true;
+
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
     vkb::PhysicalDeviceSelector selector{ vkbInst };
     vkb::PhysicalDevice physicalDevice = selector
         .set_minimum_version(1, 3)
-        .set_required_features_13(features)
+        .set_required_features_13(features13)
         .set_required_features_12(features12)
         .set_required_features_11(features11)
+        .set_required_features(features)
         .set_surface(m_surface)
         .select()
         .value();
@@ -381,9 +385,10 @@ void VulkanEngine::initDefaultData()
 
     loadMeshes();
 
-    for (auto& frame : m_frames)
+    for (auto& frame : m_frames) {
         frame.m_objectDataBuffer = std::make_unique<Buffer>(sizeof(ObjectData) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
-
+        frame.m_drawsBuffer = std::make_unique<Buffer>(sizeof(VkDrawIndexedIndirectCommand) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
+    }
     m_mainCamera.velocity = glm::vec3(0.f);
     m_mainCamera.position = glm::vec3(0, 0, 5);
 
@@ -509,7 +514,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     cmd.setViewport(m_drawExtent);
     cmd.setScissor(m_drawExtent);
 
-    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer);
+    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer);
 
     cmd.endRendering();
 
