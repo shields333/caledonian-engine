@@ -141,7 +141,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     fastgltf::Parser parser{};
 
     constexpr auto gltfOptions = fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble | fastgltf::Options::LoadGLBBuffers | fastgltf::Options::LoadExternalBuffers;
-    // fastgltf::Options::LoadExternalImages;
 
     fastgltf::GltfDataBuffer data;
     data.loadFromFile(filePath);
@@ -183,6 +182,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
     file.descriptorPool.init(VulkanEngine::getDevice()->getHandle(), gltf.materials.size(), sizes);
 
+    scene->createPipelines();
+
     // load samplers
     for (fastgltf::Sampler& sampler : gltf.samplers) {
 
@@ -201,47 +202,31 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     // temporal arrays for all the objects to use while creating the GLTF data
     std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<std::shared_ptr<Node>> nodes;
-    std::vector<std::shared_ptr<Image>> images;
     std::vector<std::shared_ptr<Mesh::GLTFMaterial>> materials;
 
-    images.push_back(VulkanEngine::get().m_whiteImage);
+    file.images.push_back(VulkanEngine::get().m_whiteImage);
 
     // load all textures
     for (fastgltf::Image& image : gltf.images) {
         std::optional<std::shared_ptr<Image>> img = load_image(gltf, image);
 
         if (img.has_value()) {
-            file.images[image.name.c_str()] = *img;
-            images.push_back(img.value());
+            //file.images[image.name.c_str()] = *img;
+            file.images.push_back(img.value());
         }
         else {
             // we failed to load, so lets give the slot a default error texture to not
             // completely break loading
-            images.push_back(VulkanEngine::get().m_errorCheckerboardImage);
+            file.images.push_back(VulkanEngine::get().m_errorCheckerboardImage);
             std::cout << "gltf failed to load texture " << image.name << std::endl;
         }
     }
 
-    // create texture array descriptor layout
-    DescriptorLayoutBuilder layoutBuilder;
-    layoutBuilder.clear();
-    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images.size());
-    file.m_textureLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    file.m_textureSet = file.descriptorPool.allocate(file.m_textureLayout);
-
-    //write the texture array to its descriptor set
-    DescriptorWriter writer;
-    writer.writeImageArray(0, images, file.samplers[0].getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    writer.update_set(VulkanEngine::getDevice()->getHandle(), file.m_textureSet);
-
-    file.metalRoughMaterial.build_pipelines(file.m_textureLayout);
-
     // create buffer to hold the material data
-    file.materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
+    file.m_materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
-    GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.materialDataBuffer->getInfo().pMappedData;
+    GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.m_materialDataBuffer->getInfo().pMappedData;
 
     // load all materials
     for (fastgltf::Material& mat : gltf.materials) {
@@ -262,7 +247,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         materialResources.metalRoughSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
 
         // set the uniform buffer for the material data
-        materialResources.dataBuffer = file.materialDataBuffer.get();
+        materialResources.dataBuffer = file.m_materialDataBuffer.get();
         // grab textures from gltf file
         if (mat.pbrData.baseColorTexture.has_value()) {
             size_t img = gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].imageIndex.value();
@@ -503,12 +488,9 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
     for (auto& s : mesh->getSurfaces()) {
         RenderObject def;
         def.drawCmd = s.indirectCommand;
-        def.indexBuffer = &mesh->getIndexBuffer();
         def.material = &s.material->data;
         def.bounds = s.bounds;
         def.transform = nodeMatrix;
-        def.vertexBufferAddress = mesh->getVertexBuffer().getAddress();
-        def.materialBufferAddress = s.material->data.materialAddress;
 
         if (s.material->data.passType == MaterialPass::Transparent)
             ctx.TransparentSurfaces.push_back(def);
@@ -520,8 +502,26 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
     Node::Draw(topMatrix, ctx);
 }
 
+void LoadedGLTF::createPipelines()
+{
+    // create texture array descriptor layout
+    DescriptorLayoutBuilder layoutBuilder;
+    layoutBuilder.clear();
+    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UINT16_MAX);
+    m_textureLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    metalRoughMaterial.build_pipelines(m_textureLayout);
+}
+
 void LoadedGLTF::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
 {
+    m_textureSet = descriptorPool.allocate(m_textureLayout);
+
+    //write the texture array to its descriptor set
+    DescriptorWriter writer;
+    writer.writeImageArray(0, images, samplers[0].getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.update_set(VulkanEngine::getDevice()->getHandle(), m_textureSet);
+
     // shouldn't overwrite an existing mesh
     assert(!m_indexBuffer);
 
@@ -600,30 +600,6 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     //defined outside of the draw function, this is the state we will try to skip
     GraphicsPipeline* lastPipeline = nullptr;
 
-    cmd.bindIndexBuffer(*m_indexBuffer);
-
-    auto draw = [&](const RenderObject& draw) {
-        if (lastPipeline != draw.material->pipeline) {
-            // bind mesh pipeline
-            cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-            std::vector<VkDescriptorSet> sets = { globalDescriptor, m_textureSet };
-
-            cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
-            lastPipeline = draw.material->pipeline;
-        }
-
-        Mesh::GPUDrawPushConstants pushConstants;
-        pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
-        pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
-        pushConstants.materialBufferAddress = draw.materialBufferAddress;
-
-        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
-
-        cmd.drawIndexed(draw.drawCmd.indexCount, draw.drawCmd.instanceCount, draw.drawCmd.firstIndex, draw.drawCmd.vertexOffset, draw.drawCmd.firstInstance);
-    };
-
     //TODO: create map function to Buffer
     ObjectData* data = (ObjectData*)objectDataBuffer.getInfo().pMappedData;
     VkDrawIndexedIndirectCommand* drawCmds = (VkDrawIndexedIndirectCommand*)drawsBuffer.getInfo().pMappedData;
@@ -644,14 +620,9 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         drawCmds[i] = m_drawContext.TransparentSurfaces[j].drawCmd;
     }
 
-    //for (auto& r : opaque_draws) {
-    //    draw(m_drawContext.OpaqueSurfaces[r]);
-    //}
+    cmd.bindIndexBuffer(*m_indexBuffer);
 
-    //for (auto& r : m_drawContext.TransparentSurfaces) {
-    //    draw(r);
-    //}
-
+#if DRAW_INDIRECT
     auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize offset, uint32_t drawCount) {
         // bind mesh pipeline
         cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
@@ -661,9 +632,9 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
         Mesh::GPUDrawPushConstants pushConstants;
-        pushConstants.vertexBufferAddress = draw.vertexBufferAddress;
+        pushConstants.vertexBufferAddress = m_vertexBuffer->getAddress();
         pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
-        pushConstants.materialBufferAddress = draw.materialBufferAddress;
+        pushConstants.materialBufferAddress = m_materialDataBuffer->getAddress();
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
         cmd.drawIndirect(drawsBuffer, offset, drawCount, sizeof(VkDrawIndexedIndirectCommand));
@@ -673,6 +644,38 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
     drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(VkDrawIndexedIndirectCommand) * opaque_draws.size(), m_drawContext.TransparentSurfaces.size());
 
+#else
+    auto draw = [&](const RenderObject& draw) {
+        if (lastPipeline != draw.material->pipeline) {
+            // bind mesh pipeline
+            cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+            std::vector<VkDescriptorSet> sets = { globalDescriptor, m_textureSet };
+
+            cmd.bindDescriptorSets(sets, draw.material->pipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+            lastPipeline = draw.material->pipeline;
+        }
+
+        Mesh::GPUDrawPushConstants pushConstants;
+        pushConstants.vertexBufferAddress = m_vertexBuffer->getAddress();
+        pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
+        pushConstants.materialBufferAddress = m_materialDataBuffer->getAddress();
+
+        cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
+
+        cmd.drawIndexed(draw.drawCmd.indexCount, draw.drawCmd.instanceCount, draw.drawCmd.firstIndex, draw.drawCmd.vertexOffset, draw.drawCmd.firstInstance);
+        };
+
+    for (auto& r : opaque_draws) {
+        draw(m_drawContext.OpaqueSurfaces[r]);
+    }
+
+    for (auto& r : m_drawContext.TransparentSurfaces) {
+        draw(r);
+    }
+
+#endif
 
     //add counters for draws
     VulkanEngine::get().m_stats.drawcall_count += opaque_draws.size() + m_drawContext.TransparentSurfaces.size();
@@ -682,7 +685,7 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 void LoadedGLTF::clearAll()
 {
     descriptorPool.destroy_pools(VulkanEngine::getDevice()->getHandle());
-    materialDataBuffer.reset();
+    m_materialDataBuffer.reset();
 
     metalRoughMaterial.clear_resources();
     vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_textureLayout, nullptr);

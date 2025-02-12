@@ -341,32 +341,16 @@ void VulkanEngine::init_background_pipelines()
     pushConstant[0].offset = 0;
     pushConstant[0].size = sizeof(ComputePushConstants);
     pushConstant[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-    m_gradientPipeline = std::make_unique<ComputePipeline>("../project/shaders/gradient_color.comp.spv", layouts, &pushConstant);
     m_skyPipeline = std::make_unique<ComputePipeline>("../project/shaders/sky.comp.spv", layouts, &pushConstant);
 
-    ComputeEffect gradient;
-    gradient.pipeline = m_gradientPipeline.get();
-    gradient.name = "gradient";
-    gradient.data = {};
-
-    //default colors
-    gradient.data.data1 = glm::vec4(1, 0, 0, 1);
-    gradient.data.data2 = glm::vec4(0, 0, 1, 1);
-
-    ComputeEffect sky;
-    sky.pipeline = m_skyPipeline.get();
-    sky.name = "sky";
-    sky.data = {};
+    m_sky.pipeline = m_skyPipeline.get();
+    m_sky.name = "sky";
+    m_sky.data = {};
     //default sky parameters
-    sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-    //add the 2 background effects into the array
-    m_backgroundEffects.push_back(gradient);
-    m_backgroundEffects.push_back(sky);
+    m_sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
     m_deleteionQueue.push_function([&]() {
         m_skyPipeline.reset();
-        m_gradientPipeline.reset();
         });
 }
 
@@ -557,11 +541,8 @@ void VulkanEngine::recordCommands()
     // transition image for transfer
     cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
 
-    ComputeEffect& effect = m_backgroundEffects[m_currentBackgroundEffect];
-    cmd->bindPipeline(effect.pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
-    cmd->bindDescriptorSet(m_drawImageDescriptors, m_gradientPipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
-
-    cmd->pushConstants(&effect.data, sizeof(ComputePushConstants), effect.pipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
+    cmd->bindPipeline(m_sky.pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+    cmd->bindDescriptorSet(m_drawImageDescriptors, m_skyPipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
     cmd->dispatch(std::ceil(m_swapchain->m_swapchainExtent.width / 16.0), std::ceil(m_swapchain->m_swapchainExtent.height / 16.0), 1);
 

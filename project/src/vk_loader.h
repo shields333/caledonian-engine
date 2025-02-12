@@ -10,6 +10,8 @@
 #include "Sampler.h"
 #include "vk_descriptors.h"
 
+#define DRAW_INDIRECT 1
+
 //forward declaration
 class VulkanEngine;
 class CommandBuffer;
@@ -43,15 +45,10 @@ struct GLTFMetallic_Roughness {
 struct RenderObject {
     VkDrawIndexedIndirectCommand drawCmd;
 
-    const Buffer* indexBuffer;
-
     MaterialInstance* material;
 
     Mesh::Bounds bounds;
     glm::mat4 transform;
-
-    VkDeviceAddress vertexBufferAddress;
-    VkDeviceAddress materialBufferAddress;
 };
 
 struct DrawContext {
@@ -111,7 +108,7 @@ struct LoadedGLTF {
     // storage for all the data on a given glTF file
     std::unordered_map<std::string, std::shared_ptr<Mesh>> meshes;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
-    std::unordered_map<std::string, std::shared_ptr<Image>> images;
+    std::vector<std::shared_ptr<Image>> images;
     std::unordered_map<std::string, std::shared_ptr<Mesh::GLTFMaterial>> materials;
 
     std::shared_ptr<Buffer> m_indexBuffer;
@@ -131,10 +128,11 @@ struct LoadedGLTF {
 
     DescriptorAllocatorGrowable descriptorPool;
 
-    std::unique_ptr<Buffer> materialDataBuffer;
+    std::unique_ptr<Buffer> m_materialDataBuffer;
 
     ~LoadedGLTF() { clearAll(); };
 
+    void createPipelines();
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
     void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer);

@@ -79,11 +79,8 @@ public:
 	VkDescriptorSetLayout m_drawImageDescriptorLayout;
 	VkDescriptorSetLayout m_singleImageDescriptorLayout;
 
-	std::unique_ptr<ComputePipeline> m_gradientPipeline;
 	std::unique_ptr<ComputePipeline> m_skyPipeline;
-
-	std::vector<ComputeEffect> m_backgroundEffects;
-	int m_currentBackgroundEffect{ 0 };
+	ComputeEffect m_sky;
 
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
 	std::shared_ptr<LoadedGLTF> m_activeScene;
