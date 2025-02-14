@@ -34,7 +34,8 @@ public:
 	void endRendering();
 	void draw(uint32_t vertexCount, uint32_t instanceCount,uint32_t firstVertex, uint32_t firstInstance);
 	void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance);
-	void drawIndirect(Buffer& commandsBuffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride);
+	void drawIndirect(Buffer& drawsBuffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride);
+	void drawIndirectCount(Buffer& drawsBuffer, VkDeviceSize drawOffset, uint32_t maxDrawCount, uint32_t stride, Buffer& countBuffer, VkDeviceSize countOffset);
 
 private:
 	VkCommandBuffer m_handle = VK_NULL_HANDLE;

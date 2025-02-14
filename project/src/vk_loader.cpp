@@ -602,7 +602,12 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
     //TODO: create map function to Buffer
     ObjectData* data = (ObjectData*)objectDataBuffer.getInfo().pMappedData;
-    VkDrawIndexedIndirectCommand* drawCmds = (VkDrawIndexedIndirectCommand*)drawsBuffer.getInfo().pMappedData;
+
+    uint32_t* drawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
+    drawPtr[0] = opaque_draws.size();
+    drawPtr[1] = m_drawContext.TransparentSurfaces.size();
+
+    VkDrawIndexedIndirectCommand* drawCmds = (VkDrawIndexedIndirectCommand*)(drawPtr + 2);
 
     // write per draw data into the buffer
     int i = 0;
@@ -623,7 +628,7 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     cmd.bindIndexBuffer(*m_indexBuffer);
 
 #if DRAW_INDIRECT
-    auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize offset, uint32_t drawCount) {
+    auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize drawOffset, uint32_t drawCount, VkDeviceSize countOffset) {
         // bind mesh pipeline
         cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
@@ -637,12 +642,12 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         pushConstants.materialBufferAddress = m_materialDataBuffer->getAddress();
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
-        cmd.drawIndirect(drawsBuffer, offset, drawCount, sizeof(VkDrawIndexedIndirectCommand));
+        cmd.drawIndirectCount(drawsBuffer, drawOffset, drawCount, sizeof(VkDrawIndexedIndirectCommand), drawsBuffer, countOffset);
         };
 
-    drawIndirect(m_drawContext.OpaqueSurfaces[0], 0, opaque_draws.size());
+    drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t)*2, opaque_draws.size(), 0);
 
-    drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(VkDrawIndexedIndirectCommand) * opaque_draws.size(), m_drawContext.TransparentSurfaces.size());
+    drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t)*2 + sizeof(VkDrawIndexedIndirectCommand) * opaque_draws.size(), m_drawContext.TransparentSurfaces.size(), 4);
 
 #else
     auto draw = [&](const RenderObject& draw) {

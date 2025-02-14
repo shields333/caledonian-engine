@@ -371,7 +371,7 @@ void VulkanEngine::initDefaultData()
 
     for (auto& frame : m_frames) {
         frame.m_objectDataBuffer = std::make_unique<Buffer>(sizeof(ObjectData) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
-        frame.m_drawsBuffer = std::make_unique<Buffer>(sizeof(VkDrawIndexedIndirectCommand) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
+        frame.m_drawsBuffer = std::make_unique<Buffer>(sizeof(VkDrawIndexedIndirectCommand) * m_activeScene->m_objectCount + 8, VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
     }
     m_mainCamera.velocity = glm::vec3(0.f);
     m_mainCamera.position = glm::vec3(0, 0, 5);

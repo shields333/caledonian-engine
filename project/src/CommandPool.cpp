@@ -292,3 +292,8 @@ void CommandBuffer::drawIndirect(Buffer& drawsBuffer, VkDeviceSize offset, uint3
     vkCmdDrawIndexedIndirect(m_handle, drawsBuffer.getHandle(), offset, drawCount, stride);
 }
 
+void CommandBuffer::drawIndirectCount(Buffer& drawsBuffer, VkDeviceSize drawOffset, uint32_t maxDrawCount, uint32_t stride, Buffer& countBuffer, VkDeviceSize countOffset)
+{
+    vkCmdDrawIndexedIndirectCount(m_handle, drawsBuffer.getHandle(), drawOffset, countBuffer.getHandle(), countOffset, maxDrawCount, stride);
+}
+
