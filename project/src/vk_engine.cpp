@@ -341,7 +341,7 @@ void VulkanEngine::init_background_pipelines()
     pushConstant[0].offset = 0;
     pushConstant[0].size = sizeof(ComputePushConstants);
     pushConstant[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-    m_skyPipeline = std::make_unique<ComputePipeline>("../project/shaders/sky.comp.spv", layouts, &pushConstant);
+    m_skyPipeline = std::make_unique<ComputePipeline>("../project/shaders/sky.comp.spv", &layouts, &pushConstant);
 
     m_sky.pipeline = m_skyPipeline.get();
     m_sky.name = "sky";
@@ -349,7 +349,12 @@ void VulkanEngine::init_background_pipelines()
     //default sky parameters
     m_sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
 
+    pushConstant[0].size = sizeof(CullPushConstants);
+
+    m_cullPipeline = std::make_unique<ComputePipeline>("../project/shaders/culling.comp.spv", nullptr, &pushConstant);
+
     m_deleteionQueue.push_function([&]() {
+        m_cullPipeline.reset();
         m_skyPipeline.reset();
         });
 }

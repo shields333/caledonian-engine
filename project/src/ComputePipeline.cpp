@@ -4,15 +4,17 @@
 
 #include "vk_engine.h"
 
-ComputePipeline::ComputePipeline(std::string sourcePath, std::vector<VkDescriptorSetLayout> &descriptorLayouts, 
+ComputePipeline::ComputePipeline(std::string sourcePath, std::vector<VkDescriptorSetLayout> *descriptorLayouts, 
 	std::vector<VkPushConstantRange>* pushConstants /*= nullptr*/)
 {
 	VkPipelineLayoutCreateInfo computeLayout{};
 	computeLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	computeLayout.pNext = nullptr;
-	computeLayout.pSetLayouts = descriptorLayouts.data();
-	computeLayout.setLayoutCount = descriptorLayouts.size();
 
+	if (descriptorLayouts) {
+		computeLayout.pSetLayouts = descriptorLayouts->data();
+		computeLayout.setLayoutCount = descriptorLayouts->size();
+	}
 	// add push constants if supplied
 	if (pushConstants){
 		computeLayout.pPushConstantRanges = pushConstants->data();
@@ -26,6 +28,7 @@ ComputePipeline::ComputePipeline(std::string sourcePath, std::vector<VkDescripto
 	if (!vkutil::load_shader_module(sourcePath.c_str(), VulkanEngine::getDevice()->getHandle(), &computeDrawShader))
 	{
 		fmt::print("Error when building the compute shader \n");
+		assert(0);
 	}
 
 	VkPipelineShaderStageCreateInfo stageinfo{};

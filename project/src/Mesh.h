@@ -32,6 +32,7 @@ public:
 		VkDrawIndexedIndirectCommand indirectCommand;
 		Bounds bounds;
 		std::shared_ptr<GLTFMaterial> material;
+		uint32_t id;
 	};
 
 	// push constants for our mesh object draws

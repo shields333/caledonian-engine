@@ -278,7 +278,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     // often
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
-    std::vector<Mesh::GeoSurface> surfaces;
+    std::vector<SurfaceData> surfaceData;
+    std::vector<CullData> cullData;
 
     for (fastgltf::Mesh& mesh : gltf.meshes) {
         std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
@@ -288,7 +289,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         // clear the mesh arrays each mesh, we dont want to merge them by error
         //indices.clear();
         //vertices.clear();
-        surfaces.clear();
+        std::vector<Mesh::GeoSurface> surfaces;
 
         surfaces.reserve(mesh.primitives.size());
 
@@ -379,12 +380,45 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             newSurface.bounds.extents = (maxpos - minpos) / 2.f;
             newSurface.bounds.sphereRadius = glm::length(newSurface.bounds.extents);
 
+            CullData cullDatum;
+            cullDatum.indexCount = newSurface.indirectCommand.indexCount;
+            cullDatum.firstIndex = newSurface.indirectCommand.firstIndex;
+            cullDatum.extents = newSurface.bounds.extents;
+            cullDatum.origin = newSurface.bounds.origin;
+            cullData.push_back(cullDatum);
+
+            SurfaceData surfaceDatum;
+            surfaceDatum.matID = newSurface.material->data.matID;
+            surfaceData.push_back(surfaceDatum);
+
+            newSurface.id = surfaceData.size() - 1;
+
             surfaces.push_back(newSurface);
         }
 
         newmesh->uploadSurfaceData(surfaces);
     }
-    scene->createBuffers(indices, vertices);
+
+    //std::sort(cullData.begin(), cullData.end(), [&](const auto& iA, const auto& iB) {
+    //    
+    //    });
+
+
+    // create buffer to hold the surface and cull data
+    file.m_cullBuffer = std::make_unique<Buffer>(sizeof(CullData) * cullData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_cullBuffer->getInfo().pMappedData, cullData.data(), sizeof(CullData) * cullData.size());
+
+    file.m_surfaceBuffer = std::make_unique<Buffer>(sizeof(SurfaceData) * surfaceData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_surfaceBuffer->getInfo().pMappedData, surfaceData.data(), sizeof(SurfaceData)* surfaceData.size());
+
+    file.createBuffers(indices, vertices);
+
+
+    std::vector<InstanceData> instData;
+    std::vector<glm::mat4> transformData;
+    transformData.reserve(gltf.nodes.size());
 
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {
@@ -404,8 +438,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         file.nodes[node.name.c_str()];
 
         std::visit(fastgltf::visitor{ [&](fastgltf::Node::TransformMatrix matrix) {
-                                          memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix));
-                                      },
+                            memcpy(&newNode->localTransform, matrix.data(), sizeof(matrix));
+                        },
                        [&](fastgltf::Node::TRS transform) {
                            glm::vec3 tl(transform.translation[0], transform.translation[1],
                                transform.translation[2]);
@@ -420,7 +454,29 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
                            newNode->localTransform = tm * rm * sm;
                        } },
             node.transform);
+
+        if (node.meshIndex.has_value()) {
+            transformData.push_back(newNode->worldTransform);
+
+            InstanceData instDatum;
+            instDatum.transformID = transformData.size() - 1;
+
+            for (auto &surface : meshes[*node.meshIndex]->getSurfaces()) {
+                instDatum.surfaceID = surface.id;
+
+                instData.push_back(instDatum);
+            }
+        }
     }
+
+    // create buffers to hold the per instance data
+    file.m_transformBuffer = std::make_unique<Buffer>(sizeof(glm::mat4) * transformData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_transformBuffer->getInfo().pMappedData, transformData.data(), sizeof(glm::mat4)* transformData.size());
+
+    file.m_instanceBuffer = std::make_unique<Buffer>(sizeof(InstanceData) * instData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_transformBuffer->getInfo().pMappedData, instData.data(), sizeof(InstanceData)* instData.size());
 
     // run loop again to setup transform hierarchy
     for (int i = 0; i < gltf.nodes.size(); i++) {
@@ -613,14 +669,14 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     int i = 0;
     for (; i < opaque_draws.size(); i++) {
         data[i].modelMatrix = m_drawContext.OpaqueSurfaces[opaque_draws[i]].transform;
-        data[i].materialID = m_drawContext.OpaqueSurfaces[opaque_draws[i]].material->matID;
+        data[i].matID = m_drawContext.OpaqueSurfaces[opaque_draws[i]].material->matID;
         m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd.firstInstance = i;
         drawCmds[i] = m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd;
     }
 
     for (int j = 0; i < opaque_draws.size() + m_drawContext.TransparentSurfaces.size(); i++, j++) {
         data[i].modelMatrix = m_drawContext.TransparentSurfaces[j].transform;
-        data[i].materialID = m_drawContext.TransparentSurfaces[j].material->matID;
+        data[i].matID = m_drawContext.TransparentSurfaces[j].material->matID;
         m_drawContext.TransparentSurfaces[j].drawCmd.firstInstance = i;
         drawCmds[i] = m_drawContext.TransparentSurfaces[j].drawCmd;
     }

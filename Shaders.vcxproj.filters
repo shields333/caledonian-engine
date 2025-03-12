@@ -1,10 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\gradient.comp.spv.rule">
-      <Filter>CMake Rules</Filter>
-    </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\gradient_color.comp.spv.rule">
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\culling.comp.spv.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
     <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\mesh.frag.spv.rule">

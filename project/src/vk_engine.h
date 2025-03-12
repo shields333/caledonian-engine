@@ -51,6 +51,16 @@ struct ComputePushConstants {
 	glm::vec4 data4;
 };
 
+struct CullPushConstants {
+	glm::mat4 viewproj;
+	VkDeviceAddress inInstanceBuf;
+	VkDeviceAddress inTransformBuf;
+	VkDeviceAddress inCullBuf;
+	VkDeviceAddress inSurfaceBuf;
+	VkDeviceAddress outObjBuf;
+	VkDeviceAddress outDrawBuf;
+};
+
 struct ComputeEffect {
 	const char* name;
 
@@ -79,6 +89,7 @@ public:
 	VkDescriptorSetLayout m_drawImageDescriptorLayout;
 	VkDescriptorSetLayout m_singleImageDescriptorLayout;
 
+	std::unique_ptr<ComputePipeline> m_cullPipeline;
 	std::unique_ptr<ComputePipeline> m_skyPipeline;
 	ComputeEffect m_sky;
 

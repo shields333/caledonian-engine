@@ -56,14 +56,31 @@ struct DrawContext {
     std::vector<RenderObject> TransparentSurfaces;
 };
 
-struct alignas (16) ObjectData {
-    glm::mat4 modelMatrix;
-    glm::uint materialID;
+struct ObjectData {
+    alignas (16) glm::mat4 modelMatrix;
+    glm::uint matID;
+};
+
+struct InstanceData {
+    glm::uint transformID;
+    glm::uint surfaceID;
+};
+
+// seperated the surfaceData into two buffers because the pass through data is only needed if the surface passes culling
+// plus it eliminates any padding in the buffers
+struct CullData {
+    alignas (16) glm::vec3 origin;
+    glm::uint indexCount;
+    alignas (16) glm::vec3 extents;
+    glm::uint firstIndex;
+};
+
+struct SurfaceData {
+    glm::uint matID;
 };
 
 // base class for a renderable dynamic object
 class IRenderable {
-
     virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) = 0;
 };
 
@@ -128,6 +145,10 @@ struct LoadedGLTF {
 
     DescriptorAllocatorGrowable descriptorPool;
 
+    std::unique_ptr<Buffer> m_instanceBuffer;
+    std::unique_ptr<Buffer> m_transformBuffer;
+    std::unique_ptr<Buffer> m_cullBuffer;
+    std::unique_ptr<Buffer> m_surfaceBuffer;
     std::unique_ptr<Buffer> m_materialDataBuffer;
 
     ~LoadedGLTF() { clearAll(); };
