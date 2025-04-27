@@ -135,6 +135,29 @@ void CommandBuffer::barrier(Image& image, VkImageLayout newLayout, VkPipelineSta
     vkCmdPipelineBarrier2(m_handle, &depInfo);
 }
 
+void CommandBuffer::barrier(Buffer& buffer, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access)
+{
+    VkBufferMemoryBarrier2 bufferBarrier{ .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2 };
+
+    bufferBarrier.srcStageMask = buffer.srcStage;
+    bufferBarrier.srcAccessMask = buffer.srcAccess;
+    bufferBarrier.dstStageMask = buffer.srcStage = stage;
+    bufferBarrier.dstAccessMask = buffer.srcAccess = access;
+
+    //bufferBarrier.offset = buffer.getInfo().offset;
+    bufferBarrier.size = VK_WHOLE_SIZE;
+    bufferBarrier.buffer = buffer.getHandle();
+
+    VkDependencyInfo depInfo{};
+    depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    depInfo.pNext = nullptr;
+
+    depInfo.bufferMemoryBarrierCount = 1;
+    depInfo.pBufferMemoryBarriers = &bufferBarrier;
+
+    vkCmdPipelineBarrier2(m_handle, &depInfo);
+}
+
 void CommandBuffer::clearColourImage(Image& image, VkClearColorValue clearColour, VkImageSubresourceRange& range)
 {
     vkCmdClearColorImage(m_handle, image.getHandle(), image.getMipmap(range.baseMipLevel).layout, &clearColour, 1, &range);

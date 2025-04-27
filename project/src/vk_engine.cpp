@@ -469,6 +469,9 @@ void VulkanEngine::update_scene()
     m_sceneData.sunlightColor = glm::vec4(1.f);
     m_sceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
 
+    if (!m_stopUpdate)
+        m_cullFrustum = m_sceneData.viewproj;
+
     auto end = std::chrono::system_clock::now();
 
     //convert to microseconds (integer), and then come back to miliseconds
@@ -496,6 +499,8 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     writer.update_set(m_device->getHandle(), globalDescriptor);
 
+    m_activeScene->cull(cmd, m_cullFrustum, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get());
+    
     //begin a render pass  connected to our draw image
     cmd.beginRendering(m_depthImage.get(), m_drawImage.get());
 
@@ -608,6 +613,9 @@ void VulkanEngine::run()
                 bQuit = true;
                 m_stopRendering = true;
             }
+
+            if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_SPACE)
+                m_stopUpdate = !m_stopUpdate;
 
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_MINIMIZED) {

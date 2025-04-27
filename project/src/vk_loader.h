@@ -11,10 +11,12 @@
 #include "vk_descriptors.h"
 
 #define DRAW_INDIRECT 1
+#define GPU_CULLING 1
 
 //forward declaration
 class VulkanEngine;
 class CommandBuffer;
+class ComputePipeline;
 
 struct GLTFMetallic_Roughness {
     std::unique_ptr<GraphicsPipeline> opaquePipeline;
@@ -131,6 +133,8 @@ struct LoadedGLTF {
     std::shared_ptr<Buffer> m_indexBuffer;
     std::shared_ptr<Buffer> m_vertexBuffer;
 
+    std::vector<uint32_t> m_opaqueDraws;
+
     // nodes that dont have a parent, for iterating through the file in tree order
     std::vector<std::shared_ptr<Node>> topNodes;
 
@@ -156,6 +160,7 @@ struct LoadedGLTF {
     void createPipelines();
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
+    void cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline *cullpipeline);
     void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer);
 
     DrawContext& getContext() { return m_drawContext; }

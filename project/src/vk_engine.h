@@ -104,6 +104,9 @@ public:
 
 	std::vector<FrameData> m_frames;
 
+	bool m_stopUpdate = false;
+	glm::mat4 m_cullFrustum;
+
 	GPUSceneData m_sceneData;
 	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
 

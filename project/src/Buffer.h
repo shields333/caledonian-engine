@@ -15,6 +15,10 @@ public:
 	VkDeviceAddress				getAddress() const { return m_address; }
 	const VmaAllocation&		getAlloacation() const { return m_allocation; }
 	const VmaAllocationInfo&	getInfo() const { return m_info; }
+
+	VkPipelineStageFlags2	srcStage = VK_PIPELINE_STAGE_2_NONE;
+	VkAccessFlags2			srcAccess = VK_ACCESS_2_NONE;
+
 private:
 	VkBuffer		m_handle = VK_NULL_HANDLE;
 	VkDeviceAddress	m_address = 0;

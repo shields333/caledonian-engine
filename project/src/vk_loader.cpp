@@ -11,11 +11,14 @@
 #include "vk_initializers.h"
 #include "vk_types.h"
 #include "Mesh.h"
+#include "ComputePipeline.h"
+
 #include <glm/gtx/quaternion.hpp>
 
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/parser.hpp>
 #include <fastgltf/tools.hpp>
+
 
 VkFilter extract_filter(fastgltf::Filter filter)
 {
@@ -415,11 +418,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
     file.createBuffers(indices, vertices);
 
-
-    std::vector<InstanceData> instData;
-    std::vector<glm::mat4> transformData;
-    transformData.reserve(gltf.nodes.size());
-
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {
         std::shared_ptr<Node> newNode;
@@ -454,29 +452,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
                            newNode->localTransform = tm * rm * sm;
                        } },
             node.transform);
-
-        if (node.meshIndex.has_value()) {
-            transformData.push_back(newNode->worldTransform);
-
-            InstanceData instDatum;
-            instDatum.transformID = transformData.size() - 1;
-
-            for (auto &surface : meshes[*node.meshIndex]->getSurfaces()) {
-                instDatum.surfaceID = surface.id;
-
-                instData.push_back(instDatum);
-            }
-        }
     }
-
-    // create buffers to hold the per instance data
-    file.m_transformBuffer = std::make_unique<Buffer>(sizeof(glm::mat4) * transformData.size(),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-    memcpy(file.m_transformBuffer->getInfo().pMappedData, transformData.data(), sizeof(glm::mat4)* transformData.size());
-
-    file.m_instanceBuffer = std::make_unique<Buffer>(sizeof(InstanceData) * instData.size(),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-    memcpy(file.m_transformBuffer->getInfo().pMappedData, instData.data(), sizeof(InstanceData)* instData.size());
 
     // run loop again to setup transform hierarchy
     for (int i = 0; i < gltf.nodes.size(); i++) {
@@ -496,7 +472,37 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             node->refreshTransform(glm::mat4{ 1.f });
         }
     }
-    return scene; }
+
+    std::vector<InstanceData> instData;
+    std::vector<glm::mat4> transformData;
+    transformData.reserve(gltf.nodes.size());
+
+    for (auto& node : nodes) {
+        if ( MeshNode* meshNode = dynamic_cast<MeshNode*>(node.get())) {
+            transformData.push_back(meshNode->worldTransform);
+
+            InstanceData instDatum;
+            instDatum.transformID = transformData.size() - 1;
+
+            for (auto& surface : meshNode->mesh->getSurfaces()) {
+                instDatum.surfaceID = surface.id;
+
+                instData.push_back(instDatum);
+            }
+        }
+    }
+
+    // create buffers to hold the per instance data
+    file.m_transformBuffer = std::make_unique<Buffer>(sizeof(glm::mat4) * transformData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_transformBuffer->getInfo().pMappedData, transformData.data(), sizeof(glm::mat4)* transformData.size());
+
+    file.m_instanceBuffer = std::make_unique<Buffer>(sizeof(InstanceData) * instData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_instanceBuffer->getInfo().pMappedData, instData.data(), sizeof(InstanceData)* instData.size());
+
+    return scene; 
+}
 
 bool is_visible(const RenderObject& obj, const glm::mat4& viewproj) {
     std::array<glm::vec3, 8> corners{
@@ -629,6 +635,7 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
 {
     m_drawContext.OpaqueSurfaces.clear();
     m_drawContext.TransparentSurfaces.clear();
+    m_opaqueDraws.clear();
 
     // create renderables from the scenenodes
     for (auto& n : topNodes) {
@@ -636,51 +643,80 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer)
+void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
 {
-    std::vector<uint32_t> opaque_draws;
-    opaque_draws.reserve(m_drawContext.OpaqueSurfaces.size());
+#if GPU_CULLING
 
+    // reset draw counts to 0
+    uint32_t* drawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
+    memset(drawPtr, 0, 8);
+
+    CullPushConstants pushConstants;
+    pushConstants.viewproj = frustum;
+    pushConstants.inInstanceBuf = m_instanceBuffer->getAddress();
+    pushConstants.inTransformBuf = m_transformBuffer->getAddress();
+    pushConstants.inCullBuf = m_cullBuffer->getAddress();
+    pushConstants.inSurfaceBuf = m_surfaceBuffer->getAddress();
+    pushConstants.outObjBuf = objectDataBuffer.getAddress();
+    pushConstants.outDrawBuf = drawsBuffer.getAddress();
+
+    cmd.bindPipeline(cullpipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+    cmd.pushConstants(&pushConstants, sizeof(CullPushConstants), cullpipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
+
+    cmd.barrier(objectDataBuffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
+    cmd.barrier(drawsBuffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
+
+    cmd.dispatch(m_drawContext.OpaqueSurfaces.size() / 32, 1, 1);
+
+    cmd.barrier(objectDataBuffer, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
+    cmd.barrier(drawsBuffer, VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT, VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT);
+
+#else
+    m_opaqueDraws.reserve(m_drawContext.OpaqueSurfaces.size());
+
+    // frustum cull
     for (uint32_t i = 0; i < m_drawContext.OpaqueSurfaces.size(); i++) {
         if (is_visible(m_drawContext.OpaqueSurfaces[i], frustum))
-            opaque_draws.push_back(i);
+            m_opaqueDraws.push_back(i);
     }
 
     // sort the opaque surfaces by material and mesh
-    std::sort(opaque_draws.begin(), opaque_draws.end(), [&](const auto& iA, const auto& iB) {
+    std::sort(m_opaqueDraws.begin(), m_opaqueDraws.end(), [&](const auto& iA, const auto& iB) {
         const RenderObject& A = m_drawContext.OpaqueSurfaces[iA];
         const RenderObject& B = m_drawContext.OpaqueSurfaces[iB];
         return A.material < B.material;
         });
 
-    //defined outside of the draw function, this is the state we will try to skip
-    GraphicsPipeline* lastPipeline = nullptr;
-
     //TODO: create map function to Buffer
     ObjectData* data = (ObjectData*)objectDataBuffer.getInfo().pMappedData;
 
     uint32_t* drawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
-    drawPtr[0] = opaque_draws.size();
+    drawPtr[0] = m_opaqueDraws.size();
     drawPtr[1] = m_drawContext.TransparentSurfaces.size();
 
     VkDrawIndexedIndirectCommand* drawCmds = (VkDrawIndexedIndirectCommand*)(drawPtr + 2);
 
     // write per draw data into the buffer
     int i = 0;
-    for (; i < opaque_draws.size(); i++) {
-        data[i].modelMatrix = m_drawContext.OpaqueSurfaces[opaque_draws[i]].transform;
-        data[i].matID = m_drawContext.OpaqueSurfaces[opaque_draws[i]].material->matID;
-        m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd.firstInstance = i;
-        drawCmds[i] = m_drawContext.OpaqueSurfaces[opaque_draws[i]].drawCmd;
+    for (; i < m_opaqueDraws.size(); i++) {
+        data[i].modelMatrix = m_drawContext.OpaqueSurfaces[m_opaqueDraws[i]].transform;
+        data[i].matID = m_drawContext.OpaqueSurfaces[m_opaqueDraws[i]].material->matID;
+        m_drawContext.OpaqueSurfaces[m_opaqueDraws[i]].drawCmd.firstInstance = i;
+        drawCmds[i] = m_drawContext.OpaqueSurfaces[m_opaqueDraws[i]].drawCmd;
     }
 
-    for (int j = 0; i < opaque_draws.size() + m_drawContext.TransparentSurfaces.size(); i++, j++) {
+    for (int j = 0; i < m_opaqueDraws.size() + m_drawContext.TransparentSurfaces.size(); i++, j++) {
         data[i].modelMatrix = m_drawContext.TransparentSurfaces[j].transform;
         data[i].matID = m_drawContext.TransparentSurfaces[j].material->matID;
         m_drawContext.TransparentSurfaces[j].drawCmd.firstInstance = i;
         drawCmds[i] = m_drawContext.TransparentSurfaces[j].drawCmd;
     }
+#endif
+}
 
+void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer)
+{
     cmd.bindIndexBuffer(*m_indexBuffer);
 
 #if DRAW_INDIRECT
@@ -701,11 +737,14 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         cmd.drawIndirectCount(drawsBuffer, drawOffset, drawCount, sizeof(VkDrawIndexedIndirectCommand), drawsBuffer, countOffset);
         };
 
-    drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t)*2, opaque_draws.size(), 0);
+    drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t)*2, m_drawContext.OpaqueSurfaces.size(), 0);
 
-    drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t)*2 + sizeof(VkDrawIndexedIndirectCommand) * opaque_draws.size(), m_drawContext.TransparentSurfaces.size(), 4);
+    //drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t)*2 + sizeof(VkDrawIndexedIndirectCommand) * m_opaqueDraws.size(), m_drawContext.TransparentSurfaces.size(), 4);
 
 #else
+    //defined outside of the draw function, this is the state we will try to skip
+    GraphicsPipeline* lastPipeline = nullptr;
+
     auto draw = [&](const RenderObject& draw) {
         if (lastPipeline != draw.material->pipeline) {
             // bind mesh pipeline
@@ -728,7 +767,7 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         cmd.drawIndexed(draw.drawCmd.indexCount, draw.drawCmd.instanceCount, draw.drawCmd.firstIndex, draw.drawCmd.vertexOffset, draw.drawCmd.firstInstance);
         };
 
-    for (auto& r : opaque_draws) {
+    for (auto& r : m_opaqueDraws) {
         draw(m_drawContext.OpaqueSurfaces[r]);
     }
 
@@ -739,7 +778,7 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 #endif
 
     //add counters for draws
-    VulkanEngine::get().m_stats.drawcall_count += opaque_draws.size() + m_drawContext.TransparentSurfaces.size();
+    VulkanEngine::get().m_stats.drawcall_count += m_opaqueDraws.size() + m_drawContext.TransparentSurfaces.size();
 
 }
 
