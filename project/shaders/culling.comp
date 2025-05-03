@@ -27,13 +27,6 @@ layout(buffer_reference, std430) readonly buffer CullBuffer{
 	CullData data[];
 };
 
-struct SurfaceData{
-    uint matID;
-};
-layout(buffer_reference, std430) readonly buffer SurfaceBuffer{
-	SurfaceData data[];
-};
-
 struct VkDrawIndexedIndirectCommand {
     uint    indexCount;
     uint    instanceCount;
@@ -42,9 +35,16 @@ struct VkDrawIndexedIndirectCommand {
     uint    firstInstance;
 };
 layout(buffer_reference, std430) buffer VisibleDrawBuffer{
-    uint opaqueCount;
-    uint transparentCount;
+    uint count;
     VkDrawIndexedIndirectCommand data[];
+};
+
+struct SurfaceData{
+    uint matID;
+    uint isTransparent;
+};
+layout(buffer_reference, std430) readonly buffer SurfaceBuffer{
+	SurfaceData data[];
 };
 
 //push constants block
@@ -55,8 +55,10 @@ layout( push_constant ) uniform Constants
     TransformBuffer inTransformBuf;
     CullBuffer inCullBuf;
     SurfaceBuffer inSurfaceBuf;
-    VisibleObjectBuffer outObjBuf;
-    VisibleDrawBuffer outDrawBuf;
+    VisibleObjectBuffer outOpaqueObjBuf;
+    VisibleObjectBuffer outTransparentObjBuf;
+    VisibleDrawBuffer outOpaqueDrawBuf;
+    VisibleDrawBuffer outTransparentDrawBuf;
 } pushConstants;
 
 bool frustumCull(CullData obj, mat4 modelMatrix) {
@@ -107,22 +109,39 @@ void main()
 
     if(frustumCull(obj, modelMatrix)){    
         SurfaceData surface = pushConstants.inSurfaceBuf.data[instance.surfaceID];
+        if (surface.isTransparent == 0){
+            uint count = atomicAdd(pushConstants.outOpaqueDrawBuf.count, 1);
 
-        uint count = atomicAdd(pushConstants.outDrawBuf.opaqueCount, 1);
+            VkDrawIndexedIndirectCommand drawCmd;
+            drawCmd.indexCount = obj.indexCount;
+            drawCmd.firstIndex = obj.firstIndex;
+            drawCmd.firstInstance = count;
+            drawCmd.instanceCount = 1;
+            drawCmd.vertexOffset = 0;
 
-        VkDrawIndexedIndirectCommand drawCmd;
-        drawCmd.indexCount = obj.indexCount;
-        drawCmd.firstIndex = obj.firstIndex;
-        drawCmd.firstInstance = count;
-        drawCmd.instanceCount = 1;
-        drawCmd.vertexOffset = 0;
+            ObjectData objData;
+            objData.modelMatrix = modelMatrix;
+            objData.matID = surface.matID;
+            
+            pushConstants.outOpaqueObjBuf.data[count] = objData;
+            pushConstants.outOpaqueDrawBuf.data[count] = drawCmd;
+        } else {
+            uint count = atomicAdd(pushConstants.outTransparentDrawBuf.count, 1);
 
-        ObjectData objData;
-        objData.modelMatrix = modelMatrix;
-        objData.matID = surface.matID;
-        
-        pushConstants.outObjBuf.data[count] = objData;
-        pushConstants.outDrawBuf.data[count] = drawCmd;
+            VkDrawIndexedIndirectCommand drawCmd;
+            drawCmd.indexCount = obj.indexCount;
+            drawCmd.firstIndex = obj.firstIndex;
+            drawCmd.firstInstance = count;
+            drawCmd.instanceCount = 1;
+            drawCmd.vertexOffset = 0;
+
+            ObjectData objData;
+            objData.modelMatrix = modelMatrix;
+            objData.matID = surface.matID;
+            
+            pushConstants.outTransparentObjBuf.data[count] = objData;
+            pushConstants.outTransparentDrawBuf.data[count] = drawCmd;
+        }
     }
 }
 

@@ -79,6 +79,7 @@ struct CullData {
 
 struct SurfaceData {
     glm::uint matID;
+    glm::uint isTransparent;
 };
 
 // base class for a renderable dynamic object

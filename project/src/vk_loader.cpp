@@ -392,6 +392,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
 
             SurfaceData surfaceDatum;
             surfaceDatum.matID = newSurface.material->data.matID;
+            surfaceDatum.isTransparent = newSurface.material->data.passType == MaterialPass::Transparent;
             surfaceData.push_back(surfaceDatum);
 
             newSurface.id = surfaceData.size() - 1;
@@ -646,10 +647,18 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
 void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
 {
 #if GPU_CULLING
+    size_t opaqueDrawSize = m_drawContext.OpaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t opaqueObjSize = m_drawContext.OpaqueSurfaces.size() * sizeof(ObjectData);
+
+    uint32_t* opaqueDrawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
+    uint32_t* transparentDrawPtr = (uint32_t*)((char*)drawsBuffer.getInfo().pMappedData + opaqueDrawSize);
+
+    //add counters for draws
+    VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + transparentDrawPtr[0];
 
     // reset draw counts to 0
-    uint32_t* drawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
-    memset(drawPtr, 0, 8);
+    memset(opaqueDrawPtr, 0, 4);
+    memset(transparentDrawPtr, 0, 4);
 
     CullPushConstants pushConstants;
     pushConstants.viewproj = frustum;
@@ -657,8 +666,10 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
     pushConstants.inTransformBuf = m_transformBuffer->getAddress();
     pushConstants.inCullBuf = m_cullBuffer->getAddress();
     pushConstants.inSurfaceBuf = m_surfaceBuffer->getAddress();
-    pushConstants.outObjBuf = objectDataBuffer.getAddress();
-    pushConstants.outDrawBuf = drawsBuffer.getAddress();
+    pushConstants.outOpaqueObjBuf = objectDataBuffer.getAddress();
+    pushConstants.outTransparentObjBuf = objectDataBuffer.getAddress() + opaqueObjSize;
+    pushConstants.outOpaqueDrawBuf = drawsBuffer.getAddress();
+    pushConstants.outTransparentDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize;
 
     cmd.bindPipeline(cullpipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
@@ -667,7 +678,7 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
     cmd.barrier(objectDataBuffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
     cmd.barrier(drawsBuffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
 
-    cmd.dispatch(m_drawContext.OpaqueSurfaces.size() / 32, 1, 1);
+    cmd.dispatch((m_drawContext.OpaqueSurfaces.size() + m_drawContext.TransparentSurfaces.size()) / 32, 1, 1);
 
     cmd.barrier(objectDataBuffer, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
     cmd.barrier(drawsBuffer, VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT, VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT);
@@ -712,6 +723,9 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
         m_drawContext.TransparentSurfaces[j].drawCmd.firstInstance = i;
         drawCmds[i] = m_drawContext.TransparentSurfaces[j].drawCmd;
     }
+
+    //add counters for draws
+    VulkanEngine::get().m_stats.drawcall_count += m_opaqueDraws.size() + m_drawContext.TransparentSurfaces.size();
 #endif
 }
 
@@ -720,7 +734,10 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     cmd.bindIndexBuffer(*m_indexBuffer);
 
 #if DRAW_INDIRECT
-    auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize drawOffset, uint32_t drawCount, VkDeviceSize countOffset) {
+    size_t opaqueDrawSize = m_drawContext.OpaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t opaqueObjSize = m_drawContext.OpaqueSurfaces.size() * sizeof(ObjectData);
+
+    auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize drawOffset, uint32_t drawCount, VkDeviceSize countOffset, VkDeviceAddress objectDataAddress) {
         // bind mesh pipeline
         cmd.bindPipeline(draw.material->pipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
@@ -730,16 +747,16 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
         Mesh::GPUDrawPushConstants pushConstants;
         pushConstants.vertexBufferAddress = m_vertexBuffer->getAddress();
-        pushConstants.objectBufferAddress = objectDataBuffer.getAddress();
+        pushConstants.objectBufferAddress = objectDataAddress;
         pushConstants.materialBufferAddress = m_materialDataBuffer->getAddress();
         cmd.pushConstants(&pushConstants, sizeof(Mesh::GPUDrawPushConstants), draw.material->pipeline->getLayout(), VkShaderStageFlagBits(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 
         cmd.drawIndirectCount(drawsBuffer, drawOffset, drawCount, sizeof(VkDrawIndexedIndirectCommand), drawsBuffer, countOffset);
         };
 
-    drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t)*2, m_drawContext.OpaqueSurfaces.size(), 0);
+    drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t), m_drawContext.OpaqueSurfaces.size(), 0, objectDataBuffer.getAddress());
 
-    //drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t)*2 + sizeof(VkDrawIndexedIndirectCommand) * m_opaqueDraws.size(), m_drawContext.TransparentSurfaces.size(), 4);
+    drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t) + opaqueDrawSize, m_drawContext.TransparentSurfaces.size(), opaqueDrawSize, objectDataBuffer.getAddress() + opaqueObjSize);
 
 #else
     //defined outside of the draw function, this is the state we will try to skip
@@ -774,11 +791,7 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     for (auto& r : m_drawContext.TransparentSurfaces) {
         draw(r);
     }
-
 #endif
-
-    //add counters for draws
-    VulkanEngine::get().m_stats.drawcall_count += m_opaqueDraws.size() + m_drawContext.TransparentSurfaces.size();
 
 }
 
