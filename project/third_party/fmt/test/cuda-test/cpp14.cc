@@ -1,11 +1,3 @@
-#include <fmt/core.h>
-
-// The purpose of this part is to ensure NVCC's host compiler also supports
-// the standard version. See 'cuda-cpp14.cu'.
-//
-// https://en.cppreference.com/w/cpp/preprocessor/replace#Predefined_macros
-static_assert(__cplusplus >= 201402L, "expect C++ 2014 for host compiler");
-
-auto make_message_cpp() -> std::string {
-  return fmt::format("host compiler \t: __cplusplus == {}", __cplusplus);
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:eead20f766c7b92118e4270712ab4cd67cd1a1f6e806120eb3b07c9dfe55a54b
+size 418

@@ -1,24 +1,3 @@
-#pragma once
-
-#include <vk_types.h>
-#include <SDL_events.h>
-
-class Camera {
-public:
-    glm::vec3 velocity;
-    glm::vec3 position;
-    // vertical rotation
-    float pitch{ 0.f };
-    // horizontal rotation
-    float yaw{ 0.f };
-
-    float fov = 70.f;
-
-    glm::mat4 getViewMatrix();
-    glm::mat4 getProjectionMatrix();
-    glm::mat4 getRotationMatrix();
-
-    void processSDLEvent(SDL_Event& e);
-
-    void update();
-};
+version https://git-lfs.github.com/spec/v1
+oid sha256:144e5cd47aff92757234a1322706e626ea255cb3514ce5e4b03b43611c6c647c
+size 420

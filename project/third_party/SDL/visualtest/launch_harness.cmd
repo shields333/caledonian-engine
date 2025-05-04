@@ -1,2 +1,3 @@
-start /wait testharness.exe --config testsprite2_crashtest.config > testrun.log 2>&1
-if %ERRORLEVEL% NEQ 0 echo TEST RUN FAILED (see testrun.log)
+version https://git-lfs.github.com/spec/v1
+oid sha256:80a20d307838ce95635e061c452bacba824b96c78ce535199da5b20e80cf9e1c
+size 145

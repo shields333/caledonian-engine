@@ -1,4 +1,3 @@
-# tests
-
-The tests are written with C++20 and [Catch2](https://github.com/catchorg/Catch2). To run, one also
-needs to init the submodules and therefore download the [glTF-Sample-Models](https://github.com/KhronosGroup/glTF-Sample-Models/).
+version https://git-lfs.github.com/spec/v1
+oid sha256:e3a74c67e4bb344d36f5237ddba4dbfc3db06fb631b35d06b8204310d183caaa
+size 240

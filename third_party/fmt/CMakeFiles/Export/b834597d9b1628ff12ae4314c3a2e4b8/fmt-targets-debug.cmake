@@ -1,19 +1,3 @@
-#----------------------------------------------------------------
-# Generated CMake target import file for configuration "Debug".
-#----------------------------------------------------------------
-
-# Commands may need to know the format version.
-set(CMAKE_IMPORT_FILE_VERSION 1)
-
-# Import target "fmt::fmt" for configuration "Debug"
-set_property(TARGET fmt::fmt APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-set_target_properties(fmt::fmt PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "CXX"
-  IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/lib/fmtd.lib"
-  )
-
-list(APPEND _cmake_import_check_targets fmt::fmt )
-list(APPEND _cmake_import_check_files_for_fmt::fmt "${_IMPORT_PREFIX}/lib/fmtd.lib" )
-
-# Commands beyond this point should not need to know the version.
-set(CMAKE_IMPORT_FILE_VERSION)
+version https://git-lfs.github.com/spec/v1
+oid sha256:08ec010e508989c7dad1742700a0095cfb5ae1cce250b8ae2ac3e20d00feeaf8
+size 797

@@ -1,3 +1,3 @@
-[Test]
-Type=session
-Exec=@installedtestsdir@/@exe@
+version https://git-lfs.github.com/spec/v1
+oid sha256:7270ff34834f7c1761cd1146ec7e1702869b9e7dbc5d674732cb79a0f859ecab
+size 51

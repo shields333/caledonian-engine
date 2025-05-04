@@ -1,26 +1,3 @@
-
-
-OS=$(shell uname)
-
-ifeq ($(OS), Darwin)
-	FILE=Makefile.mac
-endif
-
-ifneq (,$(findstring MINGW,$(OS)))
-	FILE=Makefile.mingw
-endif
-
-ifeq ($(OS), Linux)
-	FILE=Makefile.linux
-endif
-
-ifeq ($(OS), FreeBSD)
-	FILE=Makefile.freebsd
-endif
-
-ifeq ($(FILE), )
-all:
-	$(error Your platform ${OS} is not supported at this time.)
-endif
-
-include $(FILE)
+version https://git-lfs.github.com/spec/v1
+oid sha256:a63b250c291bee8c900dfa9d8e79a54c02f668b02bfedda83e3bc7005bf5229b
+size 337

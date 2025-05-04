@@ -1,6 +1,3 @@
-add_executable(fastgltf_gl_viewer EXCLUDE_FROM_ALL)
-target_compile_features(fastgltf_gl_viewer PUBLIC cxx_std_17)
-target_link_libraries(fastgltf_gl_viewer PRIVATE fastgltf fg_glad_gl46)
-target_link_libraries(fastgltf_gl_viewer PRIVATE glfw::glfw glm::glm stb)
-
-fastgltf_add_source_directory(TARGET fastgltf_gl_viewer FOLDER ".")
+version https://git-lfs.github.com/spec/v1
+oid sha256:33cfeb27cfc30bafe6afa13655db5d45efd060a46f810159029347a5d7dcea80
+size 329

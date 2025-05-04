@@ -1,12 +1,3 @@
-LOCAL_PATH := $(call my-dir)
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := main
-
-LOCAL_SRC_FILES := YourSourceHere.c
-
-LOCAL_STATIC_LIBRARIES := SDL2_static
-
-include $(BUILD_SHARED_LIBRARY)
-$(call import-module,SDL)LOCAL_PATH := $(call my-dir)
+version https://git-lfs.github.com/spec/v1
+oid sha256:4ef5b5fb68660b71db6c94d15cc5673aacb8eaba8737f0f988ce81ac0dbe9990
+size 237

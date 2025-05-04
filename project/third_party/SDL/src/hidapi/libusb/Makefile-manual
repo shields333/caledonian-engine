@@ -1,18 +1,3 @@
-
-
-OS=$(shell uname)
-
-ifeq ($(OS), Linux)
-	FILE=Makefile.linux
-endif
-
-ifeq ($(OS), FreeBSD)
-	FILE=Makefile.freebsd
-endif
-
-ifeq ($(FILE), )
-all:
-	$(error Your platform ${OS} is not supported by hidapi/libusb at this time.)
-endif
-
-include $(FILE)
+version https://git-lfs.github.com/spec/v1
+oid sha256:f2a10a969de6c5ac4bd917875f1538a4dd53ced0c7c8cfc68441cabc32d022f2
+size 244

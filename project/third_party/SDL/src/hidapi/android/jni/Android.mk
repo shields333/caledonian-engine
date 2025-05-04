@@ -1,16 +1,3 @@
-LOCAL_PATH:= $(call my-dir)
-
-HIDAPI_ROOT_REL:= ../..
-HIDAPI_ROOT_ABS:= $(LOCAL_PATH)/../..
-
-include $(CLEAR_VARS)
-
-LOCAL_CPPFLAGS += -std=c++11
-
-LOCAL_SRC_FILES := \
-  $(HIDAPI_ROOT_REL)/android/hid.cpp
-
-LOCAL_MODULE := libhidapi
-LOCAL_LDLIBS := -llog
-
-include $(BUILD_SHARED_LIBRARY)
+version https://git-lfs.github.com/spec/v1
+oid sha256:0e5281d81b26f129ade1dd05e7184017c5b31f6747439ce1a0797f7f6e937017
+size 285

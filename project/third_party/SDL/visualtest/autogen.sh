@@ -1,11 +1,3 @@
-#!/bin/sh
-
-cp acinclude.m4 aclocal.m4
-
-if test "$AUTOCONF"x = x; then
-  AUTOCONF=autoconf
-fi
-
-$AUTOCONF || exit 1
-rm aclocal.m4
-rm -rf autom4te.cache
+version https://git-lfs.github.com/spec/v1
+oid sha256:045577e34ac735fd6d929de1eebdc32c6985981f77255b159cddf2a7232e4c60
+size 150

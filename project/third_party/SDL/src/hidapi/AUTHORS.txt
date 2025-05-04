@@ -1,16 +1,3 @@
-
-HIDAPI Authors:
-
-Alan Ott <alan@signal11.us>:
-	Original Author and Maintainer
-	Linux, Windows, and Mac implementations
-
-Ludovic Rousseau <rousseau@debian.org>:
-	Formatting for Doxygen documentation
-	Bug fixes
-	Correctness fixes
-
-
-For a comprehensive list of contributions, see the commit list at github:
-	https://github.com/libusb/hidapi/commits/master
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:b327a7b3a4597e5902556ec3e8407cbdd1e288abd4623b7b4b56d14d49e84ecb
+size 355

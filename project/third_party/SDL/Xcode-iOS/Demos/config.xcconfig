@@ -1,14 +1,3 @@
-//
-//  config.xcconfig
-//  SDL tests
-//
-
-// Configuration settings file format documentation can be found at:
-// https://help.apple.com/xcode/#/dev745c5c974
-
-// Include any optional config for this build
-#include? "build.xcconfig"
-
-CONFIG_FRAMEWORK_LDFLAGS[sdk=macos*] = $(inherited) -framework SDL2 -framework AudioToolbox -framework Carbon -framework Cocoa -framework CoreAudio -framework CoreHaptics -framework CoreVideo -framework ForceFeedback -framework GameController -framework IOKit -framework Metal
-CONFIG_FRAMEWORK_LDFLAGS[sdk=iphone*] = $(inherited) -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework CoreMotion -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit
-CONFIG_FRAMEWORK_LDFLAGS[sdk=appletv*] = $(inherited) -framework AVFoundation -framework AudioToolbox -framework CoreGraphics -framework CoreHaptics -framework Foundation -framework GameController -framework Metal -framework OpenGLES -framework QuartzCore -framework UIKit
+version https://git-lfs.github.com/spec/v1
+oid sha256:0c81c91d197c2aa5a6f95ae4bf6e4cb0dfb84dfec62a630524ad1c143972e499
+size 1076

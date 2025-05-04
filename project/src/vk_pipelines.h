@@ -1,13 +1,3 @@
-﻿#pragma once 
-#include <vk_types.h>
-
-#include <vk_pipelines.h>
-#include <fstream>
-#include <vk_initializers.h>
-
-namespace vkutil {
-
-    bool load_shader_module(const char* filePath,
-        VkDevice device,
-        VkShaderModule* outShaderModule);
-};
+version https://git-lfs.github.com/spec/v1
+oid sha256:09b1ad9b66c6b8037b4d08c54780299f43c9bf45e937be8e332c6675fc62c17c
+size 254

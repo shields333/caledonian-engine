@@ -1,12 +1,3 @@
-#include "SDL_config.h"
-
-#ifdef SDL_HAPTIC_ANDROID
-
-
-extern int Android_AddHaptic(int device_id, const char *name);
-extern int Android_RemoveHaptic(int device_id);
-
-
-#endif /* SDL_HAPTIC_ANDROID */
-
-/* vi: set ts=4 sw=4 expandtab: */
+version https://git-lfs.github.com/spec/v1
+oid sha256:db45cc3595f7791cd464eb8acc0924dad664f6c91121b717a59723fa8e406b02
+size 234

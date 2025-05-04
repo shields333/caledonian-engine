@@ -1,16 +1,3 @@
-lib_LTLIBRARIES = libhidapi.la
-libhidapi_la_SOURCES = hid.c
-libhidapi_la_LDFLAGS = $(LTLDFLAGS)
-AM_CPPFLAGS = -I$(top_srcdir)/hidapi/
-libhidapi_la_LIBADD = $(LIBS)
-
-hdrdir = $(includedir)/hidapi
-hdr_HEADERS = $(top_srcdir)/hidapi/hidapi.h
-
-EXTRA_DIST = \
-  ddk_build \
-  hidapi.vcproj \
-  hidtest.vcproj \
-  Makefile-manual \
-  Makefile.mingw \
-  hidapi.sln
+version https://git-lfs.github.com/spec/v1
+oid sha256:a9f96c69f0537095d2a06c33d1fc272e1f81b2f8212ded51272f0ec378495949
+size 358

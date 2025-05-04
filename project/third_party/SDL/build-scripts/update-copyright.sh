@@ -1,7 +1,3 @@
-#!/bin/sh
-
-find . -type f -exec grep -Il "Copyright" {} \; \
-| grep -v \.git                                 \
-| while read file; do                           \
-    LC_ALL=C sed -b -i "s/\(.*Copyright.*\)[0-9]\{4\}\( *Sam Lantinga\)/\1`date +%Y`\2/" "$file"; \
-done
+version https://git-lfs.github.com/spec/v1
+oid sha256:417bd6f70fbabcd136b78bd60b1a675ba8d729ef485622a91fcdcad2b2592b95
+size 266

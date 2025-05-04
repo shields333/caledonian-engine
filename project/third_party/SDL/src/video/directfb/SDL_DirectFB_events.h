@@ -1,34 +1,3 @@
-/*
-  Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-*/
-
-#ifndef SDL_DirectFB_events_h_
-#define SDL_DirectFB_events_h_
-
-#include "../SDL_sysvideo.h"
-
-/* Functions to be exported */
-extern void DirectFB_InitKeyboard(_THIS);
-extern void DirectFB_QuitKeyboard(_THIS);
-extern void DirectFB_PumpEventsWindow(_THIS);
-
-#endif /* SDL_DirectFB_events_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+version https://git-lfs.github.com/spec/v1
+oid sha256:efb19c1966e1eb47e9f1833dec7382e38a74c4dda6a98fac47ced0aa8ad60fa6
+size 1267

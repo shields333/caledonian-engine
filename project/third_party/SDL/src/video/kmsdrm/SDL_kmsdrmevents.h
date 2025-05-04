@@ -1,31 +1,3 @@
-/*
-  Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-*/
-
-#include "../../SDL_internal.h"
-
-#ifndef SDL_kmsdrmevents_h_
-#define SDL_kmsdrmevents_h_
-
-extern void KMSDRM_PumpEvents(_THIS);
-extern void KMSDRM_EventInit(_THIS);
-extern void KMSDRM_EventQuit(_THIS);
-
-#endif /* SDL_kmsdrmevents_h_ */
+version https://git-lfs.github.com/spec/v1
+oid sha256:d8e1ef916c95311fa659c8ffd4c809484a205f1c5b0a58c6abba0017e6e6f1ed
+size 1176

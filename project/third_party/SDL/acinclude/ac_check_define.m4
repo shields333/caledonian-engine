@@ -1,14 +1,3 @@
-AC_DEFUN([AC_CHECK_DEFINE],[AC_REQUIRE([AC_PROG_CPP])dnl
-  AC_CACHE_CHECK(for $1 in $2, ac_cv_define_$1,
-    AC_EGREP_CPP([YES_IS_DEFINED], [
-#include <$2>
-#ifdef $1
-YES_IS_DEFINED
-#endif
-    ], ac_cv_define_$1=yes, ac_cv_define_$1=no)
-  )
-  if test "$ac_cv_define_$1" = "yes" ; then
-    AC_DEFINE([HAVE_$1],[],[Added by AC_CHECK_DEFINE])
-  fi
-])dnl
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:29b42b552c50e97f49e43f4fe8227f621b0d186300d6549e7c92cdab93587abc
+size 351

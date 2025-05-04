@@ -1,23 +1,3 @@
-/*
-    SDL_uikit_main.c, placed in the public domain by Sam Lantinga  3/18/2019
-*/
-
-/* Include the SDL main definition header */
-#include "SDL_main.h"
-
-#if defined(__IPHONEOS__) || defined(__TVOS__)
-
-#ifndef SDL_MAIN_HANDLED
-#ifdef main
-#undef main
-#endif
-
-int main(int argc, char *argv[])
-{
-    return SDL_UIKitRunApp(argc, argv, SDL_main);
-}
-#endif /* !SDL_MAIN_HANDLED */
-
-#endif /* __IPHONEOS__ || __TVOS__ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+version https://git-lfs.github.com/spec/v1
+oid sha256:0074a2a600fc5067c0aa7bde9fd51fa3b18b9b75c4b74edbcc407b51bbc1cd4b
+size 450

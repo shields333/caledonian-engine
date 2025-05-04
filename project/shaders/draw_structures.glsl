@@ -1,12 +1,3 @@
-#extension GL_EXT_nonuniform_qualifier : require
-#extension GL_EXT_buffer_reference : require
-
-struct ObjectData{
-	mat4 modelMatrix;
-    uint matID;
-};
-
-layout(buffer_reference, std430) buffer VisibleObjectBuffer{
-	ObjectData data[];
-};
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:ccbf4ec908e98f7cdda6472d2977ef787051c790b26c066cf8a99d6e66ae846a
+size 238

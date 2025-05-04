@@ -1,18 +1,3 @@
-LOCAL_PATH := $(call my-dir)
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := main
-
-SDL_PATH := ../SDL
-
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include
-
-# Add your application source files here...
-LOCAL_SRC_FILES := YourSourceHere.c
-
-LOCAL_SHARED_LIBRARIES := SDL2
-
-LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
-
-include $(BUILD_SHARED_LIBRARY)
+version https://git-lfs.github.com/spec/v1
+oid sha256:fc54542a76dffc2fd7d3582e48709371e0d1ed982361dce53d571cc8e547156c
+size 360

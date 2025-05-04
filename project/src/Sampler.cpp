@@ -1,24 +1,3 @@
-#include "Sampler.h"
-
-#include "vk_engine.h"
-
-Sampler::Sampler(VkSamplerCreateInfo &info)
-{
-	vkCreateSampler(VulkanEngine::getDevice()->getHandle(), &info, nullptr, &m_handle);
-}
-
-Sampler::~Sampler()
-{
-	vkDestroySampler(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
-}
-
-Sampler::Sampler(Sampler&& other) noexcept
-{
-	*this = std::move(other);
-}
-
-Sampler& Sampler::operator=(Sampler&& other) noexcept
-{
-	m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
-	return *this;
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:318a2e255c4f3afd7b403d5b72a9e08e27b4f07e23a2693e6b079577755be9ea
+size 490

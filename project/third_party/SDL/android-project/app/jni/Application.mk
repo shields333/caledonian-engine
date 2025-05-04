@@ -1,10 +1,3 @@
-
-# Uncomment this if you're using STL in your project
-# You can find more information here:
-# https://developer.android.com/ndk/guides/cpp-support
-# APP_STL := c++_shared
-
-APP_ABI := armeabi-v7a arm64-v8a x86 x86_64
-
-# Min runtime API level
-APP_PLATFORM=android-16
+version https://git-lfs.github.com/spec/v1
+oid sha256:36e4133f9d971af7309f8709c2ac1195705e7be83fb7f8bb9a819272eb994aed
+size 265
