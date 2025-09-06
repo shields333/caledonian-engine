@@ -1,4 +1,4 @@
-# Install script for directory: E:/Documents/Visual Studio 2022/VulkanProject/project/third_party
+# Install script for directory: D:/Documents/Visual Studio 2022/VulkanProject/project/third_party
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/cmake_install.cmake")
+  include("D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/cmake_install.cmake")
 
 endif()
 

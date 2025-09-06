@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{87DD0273-0ABA-34EA-BD2F-3A9F0E735692}</ProjectGuid>
+    <ProjectGuid>{10BB7FC1-B3E4-3964-BCE7-FA77F1BA22EE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -59,26 +59,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fastgltf.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fastgltf</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fastgltf.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fastgltf</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\MinSizeRel\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\MinSizeRel\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">fastgltf.dir\MinSizeRel\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">fastgltf</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">fastgltf.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">fastgltf</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -102,10 +102,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;SIMDJSON_TARGET_VERSION=\"3.3.0\";FASTGLTF_USE_CUSTOM_SMALLVECTOR=0;FASTGLTF_ENABLE_DEPRECATED_EXT=0;FASTGLTF_DISABLE_CUSTOM_MEMORY_POOL=0;FASTGLTF_USE_64BIT_FLOAT=0;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -118,7 +118,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /utf-8 /Ob3</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -144,10 +144,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;SIMDJSON_TARGET_VERSION=\"3.3.0\";FASTGLTF_USE_CUSTOM_SMALLVECTOR=0;FASTGLTF_ENABLE_DEPRECATED_EXT=0;FASTGLTF_DISABLE_CUSTOM_MEMORY_POOL=0;FASTGLTF_USE_64BIT_FLOAT=0;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -185,10 +185,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;SIMDJSON_TARGET_VERSION=\"3.3.0\";FASTGLTF_USE_CUSTOM_SMALLVECTOR=0;FASTGLTF_ENABLE_DEPRECATED_EXT=0;FASTGLTF_DISABLE_CUSTOM_MEMORY_POOL=0;FASTGLTF_USE_64BIT_FLOAT=0;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -201,7 +201,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -225,10 +225,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;SIMDJSON_TARGET_VERSION=\"3.3.0\";FASTGLTF_USE_CUSTOM_SMALLVECTOR=0;FASTGLTF_ENABLE_DEPRECATED_EXT=0;FASTGLTF_DISABLE_CUSTOM_MEMORY_POOL=0;FASTGLTF_USE_64BIT_FLOAT=0;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\deps\simdjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -240,11 +240,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -252,12 +252,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -265,12 +265,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -278,12 +278,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -291,30 +291,30 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\fastgltf.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\base64.cpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\base64.hpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\glm_element_traits.hpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\parser.hpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\tools.hpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\types.hpp" />
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\util.hpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\fastgltf.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\base64.cpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\base64.hpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\glm_element_traits.hpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\parser.hpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\tools.hpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\types.hpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\util.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
-      <Project>{B49AE839-E684-3E13-ADE7-3A4F2E0D3326}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
+      <Project>{2D9E62D5-9705-381A-809E-CDD33A86795B}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf_simdjson.vcxproj">
-      <Project>{774F9BCB-9590-3134-ACC4-337F160BB44B}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf_simdjson.vcxproj">
+      <Project>{0B86EDEC-BF65-3BB9-B6C3-D54114D6A3C0}</Project>
       <Name>fastgltf_simdjson</Name>
     </ProjectReference>
   </ItemGroup>

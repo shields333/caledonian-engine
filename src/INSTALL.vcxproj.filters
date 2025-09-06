@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\42f414e1916d78f2dbfc7d35e60e55ff\INSTALL_force.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\d78dca34156583fe59c95b9af6ef7a92\INSTALL_force.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{F3C9F009-49B0-37CD-9D8F-2E17A9157DBB}</UniqueIdentifier>
+      <UniqueIdentifier>{08F6F966-3109-3106-964F-D0A30E087566}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

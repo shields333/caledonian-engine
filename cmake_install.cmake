@@ -1,4 +1,4 @@
-# Install script for directory: E:/Documents/Visual Studio 2022/VulkanProject/project
+# Install script for directory: D:/Documents/Visual Studio 2022/VulkanProject/project
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,8 +34,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/Documents/Visual Studio 2022/VulkanProject/third_party/cmake_install.cmake")
-  include("E:/Documents/Visual Studio 2022/VulkanProject/src/cmake_install.cmake")
+  include("D:/Documents/Visual Studio 2022/VulkanProject/third_party/cmake_install.cmake")
+  include("D:/Documents/Visual Studio 2022/VulkanProject/src/cmake_install.cmake")
 
 endif()
 
@@ -54,6 +54,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "E:/Documents/Visual Studio 2022/VulkanProject/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "D:/Documents/Visual Studio 2022/VulkanProject/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

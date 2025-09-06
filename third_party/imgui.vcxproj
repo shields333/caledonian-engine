@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{26C9D4B7-9EE0-3D7D-AEBA-962C888E0B66}</ProjectGuid>
+    <ProjectGuid>{122217C3-DB79-3E44-A8E2-8DEA848D29E7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -59,26 +59,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">imgui.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">imgui</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">imgui.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">imgui</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\MinSizeRel\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\MinSizeRel\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">imgui.dir\MinSizeRel\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">imgui</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">imgui.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">imgui</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/VulkanSDK/1.3.283.0/Include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -100,10 +100,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-debug\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/VulkanSDK/1.3.283.0/Include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -139,10 +139,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-release\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -155,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/VulkanSDK/1.3.283.0/Include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -178,10 +178,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-minsizerel\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -194,7 +194,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/VulkanSDK/1.3.283.0/Include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -216,10 +216,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include\SDL2;D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\include-config-relwithdebinfo\SDL2;C:\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -231,11 +231,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\CMakeLists.txt">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -244,11 +244,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindVulkan.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -257,11 +257,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindVulkan.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -270,11 +270,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindVulkan.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -283,29 +283,29 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.30\Modules\FindVulkan.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui.h" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_demo.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_draw.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_tables.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_impl_sdl2.cpp" />
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui.h" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_demo.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_tables.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\imgui\imgui_impl_sdl2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
-      <Project>{B49AE839-E684-3E13-ADE7-3A4F2E0D3326}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
+      <Project>{2D9E62D5-9705-381A-809E-CDD33A86795B}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\SDL2.vcxproj">
-      <Project>{783E100B-5718-38A7-9A30-FDC25FD3AF8C}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\SDL2.vcxproj">
+      <Project>{E43E0AC0-CB40-3D20-ABD8-9884D987F750}</Project>
       <Name>SDL2</Name>
     </ProjectReference>
   </ItemGroup>

@@ -1,132 +1,132 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\main.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_types.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_initializers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_descriptors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_pipelines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\vk_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Swapchain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\CommandPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\FencePool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\ComputePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\GraphicsPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.h">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\GuiManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\src\CMakeLists.txt" />
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{945EB1DD-E1B2-38E7-AF1E-262169D3CE43}</UniqueIdentifier>
+      <UniqueIdentifier>{86BEBFEB-B3F1-3180-8FF3-E5B77C4B861B}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{73FD0CCD-C556-3495-AD96-49844243BE0E}</UniqueIdentifier>
+      <UniqueIdentifier>{FB0DA1F8-77F7-35FA-BC53-5F688552ABAC}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

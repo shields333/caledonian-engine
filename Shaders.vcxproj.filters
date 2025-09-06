@@ -1,29 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\culling.comp.spv.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\770faa27ec690ab2e0357654628b9ba6\culling.comp.spv.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\mesh.frag.spv.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\770faa27ec690ab2e0357654628b9ba6\mesh.frag.spv.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\mesh.vert.spv.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\770faa27ec690ab2e0357654628b9ba6\mesh.vert.spv.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\ea6bfd4731341273a56938e279910191\sky.comp.spv.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\770faa27ec690ab2e0357654628b9ba6\sky.comp.spv.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\407365bbc3ce75a0ec958e6759795730\Shaders.rule">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\4201c4187c835c4b2429613ec55609ba\Shaders.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\CMakeLists.txt" />
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\Shaders" />
+    <None Include="D:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\Shaders" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{F3C9F009-49B0-37CD-9D8F-2E17A9157DBB}</UniqueIdentifier>
+      <UniqueIdentifier>{08F6F966-3109-3106-964F-D0A30E087566}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

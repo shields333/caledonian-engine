@@ -1,42 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\fastgltf.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\fastgltf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\base64.cpp">
+    <ClCompile Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\src\base64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\base64.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\base64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\glm_element_traits.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\glm_element_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\parser.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\tools.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\tools.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\types.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\util.hpp">
+    <ClInclude Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\include\fastgltf\util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt" />
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{945EB1DD-E1B2-38E7-AF1E-262169D3CE43}</UniqueIdentifier>
+      <UniqueIdentifier>{86BEBFEB-B3F1-3180-8FF3-E5B77C4B861B}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{73FD0CCD-C556-3495-AD96-49844243BE0E}</UniqueIdentifier>
+      <UniqueIdentifier>{FB0DA1F8-77F7-35FA-BC53-5F688552ABAC}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

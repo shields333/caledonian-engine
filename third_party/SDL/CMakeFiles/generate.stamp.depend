@@ -22,16 +22,16 @@ C:/Program Files/CMake/share/cmake-3.30/Modules/GNUInstallDirs.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CheckCompilerFlag.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Internal/CheckSourceRuns.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/CMakeLists.txt
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/SDL2.spec.in
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/CheckCPUArchitecture.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/macros.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlchecks.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlfind.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlplatform.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake_uninstall.cmake.in
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/include/SDL_config.h.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/include/SDL_revision.h.cmake
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/sdl2-config.in
-E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/sdl2.pc.in
-E:/Documents/Visual Studio 2022/VulkanProject/third_party/SDL/SDL_config.h.intermediate
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/CMakeLists.txt
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/SDL2.spec.in
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/CheckCPUArchitecture.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/macros.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlchecks.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlfind.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake/sdlplatform.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/cmake_uninstall.cmake.in
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/include/SDL_config.h.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/include/SDL_revision.h.cmake
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/sdl2-config.in
+D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/SDL/sdl2.pc.in
+D:/Documents/Visual Studio 2022/VulkanProject/third_party/SDL/SDL_config.h.intermediate

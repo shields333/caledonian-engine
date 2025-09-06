@@ -25,7 +25,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A9BF38A5-7A9E-3EE4-A491-68A706CE0B5C}</ProjectGuid>
+    <ProjectGuid>{C7A2F54A-D2B6-385D-8D4E-E5A515AAB809}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -108,11 +108,11 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt">
+    <CustomBuild Include="D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -120,12 +120,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -133,12 +133,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -146,12 +146,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SE:/Documents/Visual Studio 2022/VulkanProject/project" "-BE:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "E:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Documents/Visual Studio 2022/VulkanProject/project" "-BD:/Documents/Visual Studio 2022/VulkanProject" --check-stamp-file "D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/CMakeFiles/generate.stamp"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -159,26 +159,26 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\add_source_directory.cmake;D:\Documents\Visual Studio 2022\VulkanProject\project\third_party\fastgltf\cmake\compiler_flags.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
-      <Project>{B49AE839-E684-3E13-ADE7-3A4F2E0D3326}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\ZERO_CHECK.vcxproj">
+      <Project>{2D9E62D5-9705-381A-809E-CDD33A86795B}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf.vcxproj">
-      <Project>{87DD0273-0ABA-34EA-BD2F-3A9F0E735692}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf.vcxproj">
+      <Project>{10BB7FC1-B3E4-3964-BCE7-FA77F1BA22EE}</Project>
       <Name>fastgltf</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf_simdjson.vcxproj">
-      <Project>{774F9BCB-9590-3134-ACC4-337F160BB44B}</Project>
+    <ProjectReference Include="D:\Documents\Visual Studio 2022\VulkanProject\third_party\fastgltf\fastgltf_simdjson.vcxproj">
+      <Project>{0B86EDEC-BF65-3BB9-B6C3-D54114D6A3C0}</Project>
       <Name>fastgltf_simdjson</Name>
     </ProjectReference>
   </ItemGroup>

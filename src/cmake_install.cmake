@@ -1,4 +1,4 @@
-# Install script for directory: E:/Documents/Visual Studio 2022/VulkanProject/project/src
+# Install script for directory: D:/Documents/Visual Studio 2022/VulkanProject/project/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

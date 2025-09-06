@@ -1,8 +1,8 @@
-if (NOT EXISTS "E:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt")
-    message(FATAL_ERROR "Cannot find install manifest: \"E:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt\"")
-endif(NOT EXISTS "E:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt")
+if (NOT EXISTS "D:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt")
+    message(FATAL_ERROR "Cannot find install manifest: \"D:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt\"")
+endif(NOT EXISTS "D:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt")
 
-file(READ "E:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt" files)
+file(READ "D:/Documents/Visual Studio 2022/VulkanProject/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach (file ${files})
     message(STATUS "Uninstalling \"$ENV{DESTDIR}${file}\"")
