@@ -1,3 +1,9 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d37b15a2e0c59d390b6f3a6fd62883676bb02c819c944acebd4314751a6edbc7
-size 438
+<Package>
+  <Chunk Id="1000" Marker="Launch">
+    <FileGroup DestinationPath="." SourcePath="." Include="testsprite2.exe" />
+    <FileGroup DestinationPath="." SourcePath="." Include="MicrosoftGame.config" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.bmp" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.png" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.dll" />
+  </Chunk>
+</Package>

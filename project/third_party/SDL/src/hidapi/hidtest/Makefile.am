@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5d7f4b87d89f10aee837de10e41afc60d74449694533d635443a57dd263c0c4f
-size 454
+AM_CPPFLAGS = -I$(top_srcdir)/hidapi/
+
+## Linux
+if OS_LINUX
+noinst_PROGRAMS = hidtest-libusb hidtest-hidraw
+
+hidtest_hidraw_SOURCES = hidtest.cpp
+hidtest_hidraw_LDADD = $(top_builddir)/linux/libhidapi-hidraw.la
+
+hidtest_libusb_SOURCES = hidtest.cpp
+hidtest_libusb_LDADD = $(top_builddir)/libusb/libhidapi-libusb.la
+else
+
+# Other OS's
+noinst_PROGRAMS = hidtest
+
+hidtest_SOURCES = hidtest.cpp
+hidtest_LDADD = $(top_builddir)/$(backend)/libhidapi.la
+
+endif

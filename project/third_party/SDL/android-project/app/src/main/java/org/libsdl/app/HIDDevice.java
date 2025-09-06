@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e9d8b4edbf3821e366836c30c3f4746d915a5a765938181edae854b12cd975e9
-size 623
+package org.libsdl.app;
+
+import android.hardware.usb.UsbDevice;
+
+interface HIDDevice
+{
+    public int getId();
+    public int getVendorId();
+    public int getProductId();
+    public String getSerialNumber();
+    public int getVersion();
+    public String getManufacturerName();
+    public String getProductName();
+    public UsbDevice getDevice();
+    public boolean open();
+    public int sendFeatureReport(byte[] report);
+    public int sendOutputReport(byte[] report);
+    public boolean getFeatureReport(byte[] report);
+    public void setFrozen(boolean frozen);
+    public void close();
+    public void shutdown();
+}

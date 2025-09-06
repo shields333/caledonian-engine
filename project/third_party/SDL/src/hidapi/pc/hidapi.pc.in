@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6f5823ebcfdc08dc4dcc8b3d2f7e042d715b5533ab8a13a00a9c2ad7bda72044
-size 276
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: hidapi
+Description: C Library for USB/Bluetooth HID device access from Linux, Mac OS X, FreeBSD, and Windows.
+Version: @VERSION@
+Libs: -L${libdir} -lhidapi
+Cflags: -I${includedir}/hidapi

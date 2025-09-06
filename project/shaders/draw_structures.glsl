@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:db2ed7703e11ad08098a6348efb29e030e591ce4679f59162d8e650a3ed543dd
-size 239
+#extension GL_EXT_nonuniform_qualifier : require
+#extension GL_EXT_buffer_reference2 : require
+
+struct ObjectData{
+	mat4 modelMatrix;
+    uint matID;
+};
+
+layout(buffer_reference, std430) buffer VisibleObjectBuffer{
+	ObjectData data[];
+};
+

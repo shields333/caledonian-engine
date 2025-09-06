@@ -1,3 +1,38 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3689d69cfe2ed35ce6c0af6d7b85dc81dd210b64bf17c0eeec6f20f1d8f5116f
-size 1291
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+
+#include "../../SDL_internal.h"
+
+#if SDL_THREAD_OS2
+
+#include "../SDL_thread_c.h"
+
+extern SDL_TLSData **ppSDLTLSData;
+
+/* SDL_OS2TLSAlloc() called from SDL_InitSubSystem() */
+void SDL_OS2TLSAlloc(void);
+
+/* SDL_OS2TLSFree() called from SDL_QuitSubSystem() */
+void SDL_OS2TLSFree(void);
+
+#endif /* SDL_THREAD_OS2 */
+
+/* vi: set ts=4 sw=4 expandtab: */

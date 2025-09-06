@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:47e8dc88053b5b265d902d3d1da5a9d7e0234cea3e56f489ed1d4d9c958b5022
-size 415
+#ifndef ICONV_H_ /* minimal iconv.h header based on public knowledge */
+#define ICONV_H_
+
+#include <stddef.h> /* size_t */
+#include <errno.h>
+
+typedef void *iconv_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern iconv_t iconv_open(const char *, const char *);
+extern size_t iconv(iconv_t, char **, size_t *, char **, size_t *);
+extern int iconv_close(iconv_t);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ICONV_H_ */

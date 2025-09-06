@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b53eb7274883131f8a848593d6ff9373a0b8a34436c49df48f78f9aba8cc6451
-size 268
+#!/bin/sh
+find . -type f \( -name '*.user' -o -name '*.sdf' -o -name '*.ncb' -o -name '*.suo' \) -print -delete
+find . -type f \( -name '*.bmp' -o -name '*.wav' -o -name '*.dat' \) -print -delete
+find . -depth -type d \( -name Win32 -o -name x64 \) -exec rm -rv {} \;

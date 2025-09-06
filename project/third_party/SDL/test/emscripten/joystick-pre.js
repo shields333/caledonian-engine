@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a4f6529d16c22cc05ea4bda545be130e93b01a4881cdae0ac4a9fe34d38ecb08
-size 749
+Module['arguments'] = ['0'];
+//Gamepads don't appear until a button is pressed and the joystick/gamepad tests expect one to be connected
+Module['preRun'].push(function()
+{
+    Module['print']("Waiting for gamepad...");
+    Module['addRunDependency']("gamepad");
+    window.addEventListener('gamepadconnected', function()
+    {
+        //OK, got one
+        Module['removeRunDependency']("gamepad");
+    }, false);
+
+    //chrome
+    if(!!navigator.webkitGetGamepads)
+    {
+        var timeout = function()
+        {
+            if(navigator.webkitGetGamepads()[0] !== undefined)
+                Module['removeRunDependency']("gamepad");
+            else
+                setTimeout(timeout, 100);
+        }
+        setTimeout(timeout, 100);
+    }
+});

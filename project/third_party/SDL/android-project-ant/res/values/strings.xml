@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4c8052239f85c9de53bbfb57df8c344d725b7c9805f193f36c0811d52bad1073
-size 109
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SDL App</string>
+</resources>

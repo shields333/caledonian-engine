@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8ee5cea7d1cf0eefb09e66c360caaf5bac7a3255e3e4d0cc6ecd9e4dfa845113
-size 565
+name: Build (iOS/tvOS)
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: ${{ matrix.platform.name }}
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: iOS, target: Static Library-iOS, sdk: iphoneos }
+        - { name: tvOS, target: Static Library-tvOS, sdk: appletvos }
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: xcodebuild -project Xcode/SDL/SDL.xcodeproj -target '${{ matrix.platform.target }}' -configuration Release -sdk ${{ matrix.platform.sdk }} clean build

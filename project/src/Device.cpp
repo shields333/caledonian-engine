@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:996c77c15d502c1726f2273715b43db7a7ada935c0e843d80dc25ed7dac71c03
-size 388
+#include "Device.h"
+
+#include <VkBootstrap.h>
+
+#include "vk_initializers.h"
+
+Device::Device(VkDevice handle) :
+	m_handle(handle)
+{
+}
+
+Device::~Device()
+{
+	vkDestroyDevice(m_handle, nullptr);
+}
+
+Device& Device::operator=(Device&& other) noexcept
+{
+	m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
+
+	return *this;
+}
+
+void Device::waitIdle() const
+{
+	vkDeviceWaitIdle(m_handle);
+}

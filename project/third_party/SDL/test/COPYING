@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d5a549e4a7b88cb696d0db15b21830061131ed361257ab399a33ca08ce0b33d5
-size 210
+
+The test programs in this directory tree are for demonstrating and
+testing the functionality of the SDL library, and are placed in the
+public domain.
+
+October 28, 1997
+--
+	Sam Lantinga				(slouken@libsdl.org)

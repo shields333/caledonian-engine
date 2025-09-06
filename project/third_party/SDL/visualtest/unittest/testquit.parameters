@@ -1,3 +1,3 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:10cd02a65b5ee008d275889ec5f8bb79e3b0208a03a7b599b7af60f5726302af
-size 233
+--exit-code, integer, [-1 1], false, [] # The exit code returned by the executable
+--crash, boolean, [], false, [] # Crashes the SUT executable
+--hang, boolean, [], false, [] # Runs the SUT in the infinite loop and ignores all events

@@ -1,3 +1,46 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:008f96d9fb820d697d643a30d499433003d7d479c32b8a9f6e1ae269c86f32cb
-size 551
+# CMake and build folders.
+bin/*
+build/*
+lib/*
+out/*
+CMakeSettings.json
+CMakeUserPresets.json
+vcpkg_installed/*
+cmake-build-*/
+
+# IDE specific folders
+.idea/*
+.vscode/*
+.vs/*
+
+# Binary files
+*.exe
+*.dll
+*.lib
+*.a
+*.dylib
+**/.DS_Store
+
+# Dependencies
+simdjson/
+deps/
+
+# Test files
+tests/gltf/intel_sponza/
+tests/gltf/sample-models/
+tests/gltf/good-froge/
+tests/gltf/deccer-cubes/
+tests/gltf_loaders/
+
+# gltf Rust wrapper
+tests/gltf-rs/target
+tests/gltf-rs/Cargo.lock
+
+# Example files
+*.ngfx-proj
+SpirvTemp/
+
+# Docs
+docs/xml/
+docs/Doxyfile
+docs/conf.py

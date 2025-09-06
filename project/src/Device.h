@@ -1,3 +1,24 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7537a5efe12edd434570ef318c86eaabebb4335776848e0687fce409fb398252
-size 393
+#pragma once
+
+#include "vk_types.h"
+
+class Device
+{
+public:
+	Device(VkDevice handle);
+	~Device();
+
+	Device(Device &other) = delete;
+	Device operator=(Device &other) = delete;
+
+	Device(Device&& other) noexcept { *this = std::move(other); }
+	Device& operator=(Device &&other) noexcept;
+
+	VkDevice getHandle() const { return m_handle; }
+
+	void waitIdle() const;
+
+private:
+	VkDevice m_handle;
+};
+

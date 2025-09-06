@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ad5d5fd8cd3d49d39cc826c1602649b8721c96a752d51b5dcdf7dc13ac6e92b4
-size 752
+projectfullname = SDL2
+projectshortname = SDL2
+incsubdir = include
+wikisubdir = SDL2
+readmesubdir = docs
+apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
+mainincludefname = SDL.h
+versionfname = include/SDL_version.h
+versionmajorregex = \A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z
+versionminorregex = \A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z
+versionpatchregex = \A\#define\s+SDL_PATCHLEVEL\s+(\d+)\Z
+selectheaderregex = \ASDL.*?\.h\Z
+projecturl = https://libsdl.org/
+wikiurl = https://wiki.libsdl.org/SDL2
+bugreporturl = https://github.com/libsdl-org/sdlwiki/issues/new
+warn_about_missing = 0
+wikipreamble = (This is the legacy documentation for stable SDL2, the current stable version; [SDL3](https://wiki.libsdl.org/SDL3/) is the current development version.)

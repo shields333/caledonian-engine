@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7d56173f722c8a8ee7db23e319eac7451780f28039888fe446999afba9143d8f
-size 559
+###########################################
+# Simple Makefile for HIDAPI test program
+#
+# Alan Ott
+# Signal 11 Software
+# 2010-07-03
+###########################################
+
+all: hidtest
+
+CC=gcc
+CXX=g++
+COBJS=hid.o
+CPPOBJS=../hidtest/hidtest.o
+OBJS=$(COBJS) $(CPPOBJS)
+CFLAGS+=-I../hidapi -Wall -g -c 
+LIBS=-framework IOKit -framework CoreFoundation
+
+
+hidtest: $(OBJS)
+	g++ -Wall -g $^ $(LIBS) -o hidtest
+
+$(COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(CPPOBJS): %.o: %.cpp
+	$(CXX) $(CFLAGS) $< -o $@
+
+clean:
+	rm -f *.o hidtest $(CPPOBJS)
+
+.PHONY: clean

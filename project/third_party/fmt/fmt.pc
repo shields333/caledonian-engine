@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:425196f30de3c2b15eafb778de5fefba67bb8604ec15d9dfb66c739ff2da10b5
-size 263
+prefix=C:/Program Files (x86)/vulkan_guide
+exec_prefix=C:/Program Files (x86)/vulkan_guide
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: fmt
+Description: A modern formatting library
+Version: 10.1.1
+Libs: -L${libdir} -lfmt
+Cflags: -I${includedir}
+

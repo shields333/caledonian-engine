@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:39777982c2406dc37326d4a895ed6ef29887c83021abe5b62084dc0ccf1539d8
-size 840
+#----------------------------------------------------------------
+# Generated CMake target import file for configuration "RelWithDebInfo".
+#----------------------------------------------------------------
+
+# Commands may need to know the format version.
+set(CMAKE_IMPORT_FILE_VERSION 1)
+
+# Import target "fmt::fmt" for configuration "RelWithDebInfo"
+set_property(TARGET fmt::fmt APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
+set_target_properties(fmt::fmt PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELWITHDEBINFO "CXX"
+  IMPORTED_LOCATION_RELWITHDEBINFO "${_IMPORT_PREFIX}/lib/fmt.lib"
+  )
+
+list(APPEND _cmake_import_check_targets fmt::fmt )
+list(APPEND _cmake_import_check_files_for_fmt::fmt "${_IMPORT_PREFIX}/lib/fmt.lib" )
+
+# Commands beyond this point should not need to know the version.
+set(CMAKE_IMPORT_FILE_VERSION)

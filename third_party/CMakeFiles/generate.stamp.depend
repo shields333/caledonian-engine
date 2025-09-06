@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:868d18c9be6f534ad07d37505ff9815cf5fe45b2869297233696db1730cc22e9
-size 358
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.30/Modules/FindVulkan.cmake
+E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/CMakeLists.txt

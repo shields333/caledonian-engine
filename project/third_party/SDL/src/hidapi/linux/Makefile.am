@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1fb54d159b504760b4d7f3b86cd317d4b9d26dff06c7d9505e496238a9878376
-size 321
+lib_LTLIBRARIES = libhidapi-hidraw.la
+libhidapi_hidraw_la_SOURCES = hid.c
+libhidapi_hidraw_la_LDFLAGS = $(LTLDFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/hidapi/ $(CFLAGS_HIDRAW)
+libhidapi_hidraw_la_LIBADD = $(LIBS_HIDRAW)
+
+hdrdir = $(includedir)/hidapi
+hdr_HEADERS = $(top_srcdir)/hidapi/hidapi.h
+
+EXTRA_DIST = Makefile-manual

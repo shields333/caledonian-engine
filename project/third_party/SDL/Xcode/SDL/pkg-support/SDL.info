@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3020707d57a2789d82542eb9a54ae4aa9d1dc7c3905440dcca77cbed26c620a5
-size 297
+Title SDL 2.28.4
+Version 1
+Description SDL Library for Mac OS X (http://www.libsdl.org)
+DefaultLocation /Library/Frameworks
+Diskname (null)
+DeleteWarning 
+NeedsAuthorization NO
+DisableStop NO
+UseUserMask NO
+Application NO
+Relocatable YES
+Required NO
+InstallOnly NO
+RequiresReboot NO
+InstallFat NO

@@ -1,3 +1,56 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2220f6feefc14bd32826b606f135cd388d058705fd93c11d2e1d3b928c06ab73
-size 1851
+#pragma once
+
+#include "vk_types.h"
+
+class GraphicsPipeline
+{
+public:
+    GraphicsPipeline(VkGraphicsPipelineCreateInfo &info);
+    ~GraphicsPipeline();
+
+    GraphicsPipeline(GraphicsPipeline&& other) noexcept;
+    GraphicsPipeline& operator=(GraphicsPipeline&& other) noexcept;
+
+    VkPipeline getHandle() { return m_handle; }
+    VkPipelineLayout getLayout() { return m_layout; }
+
+private:
+    VkPipeline m_handle = VK_NULL_HANDLE;
+    // TODO: the layout should be a pointer to a map
+    VkPipelineLayout m_layout = VK_NULL_HANDLE;
+};
+
+class PipelineBuilder 
+{
+public:
+    PipelineBuilder() { setDefault(); }
+
+    void setDefault();
+
+    //void ConfigureInputState()
+    void    setShaders(std::string vertPath, std::string fragPath);
+    void    createPipelineLayout(std::vector<VkDescriptorSetLayout>* descriptorLayouts, std::vector<VkPushConstantRange>* pushConstants = nullptr);
+    void    setTopology(VkPrimitiveTopology topology);
+    void    setPolygonMode(VkPolygonMode mode);
+    void    setCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace);
+    void    setColourAttachmentFormat(VkFormat format);
+    void    setDepthFormat(VkFormat format);
+    void    enableDepthtest(bool depthWriteEnable, VkCompareOp op);
+    void    enableBlendingAdditive();
+    void    enableBlendingAlphablend();
+
+    GraphicsPipeline* buildPipeline();
+
+private:
+    std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages;
+
+    VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
+    VkPipelineRasterizationStateCreateInfo m_rasterizer;
+    VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
+    VkPipelineMultisampleStateCreateInfo m_multisampling;
+    VkPipelineLayout m_pipelineLayout;
+    VkPipelineDepthStencilStateCreateInfo m_depthStencil;
+    VkPipelineRenderingCreateInfo m_renderInfo;
+    VkFormat m_colorAttachmentformat;
+
+};

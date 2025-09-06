@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5bd4abee4aa5853b8674e1ca009540a82b6ec75818f7cd09bc9fa5182b1b80d2
-size 540
+# sdl pkg-config source file
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: sdl2
+Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.
+Version: @SDL_VERSION@
+Requires.private: @PKGCONFIG_DEPENDS@
+Conflicts:
+Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_LIBS@ @PKGCONFIG_LIBS_PRIV@ @SDL_STATIC_LIBS@
+Cflags: -I${includedir} -I${includedir}/SDL2 @SDL_CFLAGS@

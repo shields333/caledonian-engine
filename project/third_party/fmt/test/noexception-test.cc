@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f9fcb5f1f6ee8b7b75293e807dc484fbc64375d2712fd5b3d90bd6a143ae629e
-size 437
+// Formatting library for C++ - Noexception tests
+//
+// Copyright (c) 2012 - present, Victor Zverovich
+// All rights reserved.
+//
+// For the license information refer to format.h.
+
+#include "fmt/args.h"
+#include "fmt/chrono.h"
+#include "fmt/color.h"
+#include "fmt/compile.h"
+#include "fmt/core.h"
+#include "fmt/format.h"
+#include "fmt/os.h"
+#include "fmt/ostream.h"
+#include "fmt/printf.h"
+#include "fmt/ranges.h"
+#include "fmt/xchar.h"

@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6de298b53f0305eb2c45ee6c2c45e248ebdc0fe6cdbc717666b32011e44886bf
-size 231
+# parameter name, type, value range, required, categories
+--blend, enum, [none blend add mod], false, []
+--fullscreen, boolean, [], false, []
+--fullscreen-desktop, boolean, [], false, []
+--iterations, integer, [1000 1000], true, []

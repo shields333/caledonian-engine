@@ -1,3 +1,2 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:38ab9c9b7143bfcefda25cded266e36d998bb0ea0107f8f4ed4138cc65de5955
-size 141
+Sphinx basic theme with Bootstrap support. Modifications are kept to
+a minimum to simplify integration in case of changes to Sphinx theming.

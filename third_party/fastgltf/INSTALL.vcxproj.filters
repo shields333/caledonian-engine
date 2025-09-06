@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:22a73c72afc06a3500ed1014213746f0f8bfaac90941bf54357622686e72883e
-size 523
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\79508233103154d46d58d2c65eade171\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F3C9F009-49B0-37CD-9D8F-2E17A9157DBB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:af26b245330b6c6032f5a2765d896e768cb4d7eccf00cb7965e7b4fc97b99e2a
-size 1439
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+#include "../../SDL_internal.h"
+
+#ifndef SDL_dspaudio_h_
+#define SDL_dspaudio_h_
+
+#include "../SDL_sysaudio.h"
+
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
+
+struct SDL_PrivateAudioData
+{
+    /* The file descriptor for the audio device */
+    int audio_fd;
+
+    /* Raw mixing buffer */
+    Uint8 *mixbuf;
+    int mixlen;
+};
+#define FUDGE_TICKS 10 /* The scheduler overhead ticks per frame */
+
+#endif /* SDL_dspaudio_h_ */
+/* vi: set ts=4 sw=4 expandtab: */

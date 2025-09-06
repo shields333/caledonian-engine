@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bc2681489b82b8fe3410587e07bfbd55c273e10f51cda2bedd7198d20c344df4
-size 1340
+#include "Buffer.h"
+
+#include "vk_engine.h"
+
+Buffer::Buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+{
+	// allocate buffer
+	VkBufferCreateInfo bufferInfo = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+	bufferInfo.pNext = nullptr;
+	bufferInfo.size = allocSize;
+
+	bufferInfo.usage = usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT ;
+
+	VmaAllocationCreateInfo vmaallocInfo = {};
+	vmaallocInfo.usage = memoryUsage;
+	vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+
+	// allocate the buffer
+	VK_CHECK(vmaCreateBuffer(VulkanEngine::get().m_allocator, &bufferInfo, &vmaallocInfo, &m_handle, &m_allocation,
+		&m_info));
+
+	VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = m_handle };
+	m_address = vkGetBufferDeviceAddress(VulkanEngine::getDevice()->getHandle(), &deviceAdressInfo);
+
+}
+
+Buffer::~Buffer()
+{
+	vmaDestroyBuffer(VulkanEngine::get().m_allocator, m_handle, m_allocation);
+}
+
+Buffer::Buffer(Buffer&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+Buffer& Buffer::operator=(Buffer&& other) noexcept
+{
+	m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
+	m_allocation = std::exchange(other.m_allocation, VK_NULL_HANDLE);
+	m_info = std::move(other.m_info);
+	return *this;
+}

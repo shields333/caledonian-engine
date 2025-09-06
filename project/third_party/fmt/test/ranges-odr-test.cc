@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:64e3b8c8ff2dea9b5dec00aba6622646bdbad83b72cd6f264f365004dae9821d
-size 454
+// Formatting library for C++ - the core API
+//
+// Copyright (c) 2012 - present, Victor Zverovich
+// All rights reserved.
+//
+// For the license information refer to format.h.
+
+#include <vector>
+
+#include "fmt/ranges.h"
+#include "gtest/gtest.h"
+
+// call fmt::format from another translation unit to test ODR
+TEST(ranges_odr_test, format_vector) {
+  auto v = std::vector<int>{1, 2, 3, 5, 7, 11};
+  EXPECT_EQ(fmt::format("{}", v), "[1, 2, 3, 5, 7, 11]");
+}

@@ -1,3 +1,9 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2e5e52cecd327467fade2f57f8c46db64e36dd425655586ad276d434efd6b95e
-size 555
+#pragma once
+#include <filesystem>
+
+// We need to use the __FILE__ macro so that we have access to test glTF files in this
+// directory. As Clang does not yet fully support std::source_location, we cannot use that.
+inline auto path = std::filesystem::path { __FILE__ }.parent_path() / "gltf";
+inline auto sampleModels = std::filesystem::path { __FILE__ }.parent_path() / "gltf" / "glTF-Sample-Models";
+inline auto intelSponza = std::filesystem::path { __FILE__ }.parent_path() / "gltf" / "intel_sponza";
+inline auto bistroPath = std::filesystem::path {};

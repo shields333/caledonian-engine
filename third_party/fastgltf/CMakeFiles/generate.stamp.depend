@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:adb4848f3aadf4282c0f09579b49fe664e9da8f6d838714c41e968e2b0ff9d0f
-size 355
+# CMake generation dependency list for this directory.
+E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/CMakeLists.txt
+E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/cmake/add_source_directory.cmake
+E:/Documents/Visual Studio 2022/VulkanProject/project/third_party/fastgltf/cmake/compiler_flags.cmake

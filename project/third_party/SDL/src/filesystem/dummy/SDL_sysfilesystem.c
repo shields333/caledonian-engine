@@ -1,3 +1,45 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e3779a5c2ff5d6df56054f4fc3e8da87cced8c9cf9b1dfa438afad7ab9ef80b0
-size 1515
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+#include "../../SDL_internal.h"
+
+#if defined(SDL_FILESYSTEM_DUMMY) || defined(SDL_FILESYSTEM_DISABLED)
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* System dependent filesystem routines                                */
+
+#include "SDL_error.h"
+#include "SDL_filesystem.h"
+
+char *SDL_GetBasePath(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+char *SDL_GetPrefPath(const char *org, const char *app)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+#endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */
+
+/* vi: set ts=4 sw=4 expandtab: */

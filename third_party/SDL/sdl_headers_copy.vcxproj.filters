@@ -1,3 +1,248 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:847f7f94ce4ec89ee1e19effc89a2859f0af323bafb65beb3379c5d9e1a070f3
-size 15517
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_assert.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_atomic.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_audio.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_bits.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_blendmode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_clipboard.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_copying.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_cpuinfo.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_egl.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_endian.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_error.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_events.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_filesystem.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_gamecontroller.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_gesture.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_guid.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_haptic.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_hidapi.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_hints.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_joystick.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_keyboard.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_keycode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_loadso.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_locale.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_log.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_main.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_messagebox.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_metal.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_misc.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_mouse.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_mutex.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_name.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengl.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengl_glext.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles2.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles2_gl2.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles2_gl2ext.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles2_gl2platform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_opengles2_khrplatform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_pixels.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_platform.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_power.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_quit.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_rect.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_render.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_rwops.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_scancode.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_sensor.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_shape.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_stdinc.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_surface.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_system.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_syswm.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_assert.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_common.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_compare.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_crc32.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_font.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_fuzzer.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_harness.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_images.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_log.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_md5.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_memory.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_test_random.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_thread.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_timer.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_touch.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_types.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_version.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_video.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\SDL_vulkan.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\begin_code.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\25a24edc48ca1c8eb6f10fc33690848c\close_code.h.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\CMakeFiles\36cc3069b200f4111f955eeca9e73278\sdl_headers_copy.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\Visual Studio 2022\VulkanProject\project\third_party\SDL\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\Documents\Visual Studio 2022\VulkanProject\third_party\SDL\CMakeFiles\sdl_headers_copy" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F3C9F009-49B0-37CD-9D8F-2E17A9157DBB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
