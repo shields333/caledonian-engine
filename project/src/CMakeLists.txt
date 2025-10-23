@@ -39,6 +39,8 @@ add_executable (engine
   GraphicsPipeline.h
   GuiManager.cpp
   GuiManager.h
+  GLTFLoader.cpp
+  GLTFLoader.h
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

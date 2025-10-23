@@ -5,7 +5,7 @@
 #include <SDL_vulkan.h>
 
 #include <vk_initializers.h>
-#include <vk_loader.h>
+#include <GLTFLoader.h>
 
 #include <glm/gtx/transform.hpp>
 //bootstrap library
@@ -16,6 +16,7 @@
 
 #include <chrono>
 #include <thread>
+#include <mutex>
 
 VulkanEngine* VulkanEngine::sm_loadedEngine = nullptr;
 
@@ -77,6 +78,10 @@ VulkanEngine::~VulkanEngine()
 
 void VulkanEngine::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
 {
+    //@TODO: parallelise this
+    static std::mutex mtx;
+    std::lock_guard<std::mutex> lock(mtx);
+
     m_cmdPool->resetPool();
 
     m_cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);

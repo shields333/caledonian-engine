@@ -363,7 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 /build
 
-/CMakeFiles
+CMakeFiles/
 *.vcxproj
 *.filters
 cmake_install.cmake

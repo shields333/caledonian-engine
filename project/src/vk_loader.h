@@ -166,5 +166,3 @@ private:
 
     void clearAll();
 };
-
-std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath);
