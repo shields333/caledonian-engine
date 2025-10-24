@@ -15,6 +15,7 @@ public:
 
 	VkCommandBuffer getHandle() { return m_handle; }
 
+	void reset(VkCommandBufferResetFlags flags = 0);
 	void begin(VkCommandBufferUsageFlags flags = 0);
 	void end();
 	void barrier(Image& image, VkImageLayout newLayout, VkPipelineStageFlags2 stage, VkAccessFlagBits2 access, uint32_t mipLevel = 0, uint32_t levelCount = 1);

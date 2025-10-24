@@ -188,7 +188,6 @@ private:
 	std::unique_ptr<Device> m_device; // Vulkan device for commands
 
 	std::unique_ptr<CommandPool> m_cmdPool;
-	std::unique_ptr<CommandBuffer> m_cmdBuf;
 
 	struct DeletionQueue
 	{

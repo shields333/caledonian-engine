@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vk_types.h>
+#include <mutex>
 
 class Fence;
 
@@ -23,4 +24,5 @@ public:
 private:
 	VkQueue		m_handle = VK_NULL_HANDLE;
 
+	std::mutex m_mutex;
 };

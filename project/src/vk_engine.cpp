@@ -78,20 +78,25 @@ VulkanEngine::~VulkanEngine()
 
 void VulkanEngine::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
 {
-    //@TODO: parallelise this
+    //@TODO: parallelise this - needs 1 commandpool per thread
     static std::mutex mtx;
-    std::lock_guard<std::mutex> lock(mtx);
+    std::unique_lock<std::mutex> lock(mtx);
 
-    m_cmdPool->resetPool();
+    CommandBuffer* cmdBuf = m_cmdPool->requestCommandBuffer();
 
-    m_cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    function(m_cmdBuf->getHandle());
-    m_cmdBuf->end();
+    cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    function(cmdBuf->getHandle());
+    cmdBuf->end();
+    lock.unlock();
 
-    Fence fence = std::move(VulkanEngine::get().m_graphicsQueue->submit(m_cmdBuf->getHandle()));
+    Fence fence = std::move(VulkanEngine::get().m_graphicsQueue->submit(cmdBuf->getHandle()));
 
     // block until the submit has completed
     fence.wait(UINT32_MAX);
+    
+    lock.lock();
+    m_cmdPool->returnCommandBuffer(&cmdBuf);
+    lock.unlock();
 
     VulkanEngine::get().m_fencePool->returnFence(fence);
 }
@@ -239,11 +244,9 @@ void VulkanEngine::initCommandPools()
         frame.m_gpuSceneDataBuffer = std::make_unique<Buffer>(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     }
 
-    m_cmdPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex);
-    m_cmdBuf = std::make_unique<CommandBuffer>(*m_cmdPool->requestCommandBuffer());
+    m_cmdPool = std::make_unique<CommandPool>(m_graphicsQueue->m_familyIndex, VkCommandPoolCreateFlagBits::VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
     m_deleteionQueue.push_function([&]() {
-        m_cmdBuf.reset();
         m_cmdPool.reset();
         m_frames.clear();
         });

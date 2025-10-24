@@ -139,10 +139,10 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     std::shared_ptr<LoadedGLTF> scene = std::make_shared<LoadedGLTF>();
     LoadedGLTF& file = *scene.get();
 
-    fastgltf::Parser parser{};
+    fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
     constexpr auto gltfOptions = fastgltf::Options::DontRequireValidAssetMember | fastgltf::Options::AllowDouble | fastgltf::Options::LoadGLBBuffers | fastgltf::Options::LoadExternalBuffers;
-
+    
     fastgltf::GltfDataBuffer data;
     data.loadFromFile(filePath);
 
@@ -247,7 +247,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         materials.push_back(newMat);
         file.materials[mat.name.c_str()] = newMat;
 
-        MaterialPass passType = MaterialPass::MainColor;
+        MaterialPass passType = MaterialPass::Opaque;
         if (mat.alphaMode == fastgltf::AlphaMode::Blend) {
             passType = MaterialPass::Transparent;
         }
@@ -313,9 +313,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         meshes.push_back(newmesh);
         file.meshes[mesh.name.c_str()] = newmesh;
 
-        // clear the mesh arrays each mesh, we dont want to merge them by error
-        //indices.clear();
-        //vertices.clear();
         std::vector<Mesh::GeoSurface> surfaces;
 
         surfaces.reserve(mesh.primitives.size());

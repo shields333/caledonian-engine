@@ -90,6 +90,11 @@ CommandBuffer::CommandBuffer(VkCommandBuffer commandBuffer) :
 }
 
 
+void CommandBuffer::reset(VkCommandBufferResetFlags flags)
+{
+    vkResetCommandBuffer(m_handle, flags);
+}
+
 void CommandBuffer::begin(VkCommandBufferUsageFlags flags)
 {
     auto info = vkinit::command_buffer_begin_info(flags);

@@ -11,7 +11,10 @@
 #include "vk_descriptors.h"
 
 #define DRAW_INDIRECT 1
-#define GPU_CULLING 1
+
+#if DRAW_INDIRECT
+#define GPU_CULLING
+#endif
 
 //forward declaration
 class VulkanEngine;

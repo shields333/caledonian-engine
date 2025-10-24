@@ -2,6 +2,7 @@
 
 #include <vk_types.h>
 #include <deque>
+#include <mutex>
 
 class Fence
 {
@@ -36,4 +37,6 @@ private:
 	std::vector<VkFence>	createFences(uint32_t count, VkFenceCreateFlags flags);
 
 	std::deque<Fence> m_availableFences;
+
+	std::mutex m_mutex;
 };

@@ -32,7 +32,7 @@ class GraphicsPipeline;
     } while (0)
 
 enum class MaterialPass :uint8_t {
-    MainColor,
+    Opaque,
     Transparent,
     Other
 };

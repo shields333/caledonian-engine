@@ -5,6 +5,8 @@
 
 Fence FencePool::requestFence(VkFenceCreateFlags flags /* = 0 */)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_availableFences.empty() || flags & VK_FENCE_CREATE_SIGNALED_BIT) {
         return createFences(flags);
     }
@@ -18,6 +20,7 @@ Fence FencePool::requestFence(VkFenceCreateFlags flags /* = 0 */)
 
 void FencePool::returnFence(Fence& fence)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_availableFences.push_back(std::move(fence));
 }
 

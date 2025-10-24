@@ -159,7 +159,7 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
     uint32_t* opaqueDrawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
     uint32_t* transparentDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + opaqueDrawSize);
 
-#if GPU_CULLING
+#ifdef GPU_CULLING
     //add counters for draws
     VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + transparentDrawPtr[0];
 
