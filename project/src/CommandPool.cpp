@@ -49,7 +49,9 @@ CommandBuffer* CommandPool::requestCommandBuffer()
 void CommandPool::returnCommandBuffer(CommandBuffer** commandBuffer)
 {
     if (m_flags & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+    {
         m_availableBuffers.push_back((*commandBuffer)->getHandle());
+    }
     else
         m_pendingBuffers.push_back((*commandBuffer)->getHandle());
 

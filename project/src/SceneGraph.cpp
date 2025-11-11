@@ -1,4 +1,4 @@
-﻿#include <vk_loader.h>
+﻿#include <SceneGraph.h>
 
 #include <iostream>
 
@@ -58,21 +58,23 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
     for (auto& s : mesh->getSurfaces()) {
         RenderObject def;
         def.drawCmd = s.indirectCommand;
-        def.material = &s.material->data;
+        def.material = reinterpret_cast<MaterialInstance*>(s.material.get());
         def.bounds = s.bounds;
         def.transform = nodeMatrix;
 
-        if (s.material->data.passType == MaterialPass::Transparent)
-            ctx.TransparentSurfaces.push_back(def);
+        if (s.material->passType == MaterialPass::Transparent)
+            ctx.transparentSurfaces.push_back(def);
+        else if (s.material->passType == MaterialPass::cutout)
+            ctx.cutoutSurfaces.push_back(def);
         else
-            ctx.OpaqueSurfaces.push_back(def);
+            ctx.opaqueSurfaces.push_back(def);
     }
 
     // recurse down
     Node::Draw(topMatrix, ctx);
 }
 
-void LoadedGLTF::createPipelines()
+void SceneGraph::createPipelines()
 {
     // create texture array descriptor layout
     DescriptorLayoutBuilder layoutBuilder;
@@ -80,12 +82,12 @@ void LoadedGLTF::createPipelines()
     layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UINT16_MAX);
     m_textureLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    metalRoughMaterial.build_pipelines(m_textureLayout);
+    m_metalRoughMaterial.build_pipelines(m_textureLayout);
 }
 
-void LoadedGLTF::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
+void SceneGraph::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
 {
-    m_textureSet = descriptorPool.allocate(m_textureLayout);
+    m_textureSet = m_descriptorPool.allocate(m_textureLayout);
 
     //write the texture array to its descriptor set
     DescriptorWriter writer;
@@ -139,10 +141,11 @@ void LoadedGLTF::createBuffers(std::span<uint32_t> indices, std::span<Vertex> ve
     
 }
 
-void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
+void SceneGraph::updateContext(const glm::mat4& topMatrix)
 {
-    m_drawContext.OpaqueSurfaces.clear();
-    m_drawContext.TransparentSurfaces.clear();
+    m_drawContext.opaqueSurfaces.clear();
+    m_drawContext.cutoutSurfaces.clear();
+    m_drawContext.transparentSurfaces.clear();
     m_opaqueDraws.clear();
 
     // create renderables from the scenenodes
@@ -151,20 +154,26 @@ void LoadedGLTF::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
+void SceneGraph::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
 {
-    size_t opaqueDrawSize = m_drawContext.OpaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
-    size_t opaqueObjSize = m_drawContext.OpaqueSurfaces.size() * sizeof(ObjectData);
+    // TODO: simplify this. Adding new materials is too laborious atm.
+    size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t opaqueObjSize = m_drawContext.opaqueSurfaces.size() * sizeof(ObjectData);
+
+    size_t cutoutDrawSize = m_drawContext.cutoutSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t cutoutObjSize = m_drawContext.cutoutSurfaces.size() * sizeof(ObjectData);
 
     uint32_t* opaqueDrawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
-    uint32_t* transparentDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + opaqueDrawSize);
+    uint32_t* cutoutDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + opaqueDrawSize);
+    uint32_t* transparentDrawPtr = (uint32_t*)((char*)cutoutDrawPtr + cutoutDrawSize);
 
 #ifdef GPU_CULLING
     //add counters for draws
-    VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + transparentDrawPtr[0];
+    VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + cutoutDrawPtr[0] + transparentDrawPtr[0];
 
     // reset draw counts to 0
     memset(opaqueDrawPtr, 0, 4);
+    memset(cutoutDrawPtr, 0, 4);
     memset(transparentDrawPtr, 0, 4);
 
     CullPushConstants pushConstants;
@@ -174,9 +183,11 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
     pushConstants.inTransformBuf = m_transformBuffer->getAddress();
     pushConstants.inSurfaceBuf = m_surfaceBuffer->getAddress();
     pushConstants.outOpaqueObjBuf = objectDataBuffer.getAddress();
-    pushConstants.outTransparentObjBuf = objectDataBuffer.getAddress() + opaqueObjSize;
+    pushConstants.outCutoutObjBuf = objectDataBuffer.getAddress() + opaqueObjSize;
+    pushConstants.outTransparentObjBuf = objectDataBuffer.getAddress() + opaqueObjSize + cutoutObjSize;
     pushConstants.outOpaqueDrawBuf = drawsBuffer.getAddress();
-    pushConstants.outTransparentDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize;
+    pushConstants.outCutoutDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize;
+    pushConstants.outTransparentDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize + cutoutDrawSize;
 
     cmd.bindPipeline(cullpipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
@@ -237,13 +248,16 @@ void LoadedGLTF::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
 #endif
 }
 
-void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer)
+void SceneGraph::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer)
 {
     cmd.bindIndexBuffer(*m_indexBuffer);
 
 #if DRAW_INDIRECT
-    size_t opaqueDrawSize = m_drawContext.OpaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
-    size_t opaqueObjSize = m_drawContext.OpaqueSurfaces.size() * sizeof(ObjectData);
+    size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t opaqueObjSize = m_drawContext.opaqueSurfaces.size() * sizeof(ObjectData);
+
+    size_t cutoutDrawSize = m_drawContext.cutoutSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t cutoutObjSize = m_drawContext.cutoutSurfaces.size() * sizeof(ObjectData);
 
     auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize drawOffset, uint32_t drawCount, VkDeviceSize countOffset, VkDeviceAddress objectDataAddress) {
         // bind mesh pipeline
@@ -262,11 +276,14 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         cmd.drawIndirectCount(drawsBuffer, drawOffset, drawCount, sizeof(VkDrawIndexedIndirectCommand), drawsBuffer, countOffset);
         };
 
-    if (!m_drawContext.OpaqueSurfaces.empty())
-        drawIndirect(m_drawContext.OpaqueSurfaces[0], sizeof(uint32_t), m_drawContext.OpaqueSurfaces.size(), 0, objectDataBuffer.getAddress());
+    if (!m_drawContext.opaqueSurfaces.empty())
+        drawIndirect(m_drawContext.opaqueSurfaces[0], sizeof(uint32_t), m_drawContext.opaqueSurfaces.size(), 0, objectDataBuffer.getAddress());
 
-    if (!m_drawContext.TransparentSurfaces.empty())
-        drawIndirect(m_drawContext.TransparentSurfaces[0], sizeof(uint32_t) + opaqueDrawSize, m_drawContext.TransparentSurfaces.size(), opaqueDrawSize, objectDataBuffer.getAddress() + opaqueObjSize);
+    if (!m_drawContext.cutoutSurfaces.empty())
+        drawIndirect(m_drawContext.cutoutSurfaces[0], sizeof(uint32_t) + opaqueDrawSize, m_drawContext.cutoutSurfaces.size(), opaqueDrawSize, objectDataBuffer.getAddress() + opaqueObjSize);
+
+    if (!m_drawContext.transparentSurfaces.empty())
+        drawIndirect(m_drawContext.transparentSurfaces[0], sizeof(uint32_t) + opaqueDrawSize + cutoutDrawSize, m_drawContext.transparentSurfaces.size(), opaqueDrawSize + cutoutDrawSize, objectDataBuffer.getAddress() + opaqueObjSize + cutoutObjSize);
 
 #else
     //defined outside of the draw function, this is the state we will try to skip
@@ -305,12 +322,12 @@ void LoadedGLTF::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
 
 }
 
-void LoadedGLTF::clearAll()
+void SceneGraph::clearAll()
 {
-    descriptorPool.destroy_pools(VulkanEngine::getDevice()->getHandle());
+    m_descriptorPool.destroy_pools(VulkanEngine::getDevice()->getHandle());
     m_materialDataBuffer.reset();
 
-    metalRoughMaterial.clear_resources();
+    m_metalRoughMaterial.clear_resources();
     vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_textureLayout, nullptr);
 
     meshes.clear();
@@ -320,65 +337,4 @@ void LoadedGLTF::clearAll()
 
     topNodes.clear();
     samplers.clear();
-}
-
-void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout)
-{
-    VkPushConstantRange matrixRange{};
-    matrixRange.offset = 0;
-    matrixRange.size = sizeof(Mesh::GPUDrawPushConstants);
-    matrixRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::vector<VkPushConstantRange> pushConstants = { matrixRange };
-
-    DescriptorLayoutBuilder layoutBuilder;
-    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, textureLayout };
-
-    // build the stage-create-info for both vertex and fragment stages. This lets
-    // the pipeline know the shader modules per stage
-    PipelineBuilder builder;
-
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants);
-    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
-    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-
-    builder.setColourAttachmentFormat(VulkanEngine::get().m_drawImage->getFormat());
-    builder.setDepthFormat(VulkanEngine::get().m_depthImage->getFormat());
-    builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
-
-    opaquePipeline.reset(builder.buildPipeline());
-
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants); // TODO: creating duplicate layout to avoid validation warnings
-    builder.enableBlendingAlphablend();
-    builder.enableDepthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
-
-    transparentPipeline.reset(builder.buildPipeline());
-}
-
-void GLTFMetallic_Roughness::clear_resources()
-{
-    opaquePipeline.reset();
-    transparentPipeline.reset();
-}
-
-MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const MaterialResources& resources, uint32_t id)
-{
-    MaterialInstance matData;
-    matData.passType = pass;
-    if (pass == MaterialPass::Transparent) {
-        matData.pipeline = transparentPipeline.get();
-    }
-    else {
-        matData.pipeline = opaquePipeline.get();
-    }
-
-    matData.materialAddress = resources.dataBuffer->getAddress();
-    matData.matID = id;
-
-    return matData;
 }

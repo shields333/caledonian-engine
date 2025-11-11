@@ -4,6 +4,8 @@
 
 #include "Buffer.h"
 
+struct MaterialInstance;
+
 struct Vertex {
 	glm::vec3 position;
 	float uv_x;
@@ -18,10 +20,6 @@ public:
 	Mesh(std::string name);
 	Mesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
-	struct GLTFMaterial {
-		MaterialInstance data;
-	};
-
 	struct Bounds {
 		glm::vec3 origin;
 		float sphereRadius;
@@ -31,7 +29,7 @@ public:
 	struct GeoSurface {
 		VkDrawIndexedIndirectCommand indirectCommand;
 		Bounds bounds;
-		std::shared_ptr<GLTFMaterial> material;
+		std::shared_ptr<MaterialInstance> material;
 		uint32_t id;
 	};
 

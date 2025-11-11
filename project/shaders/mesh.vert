@@ -8,7 +8,7 @@
 layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec4 outColor;
 layout (location = 2) out vec2 outUV;
-layout (location = 3) out uint outColourID;
+layout (location = 3) out uint outMatID;
 
 //push constants block
 layout( push_constant ) uniform Constants
@@ -19,7 +19,7 @@ layout( push_constant ) uniform Constants
 } pushConstants;
 
 void main() 
-{
+{	
 	Vertex v = pushConstants.vertexBuffer.vertices[gl_VertexIndex];
 	ObjectData objectData = pushConstants.objectBuffer.data[gl_BaseInstance];
 
@@ -27,12 +27,10 @@ void main()
 
 	gl_Position =  sceneData.viewproj * objectData.modelMatrix * position;
 
-	GLTFMaterialData material = pushConstants.materialBuffer.materials[objectData.matID];
-
 	outNormal = (objectData.modelMatrix * vec4(v.normal, 0.f)).xyz;
-	outColor = v.color * material.colorFactors;	
+	outColor = v.color;	
 	outUV.x = v.uv_x;
 	outUV.y = v.uv_y;
 
-	outColourID = material.colourID;
+	outMatID = objectData.matID;
 }

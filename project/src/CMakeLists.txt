@@ -11,8 +11,8 @@ add_executable (engine
   vk_pipelines.cpp
   vk_engine.h
   vk_engine.cpp
-  vk_loader.h
-  vk_loader.cpp
+  SceneGraph.h
+  SceneGraph.cpp
   camera.cpp
   camera.h
   Device.cpp
@@ -41,6 +41,7 @@ add_executable (engine
   GuiManager.h
   GLTFLoader.cpp
   GLTFLoader.h
+  Materials.h
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

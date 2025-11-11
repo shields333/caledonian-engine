@@ -385,7 +385,7 @@ void VulkanEngine::initDefaultData()
 
     for (auto& frame : m_frames) {
         frame.m_objectDataBuffer = std::make_unique<Buffer>(sizeof(ObjectData) * m_activeScene->m_objectCount, VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
-        frame.m_drawsBuffer = std::make_unique<Buffer>(sizeof(VkDrawIndexedIndirectCommand) * m_activeScene->m_objectCount + 8, VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
+        frame.m_drawsBuffer = std::make_unique<Buffer>(sizeof(VkDrawIndexedIndirectCommand) * m_activeScene->m_objectCount + 12, VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
     }
     m_mainCamera.velocity = glm::vec3(0.f);
     m_mainCamera.position = glm::vec3(0, 0, 5);
@@ -412,7 +412,7 @@ void VulkanEngine::loadMeshes()
 void VulkanEngine::createTextures()
 {
     //3 default textures, white, grey, black. 1 pixel each
-    uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
+    uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 0));
     m_whiteImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&white);
 

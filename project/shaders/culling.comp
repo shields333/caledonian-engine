@@ -23,7 +23,7 @@ struct SurfaceData{
     vec3 extents;
     uint firstIndex;
     uint matID;
-    uint isTransparent;
+    uint alphaMode;
 };
 layout(buffer_reference, std430) readonly buffer SurfaceBuffer{
 	SurfaceData data[];
@@ -50,8 +50,10 @@ layout( push_constant ) uniform Constants
     TransformBuffer inTransformBuf;
     SurfaceBuffer inSurfaceBuf;
     VisibleObjectBuffer outOpaqueObjBuf;
+    VisibleObjectBuffer outCutoutObjBuf;
     VisibleObjectBuffer outTransparentObjBuf;
     VisibleDrawBuffer outOpaqueDrawBuf;
+    VisibleDrawBuffer outCutoutDrawBuf;
     VisibleDrawBuffer outTransparentDrawBuf;
 } pushConstants;
 
@@ -105,7 +107,7 @@ void main()
     mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
 
     if(frustumCull(surface, modelMatrix)){    
-        if (surface.isTransparent == 0){
+        if (surface.alphaMode == 0){
             uint count = atomicAdd(pushConstants.outOpaqueDrawBuf.count, 1);
 
             VkDrawIndexedIndirectCommand drawCmd;
@@ -121,7 +123,25 @@ void main()
             
             pushConstants.outOpaqueObjBuf.data[count] = objData;
             pushConstants.outOpaqueDrawBuf.data[count] = drawCmd;
-        } else {
+        } 
+        else if (surface.alphaMode == 2) {
+            uint count = atomicAdd(pushConstants.outCutoutDrawBuf.count, 1);
+
+            VkDrawIndexedIndirectCommand drawCmd;
+            drawCmd.indexCount = surface.indexCount;
+            drawCmd.firstIndex = surface.firstIndex;
+            drawCmd.firstInstance = count;
+            drawCmd.instanceCount = 1;
+            drawCmd.vertexOffset = 0;
+
+            ObjectData objData;
+            objData.modelMatrix = modelMatrix;
+            objData.matID = surface.matID;
+            
+            pushConstants.outCutoutObjBuf.data[count] = objData;
+            pushConstants.outCutoutDrawBuf.data[count] = drawCmd;
+        } 
+        else {
             uint count = atomicAdd(pushConstants.outTransparentDrawBuf.count, 1);
 
             VkDrawIndexedIndirectCommand drawCmd;

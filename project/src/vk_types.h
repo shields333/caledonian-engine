@@ -20,8 +20,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 
-class GraphicsPipeline;
-
 #define VK_CHECK(x)                                                     \
     do {                                                                \
         VkResult err = x;                                               \
@@ -30,18 +28,4 @@ class GraphicsPipeline;
             abort();                                                    \
         }                                                               \
     } while (0)
-
-enum class MaterialPass :uint8_t {
-    Opaque,
-    Transparent,
-    Other
-};
-
-
-struct MaterialInstance {
-    GraphicsPipeline* pipeline;
-    VkDeviceAddress materialAddress;
-    MaterialPass passType;
-    uint32_t matID;
-};
 

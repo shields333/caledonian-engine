@@ -5,7 +5,7 @@
 
 #include <vk_types.h>
 #include <vk_descriptors.h>
-#include <vk_loader.h>
+#include <SceneGraph.h>
 
 #include "Device.h"
 #include "Swapchain.h"
@@ -58,8 +58,10 @@ struct CullPushConstants {
 	VkDeviceAddress inTransformBuf;
 	VkDeviceAddress inSurfaceBuf;
 	VkDeviceAddress outOpaqueObjBuf;
+	VkDeviceAddress outCutoutObjBuf;
 	VkDeviceAddress outTransparentObjBuf;
 	VkDeviceAddress outOpaqueDrawBuf;
+	VkDeviceAddress outCutoutDrawBuf;
 	VkDeviceAddress outTransparentDrawBuf;
 };
 
@@ -95,8 +97,8 @@ public:
 	std::unique_ptr<ComputePipeline> m_skyPipeline;
 	ComputeEffect m_sky;
 
-	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
-	std::shared_ptr<LoadedGLTF> m_activeScene;
+	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
+	std::shared_ptr<SceneGraph> m_activeScene;
 
 	uint32_t m_frameCount = 3;
 

@@ -30,6 +30,7 @@ struct GLTFMaterialData{
 	vec4 colorFactors;
 	vec2 metal_rough_factors;
 	uint colourID;
+	float alphaCutoff;
 };
 
 layout(buffer_reference, std430) readonly buffer MaterialBuffer{ 

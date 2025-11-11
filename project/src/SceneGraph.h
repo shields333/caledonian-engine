@@ -9,6 +9,7 @@
 #include "Buffer.h"
 #include "Sampler.h"
 #include "vk_descriptors.h"
+#include "Materials.h"
 
 #define DRAW_INDIRECT 1
 
@@ -20,32 +21,7 @@
 class VulkanEngine;
 class CommandBuffer;
 class ComputePipeline;
-
-struct GLTFMetallic_Roughness {
-    std::unique_ptr<GraphicsPipeline> opaquePipeline;
-    std::unique_ptr<GraphicsPipeline> transparentPipeline;
-
-    struct alignas (16) MaterialConstants {
-        glm::vec4 colorFactors;
-        glm::vec2 metal_rough_factors;
-        uint32_t colourID;
-    };
-
-    struct MaterialResources {
-        size_t colourID;
-        Sampler* colorSampler;
-        size_t metalRoughnessID;
-        Sampler* metalRoughSampler;
-        Buffer* dataBuffer;
-    };
-
-    DescriptorWriter writer;
-
-    void build_pipelines(VkDescriptorSetLayout textureLayout);
-    void clear_resources();
-
-    MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, uint32_t id);
-};
+class GraphicsPipeline;
 
 struct RenderObject {
     VkDrawIndexedIndirectCommand drawCmd;
@@ -57,8 +33,9 @@ struct RenderObject {
 };
 
 struct DrawContext {
-    std::vector<RenderObject> OpaqueSurfaces;
-    std::vector<RenderObject> TransparentSurfaces;
+    std::vector<RenderObject> opaqueSurfaces;
+    std::vector<RenderObject> cutoutSurfaces;
+    std::vector<RenderObject> transparentSurfaces;
 };
 
 struct ObjectData {
@@ -77,7 +54,7 @@ struct SurfaceData {
     alignas (16) glm::vec3 extents;
     glm::uint firstIndex;
     glm::uint matID;
-    glm::uint isTransparent;
+    glm::uint alphaMode;
 };
 
 // base class for a renderable dynamic object
@@ -121,13 +98,13 @@ struct MeshNode : public Node {
     virtual void Draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
 };
 
-struct LoadedGLTF {
+struct SceneGraph {
 
     // storage for all the data on a given glTF file
     std::unordered_map<std::string, std::shared_ptr<Mesh>> meshes;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
     std::vector<std::shared_ptr<Image>> images;
-    std::unordered_map<std::string, std::shared_ptr<Mesh::GLTFMaterial>> materials;
+    std::unordered_map<std::string, std::shared_ptr<MaterialInstance>> materials;
 
     std::shared_ptr<Buffer> m_indexBuffer;
     std::shared_ptr<Buffer> m_vertexBuffer;
@@ -144,16 +121,16 @@ struct LoadedGLTF {
     VkDescriptorSetLayout m_textureLayout;
     VkDescriptorSet		  m_textureSet;
 
-    GLTFMetallic_Roughness metalRoughMaterial;
+    GLTFMetallic_Roughness m_metalRoughMaterial;
 
-    DescriptorAllocatorGrowable descriptorPool;
+    DescriptorAllocatorGrowable m_descriptorPool;
 
     std::unique_ptr<Buffer> m_instanceBuffer;
     std::unique_ptr<Buffer> m_transformBuffer;
     std::unique_ptr<Buffer> m_surfaceBuffer;
     std::unique_ptr<Buffer> m_materialDataBuffer;
 
-    ~LoadedGLTF() { clearAll(); };
+    ~SceneGraph() { clearAll(); };
 
     void createPipelines();
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);

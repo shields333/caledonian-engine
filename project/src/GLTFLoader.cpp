@@ -132,12 +132,12 @@ std::optional<std::shared_ptr<Image>> load_image(fastgltf::Asset& asset, fastglt
     }
 }
 
-std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
+std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 {
     fmt::print("Loading GLTF: {}", filePath);
 
-    std::shared_ptr<LoadedGLTF> scene = std::make_shared<LoadedGLTF>();
-    LoadedGLTF& file = *scene.get();
+    std::shared_ptr<SceneGraph> scene = std::make_shared<SceneGraph>();
+    SceneGraph& file = *scene.get();
 
     fastgltf::Parser parser(fastgltf::Extensions::KHR_lights_punctual);
 
@@ -181,7 +181,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 } };
 
-    file.descriptorPool.init(VulkanEngine::getDevice()->getHandle(), gltf.materials.size(), sizes);
+    file.m_descriptorPool.init(VulkanEngine::getDevice()->getHandle(), gltf.materials.size(), sizes);
 
     scene->createPipelines();
 
@@ -203,7 +203,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
     // temporal arrays for all the objects to use while creating the GLTF data
     std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<std::shared_ptr<Node>> nodes;
-    std::vector<std::shared_ptr<Mesh::GLTFMaterial>> materials;
+    std::vector<std::shared_ptr<MaterialInstance>> materials;
 
     file.images.resize(gltf.images.size() + 1);
     file.images.front() = VulkanEngine::get().m_whiteImage;
@@ -240,16 +240,21 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
     GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.m_materialDataBuffer->getInfo().pMappedData;
+    GLTFMetallic_Roughness::MaterialConstants constants = {};
 
     // load all materials
     for (fastgltf::Material& mat : gltf.materials) {
-        std::shared_ptr<Mesh::GLTFMaterial> newMat = std::make_shared<Mesh::GLTFMaterial>();
+        std::shared_ptr<MaterialInstance> newMat = std::make_shared<MaterialInstance>();
         materials.push_back(newMat);
         file.materials[mat.name.c_str()] = newMat;
 
         MaterialPass passType = MaterialPass::Opaque;
         if (mat.alphaMode == fastgltf::AlphaMode::Blend) {
             passType = MaterialPass::Transparent;
+        }
+        else if (mat.alphaMode == fastgltf::AlphaMode::Mask) {
+            passType = MaterialPass::cutout;
+            constants.alphaCutout = mat.alphaCutoff;
         }
 
         GLTFMetallic_Roughness::MaterialResources materialResources;
@@ -270,7 +275,6 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
                 materialResources.colorSampler = &file.samplers[gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.value()];
         }
 
-        GLTFMetallic_Roughness::MaterialConstants constants;
         constants.colorFactors.x = mat.pbrData.baseColorFactor[0];
         constants.colorFactors.y = mat.pbrData.baseColorFactor[1];
         constants.colorFactors.z = mat.pbrData.baseColorFactor[2];
@@ -284,7 +288,7 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
         sceneMaterialConstants[data_index] = constants;
 
         // build material
-        newMat->data = file.metalRoughMaterial.write_material(passType, materialResources, data_index++);
+        *newMat = file.m_metalRoughMaterial.write_material(passType, materialResources, data_index++);
     }
 
     // use the same vectors for all meshes so that the memory doesnt reallocate as
@@ -409,8 +413,8 @@ std::optional<std::shared_ptr<LoadedGLTF>> loadGltf(std::string_view filePath)
             surfaceDatum.firstIndex = newSurface.indirectCommand.firstIndex;
             surfaceDatum.extents = newSurface.bounds.extents;
             surfaceDatum.origin = newSurface.bounds.origin;
-            surfaceDatum.matID = newSurface.material->data.matID;
-            surfaceDatum.isTransparent = newSurface.material->data.passType == MaterialPass::Transparent;
+            surfaceDatum.matID = newSurface.material->matID;
+            surfaceDatum.alphaMode = (uint32_t)newSurface.material->passType;
             surfaceData.push_back(surfaceDatum);
 
             newSurface.id = surfaceData.size() - 1;
