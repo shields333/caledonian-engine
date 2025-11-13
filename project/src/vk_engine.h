@@ -162,6 +162,7 @@ public:
 	static VulkanEngine& get();
 	static const Device* getDevice();
 	static const VkInstance& getInstance();
+	static float getTimeDelta() { return m_tDelta.count(); }
 
 	VulkanEngine(VulkanEngine& other) = delete;
 	VulkanEngine& operator=(const VulkanEngine& other) = delete;
@@ -191,6 +192,9 @@ private:
 
 	std::unique_ptr<CommandPool> m_cmdPool;
 
+	std::chrono::steady_clock::time_point m_lastTimePoint;
+	static std::chrono::duration<float> m_tDelta;
+
 	struct DeletionQueue
 	{
 		std::deque<std::function<void()>> deletors;
@@ -219,8 +223,6 @@ private:
 	void init_descriptors();
 	void init_pipelines();
 	void init_background_pipelines();
-
-	void initMeshPipeline();
 
 	void initDefaultData();
 	void loadMeshes();

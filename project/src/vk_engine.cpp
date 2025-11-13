@@ -19,6 +19,7 @@
 #include <mutex>
 
 VulkanEngine* VulkanEngine::sm_loadedEngine = nullptr;
+std::chrono::duration<float> VulkanEngine::m_tDelta;
 
 VulkanEngine& VulkanEngine::get()
 { 
@@ -412,7 +413,7 @@ void VulkanEngine::loadMeshes()
 void VulkanEngine::createTextures()
 {
     //3 default textures, white, grey, black. 1 pixel each
-    uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 0));
+    uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
     m_whiteImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&white);
 
@@ -463,6 +464,8 @@ void VulkanEngine::createTextures()
 
 void VulkanEngine::update_scene()
 {
+    m_tDelta = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - m_lastTimePoint);
+
     //begin clock
     auto start = std::chrono::system_clock::now();
 
@@ -488,6 +491,7 @@ void VulkanEngine::update_scene()
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     m_stats.scene_update_time = elapsed.count() / 1000.f;
 
+    m_lastTimePoint = std::chrono::steady_clock::now();
 }
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)

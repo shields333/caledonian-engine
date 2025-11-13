@@ -27,7 +27,7 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer{
 };
 
 struct GLTFMaterialData{   
-	vec4 colorFactors;
+	vec4 colourFactors;
 	vec2 metal_rough_factors;
 	uint colourID;
 	float alphaCutoff;

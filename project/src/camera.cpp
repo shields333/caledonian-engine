@@ -4,19 +4,21 @@
 
 #include "vk_engine.h"
 
+const int g_cameraSpeed = 5;
+
 void Camera::update()
 {
     glm::mat4 cameraRotation = getRotationMatrix();
-    position += glm::vec3(cameraRotation * glm::vec4(velocity * 0.5f, 0.f));
+    position += glm::vec3(cameraRotation * glm::vec4(velocity * VulkanEngine::getTimeDelta(), 0.f));
 }
 
 void Camera::processSDLEvent(SDL_Event& e)
 {
     if (e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_w) { velocity.z = -1; }
-        if (e.key.keysym.sym == SDLK_s) { velocity.z = 1; }
-        if (e.key.keysym.sym == SDLK_a) { velocity.x = -1; }
-        if (e.key.keysym.sym == SDLK_d) { velocity.x = 1; }
+        if (e.key.keysym.sym == SDLK_w) { velocity.z = -g_cameraSpeed; }
+        if (e.key.keysym.sym == SDLK_s) { velocity.z = g_cameraSpeed; }
+        if (e.key.keysym.sym == SDLK_a) { velocity.x = -g_cameraSpeed; }
+        if (e.key.keysym.sym == SDLK_d) { velocity.x = g_cameraSpeed; }
     }
 
     if (e.type == SDL_KEYUP) {
