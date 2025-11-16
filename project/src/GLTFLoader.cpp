@@ -411,8 +411,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             SurfaceData surfaceDatum;
             surfaceDatum.indexCount = newSurface.indirectCommand.indexCount;
             surfaceDatum.firstIndex = newSurface.indirectCommand.firstIndex;
-            surfaceDatum.extents = newSurface.bounds.extents;
             surfaceDatum.origin = newSurface.bounds.origin;
+            surfaceDatum.radius = newSurface.bounds.sphereRadius;
             surfaceDatum.matID = newSurface.material->matID;
             surfaceDatum.alphaMode = (uint32_t)newSurface.material->passType;
             surfaceData.push_back(surfaceDatum);
@@ -497,6 +497,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             instDatum.transformID = transformData.size() - 1;
 
             for (auto& surface : meshNode->mesh->getSurfaces()) {
+                surface.bounds.origin = glm::mat3x4(meshNode->worldTransform) * surface.bounds.origin;
+
                 instDatum.surfaceID = surface.id;
 
                 instData.push_back(instDatum);

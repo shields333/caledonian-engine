@@ -12,6 +12,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 
+#ifndef GPU_CULLING
 bool is_visible(const RenderObject& obj, const glm::mat4& viewproj) {
     std::array<glm::vec3, 8> corners{
         glm::vec3 { 1, 1, 1 },
@@ -50,6 +51,7 @@ bool is_visible(const RenderObject& obj, const glm::mat4& viewproj) {
         return true;
     }
 }
+#endif
 
 void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 {
@@ -154,7 +156,7 @@ void SceneGraph::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void SceneGraph::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
+void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
 {
     // TODO: simplify this. Adding new materials is too laborious atm.
     size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
@@ -177,7 +179,7 @@ void SceneGraph::cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataB
     memset(transparentDrawPtr, 0, 4);
 
     CullPushConstants pushConstants;
-    pushConstants.viewproj = frustum;
+    pushConstants.frustums = VulkanEngine::get().m_mainCamera.m_frustumPlanes;
     pushConstants.objCount = m_objectCount;
     pushConstants.inInstanceBuf = m_instanceBuffer->getAddress();
     pushConstants.inTransformBuf = m_transformBuffer->getAddress();

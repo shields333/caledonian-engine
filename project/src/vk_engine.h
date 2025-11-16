@@ -52,7 +52,7 @@ struct ComputePushConstants {
 };
 
 struct CullPushConstants {
-	glm::mat4		viewproj;
+	std::array<Camera::FrustumPlane, 6> frustums;
 	uint32_t		objCount;
 	VkDeviceAddress inInstanceBuf;
 	VkDeviceAddress inTransformBuf;
@@ -109,7 +109,7 @@ public:
 	std::vector<FrameData> m_frames;
 
 	bool m_stopUpdate = false;
-	glm::mat4 m_cullFrustum;
+	glm::vec4 m_frustumPlanes[6];
 
 	GPUSceneData m_sceneData;
 	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
@@ -167,7 +167,7 @@ public:
 	VulkanEngine(VulkanEngine& other) = delete;
 	VulkanEngine& operator=(const VulkanEngine& other) = delete;
 
-	VulkanEngine(VulkanEngine&& other) noexcept { *this = std::move(other); }
+	VulkanEngine(VulkanEngine&& other) noexcept = default;
 	VulkanEngine& operator=(VulkanEngine&& other) noexcept = default;
 
 	void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);

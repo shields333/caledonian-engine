@@ -8,8 +8,57 @@ const int g_cameraSpeed = 5;
 
 void Camera::update()
 {
+    auto& engine = VulkanEngine::get();
+
     glm::mat4 cameraRotation = getRotationMatrix();
     position += glm::vec3(cameraRotation * glm::vec4(velocity * VulkanEngine::getTimeDelta(), 0.f));
+    aspect = (float)engine.m_windowExtent.width / (float)engine.m_windowExtent.height;
+
+    m_view = getViewMatrix();
+    m_proj = getProjectionMatrix();
+    m_viewProj = m_proj * m_view;
+
+    // near
+    m_frustumPlanes[0].vec.x = m_viewProj[0].w + m_viewProj[0].z;
+    m_frustumPlanes[0].vec.y = m_viewProj[1].w + m_viewProj[1].z;
+    m_frustumPlanes[0].vec.z = m_viewProj[2].w + m_viewProj[2].z;
+    m_frustumPlanes[0].vec.w = m_viewProj[3].w + m_viewProj[3].z;
+    m_frustumPlanes[0].vec /= glm::length(m_frustumPlanes[0].struc.norm);
+
+    // far
+    m_frustumPlanes[1].vec.x = m_viewProj[0].w - m_viewProj[0].z;
+    m_frustumPlanes[1].vec.y = m_viewProj[1].w - m_viewProj[1].z;
+    m_frustumPlanes[1].vec.z = m_viewProj[2].w - m_viewProj[2].z;
+    m_frustumPlanes[1].vec.w = m_viewProj[3].w - m_viewProj[3].z;
+    m_frustumPlanes[1].vec /= glm::length(m_frustumPlanes[1].struc.norm);
+
+    // bottom
+    m_frustumPlanes[2].vec.x = m_viewProj[0].w + m_viewProj[0].y;
+    m_frustumPlanes[2].vec.y = m_viewProj[1].w + m_viewProj[1].y;
+    m_frustumPlanes[2].vec.z = m_viewProj[2].w + m_viewProj[2].y;
+    m_frustumPlanes[2].vec.w = m_viewProj[3].w + m_viewProj[3].y;
+    m_frustumPlanes[2].vec /= glm::length(m_frustumPlanes[2].struc.norm);
+
+    // top
+    m_frustumPlanes[3].vec.x = m_viewProj[0].w - m_viewProj[0].y;
+    m_frustumPlanes[3].vec.y = m_viewProj[1].w - m_viewProj[1].y;
+    m_frustumPlanes[3].vec.z = m_viewProj[2].w - m_viewProj[2].y;
+    m_frustumPlanes[3].vec.w = m_viewProj[3].w - m_viewProj[3].y;
+    m_frustumPlanes[3].vec /= glm::length(m_frustumPlanes[3].struc.norm);
+
+    // left
+    m_frustumPlanes[4].vec.x = m_viewProj[0].w + m_viewProj[0].x;
+    m_frustumPlanes[4].vec.y = m_viewProj[1].w + m_viewProj[1].x;
+    m_frustumPlanes[4].vec.z = m_viewProj[2].w + m_viewProj[2].x;
+    m_frustumPlanes[4].vec.w = m_viewProj[3].w + m_viewProj[3].x;
+    m_frustumPlanes[4].vec /= glm::length(m_frustumPlanes[4].struc.norm);
+
+    // right
+    m_frustumPlanes[5].vec.x = m_viewProj[0].w - m_viewProj[0].x;
+    m_frustumPlanes[5].vec.y = m_viewProj[1].w - m_viewProj[1].x;
+    m_frustumPlanes[5].vec.z = m_viewProj[2].w - m_viewProj[2].x;
+    m_frustumPlanes[5].vec.w = m_viewProj[3].w - m_viewProj[3].x;
+    m_frustumPlanes[5].vec /= glm::length(m_frustumPlanes[5].struc.norm);
 }
 
 void Camera::processSDLEvent(SDL_Event& e)
@@ -46,9 +95,8 @@ glm::mat4 Camera::getViewMatrix()
 
 glm::mat4 Camera::getProjectionMatrix()
 {
-    auto& engine = VulkanEngine::get();
     // camera projection
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)engine.m_windowExtent.width / (float)engine.m_windowExtent.height, 10000.f, 0.1f);
+    glm::mat4 projection = glm::perspective(glm::radians(fov), aspect, zFar, zNear);
 
     // invert the Y direction on projection matrix so that we are more similar
     // to opengl and gltf axis

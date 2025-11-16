@@ -369,10 +369,6 @@ void VulkanEngine::init_background_pipelines()
         });
 }
 
-//void VulkanEngine::initMeshPipeline()
-//{
-//}
-
 void VulkanEngine::initDefaultData()
 {
     createTextures();
@@ -475,15 +471,12 @@ void VulkanEngine::update_scene()
 
     m_sceneData.view = m_mainCamera.getViewMatrix();
     m_sceneData.proj = m_mainCamera.getProjectionMatrix();
-    m_sceneData.viewproj = m_sceneData.proj * m_sceneData.view;
+    m_sceneData.viewproj = m_mainCamera.m_viewProj;
 
     //some default lighting parameters
     m_sceneData.ambientColor = glm::vec4(.1f);
     m_sceneData.sunlightColor = glm::vec4(1.f);
     m_sceneData.sunlightDirection = glm::vec4(0, 1, 0.5, 1.f);
-
-    if (!m_stopUpdate)
-        m_cullFrustum = m_sceneData.viewproj;
 
     auto end = std::chrono::system_clock::now();
 
@@ -496,8 +489,9 @@ void VulkanEngine::update_scene()
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)
 {
-    //reset counters
-    m_stats.drawcall_count = 0;
+    if (!m_stopUpdate)
+        //reset counters
+        m_stats.drawcall_count = 0;
 
     //begin clock
     auto start = std::chrono::system_clock::now();
@@ -513,7 +507,8 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     writer.update_set(m_device->getHandle(), globalDescriptor);
 
-    m_activeScene->cull(cmd, m_cullFrustum, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get());
+    if (!m_stopUpdate)
+        m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get());
     
     //begin a render pass  connected to our draw image
     cmd.beginRendering(m_depthImage.get(), m_drawImage.get());

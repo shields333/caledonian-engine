@@ -50,8 +50,8 @@ struct InstanceData {
 
 struct SurfaceData {
     alignas (16) glm::vec3 origin;
+    float radius;
     glm::uint indexCount;
-    alignas (16) glm::vec3 extents;
     glm::uint firstIndex;
     glm::uint matID;
     glm::uint alphaMode;
@@ -135,7 +135,7 @@ struct SceneGraph {
     void createPipelines();
     void createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices);
     void updateContext(const glm::mat4& topMatrix);
-    void cull(CommandBuffer& cmd, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline *cullpipeline);
+    void cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline *cullpipeline);
     void draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm::mat4 frustum, Buffer& objectDataBuffer, Buffer& drawsBuffer);
 
     DrawContext& getContext() { return m_drawContext; }
