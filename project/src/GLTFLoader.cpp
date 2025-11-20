@@ -235,6 +235,10 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 }
             });
     }
+
+    for (auto& t : textureThreads)
+        t.join();
+
     // create buffer to hold the material data
     file.m_materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
@@ -515,8 +519,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     memcpy(file.m_instanceBuffer->getInfo().pMappedData, instData.data(), sizeof(InstanceData) * instData.size());
 
-    for (auto& t : textureThreads)
-        t.join();
 
     file.createBuffers(indices, vertices);
 
