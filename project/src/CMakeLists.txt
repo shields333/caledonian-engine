@@ -42,6 +42,7 @@ add_executable (engine
   GLTFLoader.cpp
   GLTFLoader.h
   Materials.h
+  Materials.cpp
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)
