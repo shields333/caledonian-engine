@@ -57,12 +57,9 @@ struct CullPushConstants {
 	VkDeviceAddress inInstanceBuf;
 	VkDeviceAddress inTransformBuf;
 	VkDeviceAddress inSurfaceBuf;
-	VkDeviceAddress outOpaqueObjBuf;
-	VkDeviceAddress outCutoutObjBuf;
-	VkDeviceAddress outTransparentObjBuf;
-	VkDeviceAddress outOpaqueDrawBuf;
-	VkDeviceAddress outCutoutDrawBuf;
-	VkDeviceAddress outTransparentDrawBuf;
+	VkDeviceAddress outObjBuf;
+	VkDeviceAddress outDrawCountBuf;
+	VkDeviceAddress outDrawBuf;
 };
 
 struct ComputeEffect {

@@ -58,7 +58,7 @@ MaterialInstance GLTFMetallic_Roughness::write_material(MaterialPass pass, const
     if (pass == MaterialPass::Transparent) {
         matData.pipeline = transparentPipeline.get();
     }
-    else if (pass == MaterialPass::cutout){
+    else if (pass == MaterialPass::Cutout){
         matData.pipeline = cutoutPipeline.get();
     }
     else {

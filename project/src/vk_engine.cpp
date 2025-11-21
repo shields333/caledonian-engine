@@ -88,14 +88,12 @@ void VulkanEngine::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& fu
     cmdBuf->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     function(cmdBuf->getHandle());
     cmdBuf->end();
-    lock.unlock();
 
     Fence fence = std::move(VulkanEngine::get().m_graphicsQueue->submit(cmdBuf->getHandle()));
 
     // block until the submit has completed
     fence.wait(UINT32_MAX);
     
-    lock.lock();
     m_cmdPool->returnCommandBuffer(&cmdBuf);
     lock.unlock();
 
@@ -461,6 +459,7 @@ void VulkanEngine::createTextures()
 void VulkanEngine::update_scene()
 {
     m_tDelta = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - m_lastTimePoint);
+    m_lastTimePoint = std::chrono::steady_clock::now();
 
     //begin clock
     auto start = std::chrono::system_clock::now();
@@ -484,7 +483,6 @@ void VulkanEngine::update_scene()
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     m_stats.scene_update_time = elapsed.count() / 1000.f;
 
-    m_lastTimePoint = std::chrono::steady_clock::now();
 }
 
 void VulkanEngine::drawGeometry(CommandBuffer& cmd)

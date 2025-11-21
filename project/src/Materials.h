@@ -9,8 +9,8 @@ class Buffer;
 
 enum class MaterialPass :uint8_t {
     Opaque,
-    Transparent,
-    cutout
+    Cutout,
+    Transparent
 };
 
 struct MaterialInstance {

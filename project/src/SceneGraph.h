@@ -54,7 +54,7 @@ struct SurfaceData {
     glm::uint indexCount;
     glm::uint firstIndex;
     glm::uint matID;
-    glm::uint alphaMode;
+    glm::uint bufferOffset;
 };
 
 // base class for a renderable dynamic object

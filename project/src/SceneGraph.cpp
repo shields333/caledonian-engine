@@ -66,7 +66,7 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 
         if (s.material->passType == MaterialPass::Transparent)
             ctx.transparentSurfaces.push_back(def);
-        else if (s.material->passType == MaterialPass::cutout)
+        else if (s.material->passType == MaterialPass::Cutout)
             ctx.cutoutSurfaces.push_back(def);
         else
             ctx.opaqueSurfaces.push_back(def);
@@ -158,25 +158,16 @@ void SceneGraph::updateContext(const glm::mat4& topMatrix)
 
 void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
 {
-    // TODO: simplify this. Adding new materials is too laborious atm.
-    size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
-    size_t opaqueObjSize = m_drawContext.opaqueSurfaces.size() * sizeof(ObjectData);
-
-    size_t cutoutDrawSize = m_drawContext.cutoutSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
-    size_t cutoutObjSize = m_drawContext.cutoutSurfaces.size() * sizeof(ObjectData);
-
     uint32_t* opaqueDrawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
-    uint32_t* cutoutDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + opaqueDrawSize);
-    uint32_t* transparentDrawPtr = (uint32_t*)((char*)cutoutDrawPtr + cutoutDrawSize);
+    uint32_t* cutoutDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + sizeof(uint32_t));
+    uint32_t* transparentDrawPtr = (uint32_t*)((char*)cutoutDrawPtr + sizeof(uint32_t));
 
 #ifdef GPU_CULLING
     //add counters for draws
     VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + cutoutDrawPtr[0] + transparentDrawPtr[0];
 
     // reset draw counts to 0
-    memset(opaqueDrawPtr, 0, 4);
-    memset(cutoutDrawPtr, 0, 4);
-    memset(transparentDrawPtr, 0, 4);
+    memset(opaqueDrawPtr, 0, sizeof(uint32_t) * 3);
 
     CullPushConstants pushConstants;
     pushConstants.frustums = VulkanEngine::get().m_mainCamera.m_frustumPlanes;
@@ -184,12 +175,9 @@ void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& draw
     pushConstants.inInstanceBuf = m_instanceBuffer->getAddress();
     pushConstants.inTransformBuf = m_transformBuffer->getAddress();
     pushConstants.inSurfaceBuf = m_surfaceBuffer->getAddress();
-    pushConstants.outOpaqueObjBuf = objectDataBuffer.getAddress();
-    pushConstants.outCutoutObjBuf = objectDataBuffer.getAddress() + opaqueObjSize;
-    pushConstants.outTransparentObjBuf = objectDataBuffer.getAddress() + opaqueObjSize + cutoutObjSize;
-    pushConstants.outOpaqueDrawBuf = drawsBuffer.getAddress();
-    pushConstants.outCutoutDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize;
-    pushConstants.outTransparentDrawBuf = drawsBuffer.getAddress() + opaqueDrawSize + cutoutDrawSize;
+    pushConstants.outObjBuf = objectDataBuffer.getAddress();
+    pushConstants.outDrawCountBuf = drawsBuffer.getAddress();
+    pushConstants.outDrawBuf = drawsBuffer.getAddress() + sizeof(uint32_t)*3;
 
     cmd.bindPipeline(cullpipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
@@ -255,10 +243,10 @@ void SceneGraph::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
     cmd.bindIndexBuffer(*m_indexBuffer);
 
 #if DRAW_INDIRECT
-    size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t opaqueDrawSize = m_drawContext.opaqueSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand);
     size_t opaqueObjSize = m_drawContext.opaqueSurfaces.size() * sizeof(ObjectData);
 
-    size_t cutoutDrawSize = m_drawContext.cutoutSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand) + sizeof(uint32_t);
+    size_t cutoutDrawSize = m_drawContext.cutoutSurfaces.size() * sizeof(VkDrawIndexedIndirectCommand);
     size_t cutoutObjSize = m_drawContext.cutoutSurfaces.size() * sizeof(ObjectData);
 
     auto drawIndirect = [&](const RenderObject& draw, VkDeviceSize drawOffset, uint32_t drawCount, VkDeviceSize countOffset, VkDeviceAddress objectDataAddress) {
@@ -279,13 +267,13 @@ void SceneGraph::draw(CommandBuffer& cmd, VkDescriptorSet globalDescriptor, glm:
         };
 
     if (!m_drawContext.opaqueSurfaces.empty())
-        drawIndirect(m_drawContext.opaqueSurfaces[0], sizeof(uint32_t), m_drawContext.opaqueSurfaces.size(), 0, objectDataBuffer.getAddress());
+        drawIndirect(m_drawContext.opaqueSurfaces[0], sizeof(uint32_t)*3, m_drawContext.opaqueSurfaces.size(), 0, objectDataBuffer.getAddress());
 
     if (!m_drawContext.cutoutSurfaces.empty())
-        drawIndirect(m_drawContext.cutoutSurfaces[0], sizeof(uint32_t) + opaqueDrawSize, m_drawContext.cutoutSurfaces.size(), opaqueDrawSize, objectDataBuffer.getAddress() + opaqueObjSize);
+        drawIndirect(m_drawContext.cutoutSurfaces[0], sizeof(uint32_t)*3 + opaqueDrawSize, m_drawContext.cutoutSurfaces.size(), sizeof(uint32_t), objectDataBuffer.getAddress() + opaqueObjSize);
 
     if (!m_drawContext.transparentSurfaces.empty())
-        drawIndirect(m_drawContext.transparentSurfaces[0], sizeof(uint32_t) + opaqueDrawSize + cutoutDrawSize, m_drawContext.transparentSurfaces.size(), opaqueDrawSize + cutoutDrawSize, objectDataBuffer.getAddress() + opaqueObjSize + cutoutObjSize);
+        drawIndirect(m_drawContext.transparentSurfaces[0], sizeof(uint32_t)*3 + opaqueDrawSize + cutoutDrawSize, m_drawContext.transparentSurfaces.size(), sizeof(uint32_t)*2, objectDataBuffer.getAddress() + opaqueObjSize + cutoutObjSize);
 
 #else
     //defined outside of the draw function, this is the state we will try to skip

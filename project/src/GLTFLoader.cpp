@@ -257,7 +257,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             passType = MaterialPass::Transparent;
         }
         else if (mat.alphaMode == fastgltf::AlphaMode::Mask) {
-            passType = MaterialPass::cutout;
+            passType = MaterialPass::Cutout;
             constants.alphaCutout = mat.alphaCutoff;
         }
 
@@ -295,8 +295,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         *newMat = file.m_metalRoughMaterial.write_material(passType, materialResources, data_index++);
     }
 
-    // use the same vectors for all meshes so that the memory doesnt reallocate as
-    // often
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
     std::vector<SurfaceData> surfaceData;
@@ -304,6 +302,12 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     uint32_t indexCount = 0;
     uint32_t vertexCount = 0;
 
+    uint32_t surfacesCount = 0;
+    uint32_t opaqueCount = 0;
+    uint32_t cutoutCount = 0;
+    uint32_t transparentCount = 0;
+
+    // calculate required buffer sizes and offsets
     for (fastgltf::Mesh& mesh : gltf.meshes) {
         for (auto&& p : mesh.primitives) {
             fastgltf::Accessor& indexaccessor = gltf.accessors[p.indicesAccessor.value()];
@@ -311,10 +315,34 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             fastgltf::Accessor& posAccessor = gltf.accessors[p.findAttribute("POSITION")->second];
             vertexCount += posAccessor.count;
+
+            MaterialInstance* mat;
+            if (p.materialIndex.has_value()) {
+                mat = materials[p.materialIndex.value()].get();
+            }
+            else {
+                mat = materials[0].get();
+            }
+
+            switch (mat->passType) {
+            case MaterialPass::Opaque:
+                opaqueCount++;
+                break;
+            case MaterialPass::Cutout:
+                cutoutCount++;
+                break;
+            case MaterialPass::Transparent:
+                transparentCount++;
+                break;
+            default:
+                opaqueCount++;
+            }
+            surfacesCount++;
         }
     }
     indices.reserve(indexCount);
     vertices.reserve(vertexCount);
+    surfaceData.reserve(surfacesCount);
 
     for (fastgltf::Mesh& mesh : gltf.meshes) {
         std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
@@ -418,7 +446,23 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             surfaceDatum.origin = newSurface.bounds.origin;
             surfaceDatum.radius = newSurface.bounds.sphereRadius;
             surfaceDatum.matID = newSurface.material->matID;
-            surfaceDatum.alphaMode = (uint32_t)newSurface.material->passType;
+            surfaceDatum.bufferOffset = BitfieldInsert((uint32_t)newSurface.material->passType, 0, 10);
+            uint32_t valid;
+            switch (newSurface.material->passType) {
+            case MaterialPass::Opaque:
+                surfaceDatum.bufferOffset |= BitfieldInsert(0, 10, 22);
+                break;
+            case MaterialPass::Cutout:
+                surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount, 10, 22);
+                break;
+            case MaterialPass::Transparent:
+                surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount + cutoutCount, 10, 22);
+                break;
+            default:
+                surfaceDatum.bufferOffset = 0;
+            }
+
+
             surfaceData.push_back(surfaceDatum);
 
             newSurface.id = surfaceData.size() - 1;

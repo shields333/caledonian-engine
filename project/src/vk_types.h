@@ -29,3 +29,6 @@
         }                                                               \
     } while (0)
 
+inline uint32_t BitfieldExtract(uint32_t src, uint32_t off, uint32_t bits) { uint32_t mask = (1u << bits) - 1; return (src >> off) & mask; } // ABfe
+inline uint32_t BitfieldInsert(uint32_t src, uint32_t ins, uint32_t bits) { uint32_t mask = (1u << bits) - 1; return (src << ins) & (mask << ins); } // ABfiM
+

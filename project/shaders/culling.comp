@@ -23,7 +23,7 @@ struct SurfaceData{
     uint indexCount;
     uint firstIndex;
     uint matID;
-    uint alphaMode;
+    uint bufferOffset;
 };
 layout(buffer_reference, std430) readonly buffer SurfaceBuffer{
 	SurfaceData data[];
@@ -36,8 +36,11 @@ struct VkDrawIndexedIndirectCommand {
     int     vertexOffset;
     uint    firstInstance;
 };
+
+layout(buffer_reference, std430) buffer VisibleDrawCountBuffer{
+    uint counter[];
+};
 layout(buffer_reference, std430) buffer VisibleDrawBuffer{
-    uint count;
     VkDrawIndexedIndirectCommand data[];
 };
 
@@ -49,13 +52,13 @@ layout( push_constant ) uniform Constants
     InstanceBuffer inInstanceBuf;
     TransformBuffer inTransformBuf;
     SurfaceBuffer inSurfaceBuf;
-    VisibleObjectBuffer outOpaqueObjBuf;
-    VisibleObjectBuffer outCutoutObjBuf;
-    VisibleObjectBuffer outTransparentObjBuf;
-    VisibleDrawBuffer outOpaqueDrawBuf;
-    VisibleDrawBuffer outCutoutDrawBuf;
-    VisibleDrawBuffer outTransparentDrawBuf;
+    VisibleObjectBuffer outObjBuf;
+    VisibleDrawCountBuffer outDrawCountBuf;
+    VisibleDrawBuffer outDrawBuf;
 } pushConstants;
+
+uint BitfieldExtract(uint src, uint off, uint bits) { uint mask = (1u << bits) - 1; return (src >> off) & mask; } // ABfe
+uint BitfieldInsert(uint src, uint ins, uint bits) { uint mask = (1u << bits) - 1; return (src << ins) & (mask << ins); } // ABfiM
 
 bool frustumCull(SurfaceData surface) {
     for (int i = 0; i < 6; i++)
@@ -77,57 +80,24 @@ void main()
     if(frustumCull(surface)){    
         mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
 
-        if (surface.alphaMode == 0){
-            uint count = atomicAdd(pushConstants.outOpaqueDrawBuf.count, 1);
+        uint counterID = BitfieldExtract(surface.bufferOffset, 0, 10);
+        uint drawOffset = BitfieldExtract(surface.bufferOffset, 10, 22);
+        
+        uint count = atomicAdd(pushConstants.outDrawCountBuf.counter[counterID], 1);
 
-            VkDrawIndexedIndirectCommand drawCmd;
-            drawCmd.indexCount = surface.indexCount;
-            drawCmd.firstIndex = surface.firstIndex;
-            drawCmd.firstInstance = count;
-            drawCmd.instanceCount = 1;
-            drawCmd.vertexOffset = 0;
+        VkDrawIndexedIndirectCommand drawCmd;
+        drawCmd.indexCount = surface.indexCount;
+        drawCmd.firstIndex = surface.firstIndex;
+        drawCmd.firstInstance = count;
+        drawCmd.instanceCount = 1;
+        drawCmd.vertexOffset = 0;
 
-            ObjectData objData;
-            objData.modelMatrix = modelMatrix;
-            objData.matID = surface.matID;
-            
-            pushConstants.outOpaqueObjBuf.data[count] = objData;
-            pushConstants.outOpaqueDrawBuf.data[count] = drawCmd;
-        } 
-        else if (surface.alphaMode == 2) {
-            uint count = atomicAdd(pushConstants.outCutoutDrawBuf.count, 1);
-
-            VkDrawIndexedIndirectCommand drawCmd;
-            drawCmd.indexCount = surface.indexCount;
-            drawCmd.firstIndex = surface.firstIndex;
-            drawCmd.firstInstance = count;
-            drawCmd.instanceCount = 1;
-            drawCmd.vertexOffset = 0;
-
-            ObjectData objData;
-            objData.modelMatrix = modelMatrix;
-            objData.matID = surface.matID;
-            
-            pushConstants.outCutoutObjBuf.data[count] = objData;
-            pushConstants.outCutoutDrawBuf.data[count] = drawCmd;
-        } 
-        else {
-            uint count = atomicAdd(pushConstants.outTransparentDrawBuf.count, 1);
-
-            VkDrawIndexedIndirectCommand drawCmd;
-            drawCmd.indexCount = surface.indexCount;
-            drawCmd.firstIndex = surface.firstIndex;
-            drawCmd.firstInstance = count;
-            drawCmd.instanceCount = 1;
-            drawCmd.vertexOffset = 0;
-
-            ObjectData objData;
-            objData.modelMatrix = modelMatrix;
-            objData.matID = surface.matID;
-            
-            pushConstants.outTransparentObjBuf.data[count] = objData;
-            pushConstants.outTransparentDrawBuf.data[count] = drawCmd;
-        }
+        ObjectData objData;
+        objData.modelMatrix = modelMatrix;
+        objData.matID = surface.matID;
+        
+        pushConstants.outObjBuf.data[drawOffset + count] = objData;
+        pushConstants.outDrawBuf.data[drawOffset + count] = drawCmd;
     }
 }
 
