@@ -473,11 +473,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         newmesh->uploadSurfaceData(surfaces);
     }
 
-    // create buffer to hold the surface and cull data
-    file.m_surfaceBuffer = std::make_unique<Buffer>(sizeof(SurfaceData) * surfaceData.size(),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-    memcpy(file.m_surfaceBuffer->getInfo().pMappedData, surfaceData.data(), sizeof(SurfaceData) * surfaceData.size());
-
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {
         std::shared_ptr<Node> newNode;
@@ -545,7 +540,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             instDatum.transformID = transformData.size() - 1;
 
             for (auto& surface : meshNode->mesh->getSurfaces()) {
-                surface.bounds.origin = glm::mat3x4(meshNode->worldTransform) * surface.bounds.origin;
+                surfaceData[surface.id].origin = surface.bounds.origin = meshNode->worldTransform * glm::vec4(surface.bounds.origin, 1.0f);
 
                 instDatum.surfaceID = surface.id;
 
@@ -563,6 +558,10 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     memcpy(file.m_instanceBuffer->getInfo().pMappedData, instData.data(), sizeof(InstanceData) * instData.size());
 
+    // create buffer to hold the surface and cull data
+    file.m_surfaceBuffer = std::make_unique<Buffer>(sizeof(SurfaceData) * surfaceData.size(),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
+    memcpy(file.m_surfaceBuffer->getInfo().pMappedData, surfaceData.data(), sizeof(SurfaceData)* surfaceData.size());
 
     file.createBuffers(indices, vertices);
 
