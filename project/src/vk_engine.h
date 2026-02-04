@@ -86,13 +86,7 @@ public:
 
 	DescriptorAllocatorGrowable m_globalDescriptorAllocator;
 
-	VkDescriptorSet m_drawImageDescriptors;
-	VkDescriptorSetLayout m_drawImageDescriptorLayout;
-	VkDescriptorSetLayout m_singleImageDescriptorLayout;
-
 	std::unique_ptr<ComputePipeline> m_cullPipeline;
-	std::unique_ptr<ComputePipeline> m_skyPipeline;
-	ComputeEffect m_sky;
 
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
@@ -109,7 +103,6 @@ public:
 	glm::vec4 m_frustumPlanes[6];
 
 	GPUSceneData m_sceneData;
-	VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
 
 	VkExtent2D m_drawExtent;
 	float m_renderScale = 1.f;

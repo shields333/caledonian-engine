@@ -5,7 +5,7 @@
 class GraphicsPipeline
 {
 public:
-    GraphicsPipeline(VkGraphicsPipelineCreateInfo &info);
+    GraphicsPipeline(std::vector<std::string> shaderPaths, VkGraphicsPipelineCreateInfo &info);
     ~GraphicsPipeline();
 
     GraphicsPipeline(GraphicsPipeline&& other) noexcept;
@@ -13,11 +13,12 @@ public:
 
     VkPipeline getHandle() { return m_handle; }
     VkPipelineLayout getLayout() { return m_layout; }
-
+    VkDescriptorSetLayout getDescriptorLayout(int i) { return m_descriptorLayouts[i]; }
 private:
     VkPipeline m_handle = VK_NULL_HANDLE;
     // TODO: the layout should be a pointer to a map
     VkPipelineLayout m_layout = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSetLayout> m_descriptorLayouts;
 };
 
 class PipelineBuilder 
@@ -28,8 +29,6 @@ public:
     void setDefault();
 
     //void ConfigureInputState()
-    void    setShaders(std::string vertPath, std::string fragPath);
-    void    createPipelineLayout(std::vector<VkDescriptorSetLayout>* descriptorLayouts, std::vector<VkPushConstantRange>* pushConstants = nullptr);
     void    setTopology(VkPrimitiveTopology topology);
     void    setPolygonMode(VkPolygonMode mode);
     void    setCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace);
@@ -39,16 +38,13 @@ public:
     void    enableBlendingAdditive();
     void    enableBlendingAlphablend();
 
-    GraphicsPipeline* buildPipeline();
+    GraphicsPipeline* buildPipeline(std::vector<std::string> shaderPaths);
 
 private:
-    std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages;
-
     VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
     VkPipelineRasterizationStateCreateInfo m_rasterizer;
     VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
     VkPipelineMultisampleStateCreateInfo m_multisampling;
-    VkPipelineLayout m_pipelineLayout;
     VkPipelineDepthStencilStateCreateInfo m_depthStencil;
     VkPipelineRenderingCreateInfo m_renderInfo;
     VkFormat m_colorAttachmentformat;

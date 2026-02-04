@@ -124,7 +124,7 @@ VkPresentInfoKHR vkinit::present_info()
 
 //> color_info
 VkRenderingAttachmentInfo vkinit::attachment_info(
-    VkImageView view, VkClearValue* clear ,VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
+    VkImageView view, VkClearColorValue* clear ,VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
 {
     VkRenderingAttachmentInfo colorAttachment {};
     colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -135,7 +135,7 @@ VkRenderingAttachmentInfo vkinit::attachment_info(
     colorAttachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     if (clear) {
-        colorAttachment.clearValue = *clear;
+        colorAttachment.clearValue = static_cast<VkClearValue>(*clear);
     }
 
     return colorAttachment;

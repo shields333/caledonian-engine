@@ -284,7 +284,7 @@ void CommandBuffer::dispatch(uint32_t x, uint32_t y, uint32_t z)
     vkCmdDispatch(m_handle, x, y, z);
 }
 
-void CommandBuffer::beginRendering(const Image* depth, const Image* colour) const
+void CommandBuffer::beginRendering(const Image* depth, const Image* colour, VkClearColorValue* clearColour /*= nullptr*/) const
 {
 
     VkRenderingAttachmentInfo depthAttachment;
@@ -293,7 +293,7 @@ void CommandBuffer::beginRendering(const Image* depth, const Image* colour) cons
     if (depth)
         depthAttachment = vkinit::depth_attachment_info(depth->getViewHandle(), VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
     if (colour)
-        colorAttachment = vkinit::attachment_info(colour->getViewHandle(), nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachment = vkinit::attachment_info(colour->getViewHandle(), clearColour, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     VkRenderingInfo renderInfo = vkinit::rendering_info(colour->getExtent2D(), 
         colour ? &colorAttachment : nullptr,

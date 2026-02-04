@@ -244,10 +244,10 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
     GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.m_materialDataBuffer->getInfo().pMappedData;
-    GLTFMetallic_Roughness::MaterialConstants constants = {};
 
     // load all materials
     for (fastgltf::Material& mat : gltf.materials) {
+        GLTFMetallic_Roughness::MaterialConstants constants = {};
         std::shared_ptr<MaterialInstance> newMat = std::make_shared<MaterialInstance>();
         materials.push_back(newMat);
         file.materials[mat.name.c_str()] = newMat;

@@ -1,22 +1,50 @@
 #include "GraphicsPipeline.h"
 
 #include "vk_engine.h"
+#include <spirv_reflect.h>
 
 #include <vk_initializers.h>
 #include <vk_pipelines.h>
 
 
-GraphicsPipeline::GraphicsPipeline(VkGraphicsPipelineCreateInfo &info) :
-    m_layout(info.layout)
+GraphicsPipeline::GraphicsPipeline(std::vector<std::string> shaderPaths, VkGraphicsPipelineCreateInfo &info)
 {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStageInfo;
+    std::vector<SpvReflectShaderModule> reflModules;
+    shaderStageInfo.reserve(shaderPaths.size());
+    reflModules.reserve(shaderPaths.size());
+
+    //layout code
+    for (auto path : shaderPaths) {
+        shaderStageInfo.emplace_back();
+        SpvReflectShaderModule reflectModule;
+        if (!vkutil::load_shader_module(path.c_str(), VulkanEngine::getDevice()->getHandle(), shaderStageInfo.back(), &reflectModule))
+        {
+            fmt::print("Error when building the shader\n");
+        }
+        reflModules.push_back(reflectModule);
+
+    }
+
+    info.layout = m_layout = vkutil::createPiplineLayout(reflModules, m_descriptorLayouts);
+    info.stageCount = shaderStageInfo.size();
+    info.pStages = shaderStageInfo.data();
+
     VK_CHECK(vkCreateGraphicsPipelines(VulkanEngine::getDevice()->getHandle(), VK_NULL_HANDLE, 1, &info,
         nullptr, &m_handle));
+
+    for (int i = 0; i < shaderPaths.size(); i++) {
+        vkDestroyShaderModule(VulkanEngine::getDevice()->getHandle(), shaderStageInfo[i].module, nullptr);
+        spvReflectDestroyShaderModule(&reflModules[i]);
+    }
 }
 
 GraphicsPipeline::~GraphicsPipeline()
 {
     vkDestroyPipelineLayout(VulkanEngine::getDevice()->getHandle(), m_layout, nullptr);
     vkDestroyPipeline(VulkanEngine::getDevice()->getHandle(), m_handle, nullptr);
+    for (auto& descLayout : m_descriptorLayouts)
+        vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), descLayout, nullptr);
 }
 
 GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) noexcept
@@ -28,6 +56,7 @@ GraphicsPipeline& GraphicsPipeline::operator=(GraphicsPipeline&& other) noexcept
 {
     m_layout = std::exchange(other.m_layout, VK_NULL_HANDLE);
     m_handle = std::exchange(other.m_handle, VK_NULL_HANDLE);
+    m_descriptorLayouts.swap(other.m_descriptorLayouts);
     return *this;
 }
 
@@ -60,59 +89,9 @@ void PipelineBuilder::setDefault()
     m_multisampling.alphaToCoverageEnable = VK_FALSE;
     m_multisampling.alphaToOneEnable = VK_FALSE;
 
-    m_pipelineLayout = {};
-
     m_depthStencil = { .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
 
     m_renderInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
-
-    m_shaderStages.clear();
-}
-
-void PipelineBuilder::setShaders(std::string vertPath, std::string fragPath)
-{
-    //layout code
-    VkShaderModule vertexShader;
-    if (!vkutil::load_shader_module(vertPath.c_str(), VulkanEngine::getDevice()->getHandle(), &vertexShader))
-    {
-        fmt::print("Error when building the vertex shader \n");
-    }
-
-    VkShaderModule fragmentShader;
-    if (!vkutil::load_shader_module(fragPath.c_str(), VulkanEngine::getDevice()->getHandle(), &fragmentShader))
-    {
-        fmt::print("Error when building the fragment shader \n");
-    }
-
-    //TODO: clean up any remaining shaders
-    m_shaderStages.clear();
-
-    m_shaderStages.push_back(
-    vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertexShader));
-
-    m_shaderStages.push_back(
-    vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, fragmentShader));
-}
-
-void PipelineBuilder::createPipelineLayout(std::vector<VkDescriptorSetLayout>* descriptorLayouts, std::vector<VkPushConstantRange>* pushConstants)
-{
-    VkPipelineLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    layoutInfo.pNext = nullptr;
-
-    if (descriptorLayouts) {
-        layoutInfo.pSetLayouts = descriptorLayouts->data();
-        layoutInfo.setLayoutCount = descriptorLayouts->size();
-    }
-
-    // add push constants if supplied
-    if (pushConstants) {
-        layoutInfo.pPushConstantRanges = pushConstants->data();
-        layoutInfo.pushConstantRangeCount = pushConstants->size();
-    }
-
-    VK_CHECK(vkCreatePipelineLayout(VulkanEngine::getDevice()->getHandle(), &layoutInfo, nullptr, &m_pipelineLayout));
-
 }
 
 void PipelineBuilder::setTopology(VkPrimitiveTopology topology)
@@ -181,7 +160,7 @@ void PipelineBuilder::enableBlendingAlphablend()
     m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 }
 
-GraphicsPipeline* PipelineBuilder::buildPipeline()
+GraphicsPipeline* PipelineBuilder::buildPipeline(std::vector<std::string> shaderPaths)
 {
     // make viewport state from our stored viewport and scissor.
     // at the moment we wont support multiple viewports or scissors
@@ -212,8 +191,6 @@ GraphicsPipeline* PipelineBuilder::buildPipeline()
     // connect the renderInfo to the pNext extension mechanism
     pipelineInfo.pNext = &m_renderInfo;
 
-    pipelineInfo.stageCount = (uint32_t)m_shaderStages.size();
-    pipelineInfo.pStages = m_shaderStages.data();
     pipelineInfo.pVertexInputState = &_vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &m_inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
@@ -221,7 +198,6 @@ GraphicsPipeline* PipelineBuilder::buildPipeline()
     pipelineInfo.pMultisampleState = &m_multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDepthStencilState = &m_depthStencil;
-    pipelineInfo.layout = m_pipelineLayout;
 
     VkDynamicState state[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
@@ -231,13 +207,7 @@ GraphicsPipeline* PipelineBuilder::buildPipeline()
 
     pipelineInfo.pDynamicState = &dynamicInfo;
     
-    auto pipeline = new GraphicsPipeline(pipelineInfo);
-
-    //clean structures
-    for(auto& shader: m_shaderStages)
-        vkDestroyShaderModule(VulkanEngine::getDevice()->getHandle(), shader.module, nullptr);
-
-    m_shaderStages.clear();
+    auto pipeline = new GraphicsPipeline(shaderPaths, pipelineInfo);
 
     return pipeline;
 }

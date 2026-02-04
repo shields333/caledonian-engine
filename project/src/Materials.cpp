@@ -2,7 +2,7 @@
 
 #include "vk_engine.h"
 
-void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout)
+void GLTFMetallic_Roughness::build_pipelines()
 {
     VkPushConstantRange matrixRange{};
     matrixRange.offset = 0;
@@ -11,17 +11,11 @@ void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout
 
     std::vector<VkPushConstantRange> pushConstants = { matrixRange };
 
-    DescriptorLayoutBuilder layoutBuilder;
-    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    std::vector<VkDescriptorSetLayout> layouts = { VulkanEngine::get().m_gpuSceneDataDescriptorLayout, textureLayout };
-
     // build the stage-create-info for both vertex and fragment stages. This lets
     // the pipeline know the shader modules per stage
     PipelineBuilder builder;
 
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants);
+    std::vector<std::string> shaderPaths = { "../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv" };
     builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     builder.setPolygonMode(VK_POLYGON_MODE_FILL);
     builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
@@ -30,18 +24,16 @@ void GLTFMetallic_Roughness::build_pipelines(VkDescriptorSetLayout textureLayout
     builder.setDepthFormat(VulkanEngine::get().m_depthImage->getFormat());
     builder.enableDepthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
 
-    opaquePipeline.reset(builder.buildPipeline());
+    opaquePipeline.reset(builder.buildPipeline(shaderPaths));
 
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/litCutout.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants); // TODO: creating duplicate layout to avoid validation warnings
-    cutoutPipeline.reset(builder.buildPipeline());
+    shaderPaths = { "../project/shaders/mesh.vert.spv", "../project/shaders/litCutout.frag.spv" };
+    cutoutPipeline.reset(builder.buildPipeline(shaderPaths));
 
-    builder.setShaders("../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv");
-    builder.createPipelineLayout(&layouts, &pushConstants); // TODO: creating duplicate layout to avoid validation warnings
+    shaderPaths = { "../project/shaders/mesh.vert.spv", "../project/shaders/mesh.frag.spv" };
     builder.enableBlendingAlphablend();
     builder.enableDepthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
 
-    transparentPipeline.reset(builder.buildPipeline());
+    transparentPipeline.reset(builder.buildPipeline(shaderPaths));
 }
 
 void GLTFMetallic_Roughness::clear_resources()

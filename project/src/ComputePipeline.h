@@ -6,7 +6,7 @@ class ComputePipeline
 {
 public:
 	ComputePipeline() = default;
-	ComputePipeline(std::string sourcePath, std::vector<VkDescriptorSetLayout> *descriptorLayouts, std::vector<VkPushConstantRange> *pushConstants = nullptr);
+	ComputePipeline(std::string sourcePath);
 	~ComputePipeline();
 
 	ComputePipeline(const ComputePipeline& other) = delete;
@@ -22,4 +22,5 @@ private:
 	VkPipeline m_handle = VK_NULL_HANDLE;
 
 	VkPipelineLayout m_layout = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSetLayout> m_descriptorLayouts;
 };

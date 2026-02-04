@@ -78,13 +78,10 @@ void MeshNode::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
 
 void SceneGraph::createPipelines()
 {
-    // create texture array descriptor layout
-    DescriptorLayoutBuilder layoutBuilder;
-    layoutBuilder.clear();
-    layoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UINT16_MAX);
-    m_textureLayout = layoutBuilder.build(VulkanEngine::getDevice()->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
+    m_metalRoughMaterial.build_pipelines();
 
-    m_metalRoughMaterial.build_pipelines(m_textureLayout);
+    m_gpuSceneDataDescriptorLayout = m_metalRoughMaterial.opaquePipeline->getDescriptorLayout(0);
+    m_textureLayout = m_metalRoughMaterial.opaquePipeline->getDescriptorLayout(1);
 }
 
 void SceneGraph::createBuffers(std::span<uint32_t> indices, std::span<Vertex> vertices)
@@ -318,7 +315,6 @@ void SceneGraph::clearAll()
     m_materialDataBuffer.reset();
 
     m_metalRoughMaterial.clear_resources();
-    vkDestroyDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), m_textureLayout, nullptr);
 
     meshes.clear();
     nodes.clear();

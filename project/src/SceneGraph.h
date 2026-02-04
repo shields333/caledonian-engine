@@ -119,6 +119,8 @@ struct SceneGraph {
     uint32_t m_objectCount = 0;
 
     VkDescriptorSetLayout m_textureLayout;
+    VkDescriptorSetLayout m_gpuSceneDataDescriptorLayout;
+
     VkDescriptorSet		  m_textureSet;
 
     GLTFMetallic_Roughness m_metalRoughMaterial;

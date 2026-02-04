@@ -42,7 +42,7 @@ struct GLTFMetallic_Roughness {
 
     DescriptorWriter writer;
 
-    void build_pipelines(VkDescriptorSetLayout textureLayout);
+    void build_pipelines();
     void clear_resources();
 
     MaterialInstance write_material(MaterialPass pass, const MaterialResources& resources, uint32_t id);

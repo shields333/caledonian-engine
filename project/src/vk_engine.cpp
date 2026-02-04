@@ -283,21 +283,6 @@ void VulkanEngine::init_descriptors()
 
     m_globalDescriptorAllocator.init(m_device->getHandle(), 10, sizes);
 
-    //make the descriptor set layout for our compute draw
-    {
-        DescriptorLayoutBuilder builder;
-        builder.add_binding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-        m_drawImageDescriptorLayout = builder.build(m_device->getHandle(), VK_SHADER_STAGE_COMPUTE_BIT);
-    }
-
-    //allocate a descriptor set for our draw image
-    m_drawImageDescriptors = m_globalDescriptorAllocator.allocate(m_drawImageDescriptorLayout);
-
-    DescriptorWriter writer;
-    writer.write_image(0, m_drawImage->getViewHandle(), VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-
-    writer.update_set(m_device->getHandle(), m_drawImageDescriptors);
-
     for (int i = 0; i < m_frameCount; i++) {
         // create a descriptor pool
         std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> frame_sizes = {
@@ -316,21 +301,9 @@ void VulkanEngine::init_descriptors()
     }
 
     {
-        DescriptorLayoutBuilder builder;
-        builder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-        m_gpuSceneDataDescriptorLayout = builder.build(m_device->getHandle(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-    }
-
-    {
-        DescriptorLayoutBuilder builder;
-        builder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        m_singleImageDescriptorLayout = builder.build(m_device->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 
     m_deleteionQueue.push_function([&]() {
-        vkDestroyDescriptorSetLayout(m_device->getHandle(), m_singleImageDescriptorLayout, nullptr);
-        vkDestroyDescriptorSetLayout(m_device->getHandle(), m_gpuSceneDataDescriptorLayout, nullptr);
-        vkDestroyDescriptorSetLayout(m_device->getHandle(), m_drawImageDescriptorLayout, nullptr);
         m_globalDescriptorAllocator.destroy_pools(m_device->getHandle());
         });
 }
@@ -343,27 +316,10 @@ void VulkanEngine::init_pipelines()
 
 void VulkanEngine::init_background_pipelines()
 {
-    // create gradient pipeline
-    std::vector<VkDescriptorSetLayout> layouts(1, m_drawImageDescriptorLayout);
-    std::vector <VkPushConstantRange> pushConstant(1);
-    pushConstant[0].offset = 0;
-    pushConstant[0].size = sizeof(ComputePushConstants);
-    pushConstant[0].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-    m_skyPipeline = std::make_unique<ComputePipeline>("../project/shaders/sky.comp.spv", &layouts, &pushConstant);
-
-    m_sky.pipeline = m_skyPipeline.get();
-    m_sky.name = "sky";
-    m_sky.data = {};
-    //default sky parameters
-    m_sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
-
-    pushConstant[0].size = sizeof(CullPushConstants);
-
-    m_cullPipeline = std::make_unique<ComputePipeline>("../project/shaders/culling.comp.spv", nullptr, &pushConstant);
+    m_cullPipeline = std::make_unique<ComputePipeline>("../project/shaders/culling.comp.spv");
 
     m_deleteionQueue.push_function([&]() {
         m_cullPipeline.reset();
-        m_skyPipeline.reset();
         });
 }
 
@@ -499,7 +455,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     *sceneUniformData = m_sceneData;
 
     //create a descriptor set that binds that buffer and update it
-    VkDescriptorSet globalDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_gpuSceneDataDescriptorLayout);
+    VkDescriptorSet globalDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_activeScene->m_gpuSceneDataDescriptorLayout);
 
     DescriptorWriter writer;
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -509,7 +465,8 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
         m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get());
     
     //begin a render pass  connected to our draw image
-    cmd.beginRendering(m_depthImage.get(), m_drawImage.get());
+    VkClearColorValue clearColour = { 0.f, 0.f, 0.f, 0.f };
+    cmd.beginRendering(m_depthImage.get(), m_drawImage.get(), &clearColour);
 
     //set dynamic viewport and scissor
     cmd.setViewport(m_drawExtent);
@@ -554,14 +511,6 @@ void VulkanEngine::recordCommands()
 
     auto& cmd = frameData.mainCommandBuffer;
     cmd->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
-    // transition image for transfer
-    cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT);
-
-    cmd->bindPipeline(m_sky.pipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
-    cmd->bindDescriptorSet(m_drawImageDescriptors, m_skyPipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
-
-    cmd->dispatch(std::ceil(m_swapchain->m_swapchainExtent.width / 16.0), std::ceil(m_swapchain->m_swapchainExtent.height / 16.0), 1);
 
     cmd->barrier(*m_drawImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     cmd->barrier(*m_depthImage, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
