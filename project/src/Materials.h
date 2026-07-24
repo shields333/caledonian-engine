@@ -26,9 +26,10 @@ struct GLTFMetallic_Roughness {
     std::unique_ptr<GraphicsPipeline> transparentPipeline;
 
     struct alignas (16) MaterialConstants {
-        glm::vec4 colorFactors;
+        glm::vec4 colourFactors;
         glm::vec2 metal_rough_factors;
         uint32_t colourID;
+        uint32_t metalRoughnessID;
         float alphaCutout;
     };
 

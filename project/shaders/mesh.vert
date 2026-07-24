@@ -5,10 +5,11 @@
 #include "input_structures.glsl"
 #include "draw_structures.glsl"
 
-layout (location = 0) out vec3 outNormal;
-layout (location = 1) out vec4 outColor;
-layout (location = 2) out vec2 outUV;
-layout (location = 3) out uint outMatID;
+layout (location = 0) out vec3 outPos;
+layout (location = 1) out vec3 outNormal;
+layout (location = 2) out vec4 outColor;
+layout (location = 3) out vec2 outUV;
+layout (location = 4) out uint outMatID;
 
 //push constants block
 layout( push_constant ) uniform Constants
@@ -24,9 +25,11 @@ void main()
 	ObjectData objectData = pushConstants.objectBuffer.data[gl_BaseInstance];
 
 	vec4 position = vec4(v.position, 1.0f);
+	position = objectData.modelMatrix * position;
+	
+	gl_Position =  sceneData.viewproj * position;
 
-	gl_Position =  sceneData.viewproj * objectData.modelMatrix * position;
-
+	outPos = position.xyz;
 	outNormal = (objectData.modelMatrix * vec4(v.normal, 0.f)).xyz;
 	outColor = v.color;	
 	outUV.x = v.uv_x;

@@ -278,16 +278,26 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             if (gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.colorSampler = &file.samplers[gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.value()];
         }
+        // look for metal/roughness texture
+        if (mat.pbrData.metallicRoughnessTexture.has_value()) {
+            size_t img = gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].imageIndex.value();
+            materialResources.metalRoughnessID = img + 1;
 
-        constants.colorFactors.x = mat.pbrData.baseColorFactor[0];
-        constants.colorFactors.y = mat.pbrData.baseColorFactor[1];
-        constants.colorFactors.z = mat.pbrData.baseColorFactor[2];
-        constants.colorFactors.w = mat.pbrData.baseColorFactor[3];
+            if (gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.has_value())
+                materialResources.metalRoughSampler = &file.samplers[gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value()];
+        }
 
-        constants.metal_rough_factors.x = mat.pbrData.metallicFactor;
-        constants.metal_rough_factors.y = mat.pbrData.roughnessFactor;
+        constants.colourFactors.x = mat.pbrData.baseColorFactor[0];
+        constants.colourFactors.y = mat.pbrData.baseColorFactor[1];
+        constants.colourFactors.z = mat.pbrData.baseColorFactor[2];
+        constants.colourFactors.w = mat.pbrData.baseColorFactor[3];
+
+        constants.metal_rough_factors.x = 0;
+        constants.metal_rough_factors.y = 0.7;
 
         constants.colourID = materialResources.colourID;
+        constants.metalRoughnessID = materialResources.metalRoughnessID;
+
         // write material parameters to buffer
         sceneMaterialConstants[data_index] = constants;
 
