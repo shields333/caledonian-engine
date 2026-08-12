@@ -10,6 +10,7 @@ layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec4 inColour;
 layout (location = 3) in vec2 inUV;
 layout (location = 4) flat in int inMatID;
+layout (location = 5) in mat3 inTBN;
 
 layout (location = 0) out vec4 outFragColor;
 
@@ -27,9 +28,13 @@ void main()
 
 	vec4 texColour = texture(textures[material.colourID], inUV);
 	vec2 texRoughMetal = texture(textures[material.metalRoughnessID], inUV).gb;
+	vec3 texEmissive = texture(textures[material.emissiveID], inUV).rgb;
+	vec3 texNormal = texture(textures[material.normalID], inUV).rgb * 2.0 - 1.0;
 
-	float roughness = texRoughMetal.r * material.metal_rough_factors.g;
-	float metalness = texRoughMetal.g * material.metal_rough_factors.r;
+	float roughness = texRoughMetal.r * material.metalRoughFactors.g;
+	float metalness = texRoughMetal.g * material.metalRoughFactors.r;
+
+	vec3 emissiveColour = texEmissive * material.emmisiveFactors;
 
 	vec4 matColour = inColour * material.colourFactors * texColour;
 	vec3 lightColour = sceneData.sunlightColor.rgb * sceneData.sunlightColor.w;
@@ -37,8 +42,10 @@ void main()
 
 	vec3 lightDir = -sceneData.sunlightDirection.xyz;
 	vec3 viewDir = normalize(sceneData.cameraPos.xyz - inPos);
+	
+	vec3 normal = inTBN * texNormal;
 
-	vec3 light = CookTorrance_BRDF(matColour.rgb, lightColour, inNormal, viewDir, lightDir, roughness, metalness);
+	vec3 light = CookTorrance_BRDF(matColour.rgb, lightColour, normal, viewDir, lightDir, roughness, metalness);
 
-	outFragColor = vec4(light + ambient, matColour.w);
+	outFragColor = vec4(light + ambient + emissiveColour, matColour.w);
 }

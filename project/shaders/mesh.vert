@@ -10,6 +10,7 @@ layout (location = 1) out vec3 outNormal;
 layout (location = 2) out vec4 outColor;
 layout (location = 3) out vec2 outUV;
 layout (location = 4) out uint outMatID;
+layout (location = 5) out mat3 outTBN;
 
 //push constants block
 layout( push_constant ) uniform Constants
@@ -26,11 +27,16 @@ void main()
 
 	vec4 position = vec4(v.position, 1.0f);
 	position = objectData.modelMatrix * position;
-	
-	gl_Position =  sceneData.viewproj * position;
-
 	outPos = position.xyz;
-	outNormal = (objectData.modelMatrix * vec4(v.normal, 0.f)).xyz;
+
+	gl_Position =  sceneData.viewproj * position;
+	
+	vec3 normal = mat3(objectData.modelMatrix) * v.normal;
+	vec3 tangent = mat3(objectData.modelMatrix) * v.tangent.xyz;
+	vec3 bitangent = cross(normal, tangent) * v.tangent.w;
+	outNormal = tangent;
+	outTBN = mat3(tangent, bitangent, normal);
+	
 	outColor = v.color;	
 	outUV.x = v.uv_x;
 	outUV.y = v.uv_y;

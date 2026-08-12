@@ -330,7 +330,7 @@ void VulkanEngine::initDefaultData()
     //write the buffer
     GLTFMetallic_Roughness::MaterialConstants* sceneUniformData = (GLTFMetallic_Roughness::MaterialConstants*)m_globalUniform.get()->getAlloacation()->GetMappedData();
     sceneUniformData->colourFactors = glm::vec4{ 1,1,1,1 };
-    sceneUniformData->metal_rough_factors = glm::vec4{ 1,0.5,0,0 };
+    sceneUniformData->metalRoughFactors = glm::vec4{ 1,0.5,0,0 };
 
     loadMeshes();
 
@@ -430,8 +430,8 @@ void VulkanEngine::update_scene()
     m_sceneData.cameraPos = glm::vec4(m_mainCamera.position, 1.0);
 
     //some default lighting parameters
-    m_sceneData.ambientColor = glm::vec4(.03f);
-    m_sceneData.sunlightColor = glm::vec4(glm::vec3(244.f, 233.f, 155.f) / 255.f, 3.f);
+    m_sceneData.ambientColor = glm::vec4(.3f);
+    m_sceneData.sunlightColor = glm::vec4(glm::vec3(255.f, 255.f, 251.f) / 255.f, 3.f);
     m_sceneData.sunlightDirection = glm::vec4(0, -0.5, 0.5, 1.f);
 
     auto end = std::chrono::system_clock::now();

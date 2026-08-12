@@ -50,7 +50,7 @@ VkSamplerMipmapMode extract_mipmap_mode(fastgltf::Filter filter)
     }
 }
 
-std::optional<std::shared_ptr<Image>> load_image(fastgltf::Asset& asset, fastgltf::Image& image)
+std::optional<std::shared_ptr<Image>> loadImage(fastgltf::Asset& asset, fastgltf::Image& image)
 {
     int width, height, nrChannels;
 
@@ -134,7 +134,7 @@ std::optional<std::shared_ptr<Image>> load_image(fastgltf::Asset& asset, fastglt
 
 std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 {
-    fmt::print("Loading GLTF: {}", filePath);
+    fmt::print("Loading GLTF: {}\n", filePath);
 
     std::shared_ptr<SceneGraph> scene = std::make_shared<SceneGraph>();
     SceneGraph& file = *scene.get();
@@ -212,15 +212,16 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     if (maxThreads > gltf.images.size())
         maxThreads = gltf.images.size();
 
-    std::vector<std::thread> textureThreads(maxThreads);
-    for (auto& t : textureThreads) {
+    std::vector<std::thread> threads(maxThreads);
         std::atomic<int> pendingImages(gltf.images.size() - 1);
+
+    for (auto& t : threads) {
         t = std::thread([&]()
             {
                 int idx = pendingImages.fetch_sub(1);
                 // load all textures
                 while (idx >= 0) {
-                    std::optional<std::shared_ptr<Image>> img = load_image(gltf, gltf.images[idx]);
+                    std::optional<std::shared_ptr<Image>> img = loadImage(gltf, gltf.images[idx]);
 
                     if (img.has_value()) {
                         file.images[idx + 1] = img.value();
@@ -236,7 +237,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             });
     }
 
-    for (auto& t : textureThreads)
+    for (auto& t : threads)
         t.join();
 
     // create buffer to hold the material data
@@ -267,6 +268,10 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         materialResources.colorSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
         materialResources.metalRoughnessID = 0;
         materialResources.metalRoughSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
+        materialResources.normalID = 0;
+        materialResources.normalSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
+        materialResources.emissiveID = 0;
+        materialResources.emissiveSampler = VulkanEngine::get().m_defaultSamplerLinear.get();
 
         // set the uniform buffer for the material data
         materialResources.dataBuffer = file.m_materialDataBuffer.get();
@@ -286,17 +291,41 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             if (gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.metalRoughSampler = &file.samplers[gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value()];
         }
+        // look for normal texture
+        if (mat.normalTexture.has_value()) {
+            size_t img = gltf.textures[mat.normalTexture.value().textureIndex].imageIndex.value();
+            materialResources.normalID = img + 1;
+
+            if (gltf.textures[mat.normalTexture.value().textureIndex].samplerIndex.has_value())
+                materialResources.normalSampler = &file.samplers[gltf.textures[mat.normalTexture.value().textureIndex].samplerIndex.value()];
+        }
+        // look for emissive texture
+        if (mat.emissiveTexture.has_value()) {
+            size_t img = gltf.textures[mat.emissiveTexture.value().textureIndex].imageIndex.value();
+            materialResources.emissiveID = img + 1;
+
+            if (gltf.textures[mat.emissiveTexture.value().textureIndex].samplerIndex.has_value())
+                materialResources.emissiveSampler = &file.samplers[gltf.textures[mat.emissiveTexture.value().textureIndex].samplerIndex.value()];
+        }
 
         constants.colourFactors.x = mat.pbrData.baseColorFactor[0];
         constants.colourFactors.y = mat.pbrData.baseColorFactor[1];
         constants.colourFactors.z = mat.pbrData.baseColorFactor[2];
         constants.colourFactors.w = mat.pbrData.baseColorFactor[3];
 
-        constants.metal_rough_factors.x = 0;
-        constants.metal_rough_factors.y = 0.7;
+        constants.metalRoughFactors.x = 0;
+        constants.metalRoughFactors.y = 0.7;
+
+        constants.normalScale = mat.normalTexture->scale;
+
+        constants.emmisiveFactors.x = mat.emissiveFactor[0];
+        constants.emmisiveFactors.y = mat.emissiveFactor[1];
+        constants.emmisiveFactors.z = mat.emissiveFactor[2];
 
         constants.colourID = materialResources.colourID;
         constants.metalRoughnessID = materialResources.metalRoughnessID;
+        constants.normalID = materialResources.normalID;
+        constants.emissiveID = materialResources.emissiveID;
 
         // write material parameters to buffer
         sceneMaterialConstants[data_index] = constants;
@@ -305,6 +334,9 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         *newMat = file.m_metalRoughMaterial.write_material(passType, materialResources, data_index++);
     }
 
+    // load meshes
+    std::vector<std::shared_ptr<Mesh>> meshes;
+    std::vector<SurfaceData> surfaceData;
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
     std::vector<SurfaceData> surfaceData;
@@ -317,8 +349,26 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     uint32_t cutoutCount = 0;
     uint32_t transparentCount = 0;
 
+    struct MeshBufferInfo {
+        fastgltf::Mesh* gltfMesh;
+        uint32_t indexOffset;
+        uint32_t indexCount;
+        uint32_t vertexOffset;
+        uint32_t vertexCount;
+        uint32_t surfaceOffset;
+        uint32_t surfaceCount;
+    };
+    std::vector<MeshBufferInfo> meshesOffsets;
+    meshesOffsets.reserve(gltf.meshes.size());
+
     // calculate required buffer sizes and offsets
     for (fastgltf::Mesh& mesh : gltf.meshes) {
+        MeshBufferInfo offsets = {&mesh};
+        offsets.indexOffset = indexCount;
+        offsets.vertexOffset = vertexCount;
+        offsets.surfaceOffset = surfacesCount;
+        surfacesCount += offsets.surfaceCount = mesh.primitives.size();
+
         for (auto&& p : mesh.primitives) {
             fastgltf::Accessor& indexaccessor = gltf.accessors[p.indicesAccessor.value()];
             indexCount += indexaccessor.count;
@@ -349,36 +399,67 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             }
             surfacesCount++;
         }
+
+        offsets.indexCount = indexCount - offsets.indexOffset;
+        offsets.vertexCount = indexCount - offsets.vertexOffset;
+        meshesOffsets.push_back(offsets);
     }
     indices.reserve(indexCount);
     vertices.reserve(vertexCount);
     surfaceData.reserve(surfacesCount);
 
-    for (fastgltf::Mesh& mesh : gltf.meshes) {
+    indices.resize(indexCount);
+    vertices.resize(vertexCount);
+    surfaceData.resize(surfacesCount);
+    meshes.reserve(gltf.meshes.size());
+
+    std::atomic<int> pendingMeshes(gltf.meshes.size() - 1);
+    std::mutex mtx;
+
+    fmt::print("Loading Meshes\n");
+
+    for (auto& t : threads) {
+        t = std::thread([&]()
+            {
+                int idx = pendingMeshes.fetch_sub(1);
+                // load all textures
+                while (idx >= 0) {
+                    MeshBufferInfo& meshInfo = meshesOffsets[idx];
+                    fastgltf::Mesh& mesh = *meshInfo.gltfMesh;
+
+                    mtx.lock();
         std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
         meshes.push_back(newmesh);
         file.meshes[mesh.name.c_str()] = newmesh;
+                    mtx.unlock();
 
         std::vector<Mesh::GeoSurface> surfaces;
 
         surfaces.reserve(mesh.primitives.size());
 
+                    uint32_t subIndexOffset = meshInfo.indexOffset;
+                    uint32_t subVertexOffset = meshInfo.vertexOffset;
+                    uint32_t surfaceID = meshInfo.surfaceOffset;
+
         for (auto&& p : mesh.primitives) {
             Mesh::GeoSurface newSurface;
-            newSurface.indirectCommand.firstIndex = (uint32_t)indices.size();
+                        newSurface.indirectCommand.firstIndex = subIndexOffset;
             newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
             newSurface.indirectCommand.vertexOffset = 0;
             newSurface.indirectCommand.instanceCount = 1;
 
-            size_t buffOffset = vertices.size();
+                        size_t vertexCount = gltf.accessors[p.findAttribute("POSITION")->second].count;
+                        size_t buffOffset = subVertexOffset;
 
             // load indexes
             {
                 fastgltf::Accessor& indexaccessor = gltf.accessors[p.indicesAccessor.value()];
+                            auto it = indices.begin() + subIndexOffset;
 
                 fastgltf::iterateAccessor<std::uint32_t>(gltf, indexaccessor,
                     [&](std::uint32_t idx) {
-                        indices.push_back(idx + buffOffset);
+                                    *it = idx + buffOffset;
+                                    ++it;
                     });
             }
 
@@ -409,6 +490,15 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                     });
             }
 
+                        // load vertex tangents
+                        auto tangents = p.findAttribute("TANGENT");
+                        if (normals != p.attributes.end() && tangents != p.attributes.end()) {
+
+                            fastgltf::iterateAccessorWithIndex<glm::vec4>(gltf, gltf.accessors[(*tangents).second],
+                                [&](glm::vec4 v, size_t index) {
+                                    vertices[buffOffset + index].tangent = v;
+                                });
+                        }
             // load UVs
             auto uv = p.findAttribute("TEXCOORD_0");
             if (uv != p.attributes.end()) {
@@ -440,7 +530,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             //loop the vertices of this surface, find min/max bounds
             glm::vec3 minpos = vertices[buffOffset].position;
             glm::vec3 maxpos = vertices[buffOffset].position;
-            for (int i = buffOffset; i < vertices.size(); i++) {
+                        for (int i = buffOffset; i < buffOffset + vertexCount; i++) {
                 minpos = glm::min(minpos, vertices[i].position);
                 maxpos = glm::max(maxpos, vertices[i].position);
             }
@@ -472,16 +562,23 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 surfaceDatum.bufferOffset = 0;
             }
 
+                        surfaceData[surfaceID] = surfaceDatum;
 
-            surfaceData.push_back(surfaceDatum);
-
-            newSurface.id = surfaceData.size() - 1;
-
+                        newSurface.id = surfaceID++;
             surfaces.push_back(newSurface);
+
+                        subIndexOffset += newSurface.indirectCommand.indexCount;
+                        subVertexOffset += vertexCount;
         }
 
         newmesh->uploadSurfaceData(surfaces);
+                    idx = pendingMeshes.fetch_sub(1);
+                }
+            });
     }
+
+    for (auto& t : threads)
+        t.join();
 
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {

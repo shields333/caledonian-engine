@@ -27,17 +27,29 @@ struct GLTFMetallic_Roughness {
 
     struct alignas (16) MaterialConstants {
         glm::vec4 colourFactors;
-        glm::vec2 metal_rough_factors;
+        glm::vec3 emmisiveFactors;
+        float     normalScale;
+        glm::vec2 metalRoughFactors;
         uint32_t colourID;
         uint32_t metalRoughnessID;
+        uint32_t normalID;
+        uint32_t emissiveID;
         float alphaCutout;
     };
 
     struct MaterialResources {
         size_t colourID;
         Sampler* colorSampler;
+
         size_t metalRoughnessID;
         Sampler* metalRoughSampler;
+
+        size_t normalID;
+        Sampler* normalSampler;
+
+        size_t emissiveID;
+        Sampler* emissiveSampler;
+
         Buffer* dataBuffer;
     };
 

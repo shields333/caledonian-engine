@@ -21,6 +21,7 @@ struct Vertex {
 	vec3 normal;
 	float uv_y;
 	vec4 color;
+	vec4 tangent;
 }; 
 
 layout(buffer_reference, std430) readonly buffer VertexBuffer{ 
@@ -29,9 +30,13 @@ layout(buffer_reference, std430) readonly buffer VertexBuffer{
 
 struct GLTFMaterialData{   
 	vec4 colourFactors;
-	vec2 metal_rough_factors;
+	vec3 emmisiveFactors;
+	float normalScale;
+	vec2 metalRoughFactors;
 	uint colourID;
 	uint metalRoughnessID;
+	uint normalID;
+	uint emissiveID;
 	float alphaCutoff;
 };
 
