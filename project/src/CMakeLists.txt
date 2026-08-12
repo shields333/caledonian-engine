@@ -43,6 +43,8 @@ add_executable (engine
   GLTFLoader.h
   Materials.h
   Materials.cpp
+  MikkTSpace/mikktspace.c
+  MikkTSpace/mikktspace.h
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

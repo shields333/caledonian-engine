@@ -17,6 +17,8 @@
 #include "Image.h"
 #include "vk_descriptors.h"
 
+#include "MikkTSpace/mikktspace.h"
+
 
 VkFilter extract_filter(fastgltf::Filter filter)
 {
@@ -201,7 +203,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     }
 
     // temporal arrays for all the objects to use while creating the GLTF data
-    std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<std::shared_ptr<Node>> nodes;
     std::vector<std::shared_ptr<MaterialInstance>> materials;
 
@@ -213,7 +214,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         maxThreads = gltf.images.size();
 
     std::vector<std::thread> threads(maxThreads);
-        std::atomic<int> pendingImages(gltf.images.size() - 1);
+    std::atomic<int> pendingImages(gltf.images.size() - 1);
 
     for (auto& t : threads) {
         t = std::thread([&]()
@@ -339,7 +340,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     std::vector<SurfaceData> surfaceData;
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
-    std::vector<SurfaceData> surfaceData;
 
     uint32_t indexCount = 0;
     uint32_t vertexCount = 0;
@@ -397,16 +397,12 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             default:
                 opaqueCount++;
             }
-            surfacesCount++;
         }
 
         offsets.indexCount = indexCount - offsets.indexOffset;
         offsets.vertexCount = indexCount - offsets.vertexOffset;
         meshesOffsets.push_back(offsets);
     }
-    indices.reserve(indexCount);
-    vertices.reserve(vertexCount);
-    surfaceData.reserve(surfacesCount);
 
     indices.resize(indexCount);
     vertices.resize(vertexCount);
@@ -428,67 +424,76 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                     fastgltf::Mesh& mesh = *meshInfo.gltfMesh;
 
                     mtx.lock();
-        std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
-        meshes.push_back(newmesh);
-        file.meshes[mesh.name.c_str()] = newmesh;
+                    std::shared_ptr<Mesh> newmesh = std::make_shared<Mesh>(mesh.name.c_str());
+                    meshes.push_back(newmesh);
+                    file.meshes[mesh.name.c_str()] = newmesh;
                     mtx.unlock();
 
-        std::vector<Mesh::GeoSurface> surfaces;
-
-        surfaces.reserve(mesh.primitives.size());
+                    std::vector<Mesh::GeoSurface> surfaces;
+                    surfaces.reserve(mesh.primitives.size());
 
                     uint32_t subIndexOffset = meshInfo.indexOffset;
                     uint32_t subVertexOffset = meshInfo.vertexOffset;
                     uint32_t surfaceID = meshInfo.surfaceOffset;
 
-        for (auto&& p : mesh.primitives) {
-            Mesh::GeoSurface newSurface;
+                    for (auto&& p : mesh.primitives) {
+                        Mesh::GeoSurface newSurface;
                         newSurface.indirectCommand.firstIndex = subIndexOffset;
-            newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
-            newSurface.indirectCommand.vertexOffset = 0;
-            newSurface.indirectCommand.instanceCount = 1;
+                        newSurface.indirectCommand.indexCount = (uint32_t)gltf.accessors[p.indicesAccessor.value()].count;
+                        newSurface.indirectCommand.vertexOffset = 0;
+                        newSurface.indirectCommand.instanceCount = 1;
 
                         size_t vertexCount = gltf.accessors[p.findAttribute("POSITION")->second].count;
                         size_t buffOffset = subVertexOffset;
 
-            // load indexes
-            {
-                fastgltf::Accessor& indexaccessor = gltf.accessors[p.indicesAccessor.value()];
+                        // load indexes
+                        {
+                            fastgltf::Accessor& indexaccessor = gltf.accessors[p.indicesAccessor.value()];
                             auto it = indices.begin() + subIndexOffset;
 
-                fastgltf::iterateAccessor<std::uint32_t>(gltf, indexaccessor,
-                    [&](std::uint32_t idx) {
+                            fastgltf::iterateAccessor<std::uint32_t>(gltf, indexaccessor,
+                                [&](std::uint32_t idx) {
                                     *it = idx + buffOffset;
                                     ++it;
-                    });
-            }
+                                });
+                        }
 
-            // load vertex positions
-            {
-                fastgltf::Accessor& posAccessor = gltf.accessors[p.findAttribute("POSITION")->second];
-                vertices.resize(vertices.size() + posAccessor.count);
+                        // load vertex positions
+                        {
+                            fastgltf::Accessor& posAccessor = gltf.accessors[p.findAttribute("POSITION")->second];
 
-                fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, posAccessor,
-                    [&](glm::vec3 v, size_t index) {
-                        Vertex newvtx;
-                        newvtx.position = v;
-                        newvtx.normal = { 1, 0, 0 };
-                        newvtx.color = glm::vec4{ 1.f };
-                        newvtx.uv_x = 0;
-                        newvtx.uv_y = 0;
-                        vertices[buffOffset + index] = newvtx;
-                    });
-            }
+                            fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, posAccessor,
+                                [&](glm::vec3 v, size_t index) {
+                                    Vertex newvtx;
+                                    newvtx.position = v;
+                                    newvtx.normal = { 1, 0, 0 };
+                                    newvtx.color = glm::vec4{ 1.f };
+                                    newvtx.uv_x = 0;
+                                    newvtx.uv_y = 0;
+                                    vertices[buffOffset + index] = newvtx;
+                                });
+                        }
 
-            // load vertex normals
-            auto normals = p.findAttribute("NORMAL");
-            if (normals != p.attributes.end()) {
+                        // load vertex normals
+                        auto normals = p.findAttribute("NORMAL");
+                        if (normals != p.attributes.end()) {
 
-                fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[(*normals).second],
-                    [&](glm::vec3 v, size_t index) {
-                        vertices[buffOffset + index].normal = v;
-                    });
-            }
+                            fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[(*normals).second],
+                                [&](glm::vec3 v, size_t index) {
+                                    vertices[buffOffset + index].normal = v;
+                                });
+                        }
+
+                        // load UVs
+                        auto uv = p.findAttribute("TEXCOORD_0");
+                        if (uv != p.attributes.end()) {
+
+                            fastgltf::iterateAccessorWithIndex<glm::vec2>(gltf, gltf.accessors[(*uv).second],
+                                [&](glm::vec2 v, size_t index) {
+                                    vertices[buffOffset + index].uv_x = v.x;
+                                    vertices[buffOffset + index].uv_y = v.y;
+                                });
+                        }
 
                         // load vertex tangents
                         auto tangents = p.findAttribute("TANGENT");
@@ -499,79 +504,123 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                                     vertices[buffOffset + index].tangent = v;
                                 });
                         }
-            // load UVs
-            auto uv = p.findAttribute("TEXCOORD_0");
-            if (uv != p.attributes.end()) {
+                        else
+                        {
+                            struct SurfaceData {
+                                uint32_t* indices;
+                                std::vector<Vertex>& vertices;
+                                uint32_t vertexCount;
+                                uint32_t indexCount;
+                            }surfaceData = { &indices[subIndexOffset],
+                                vertices,
+                                vertexCount,
+                                newSurface.indirectCommand.indexCount
+                            };
 
-                fastgltf::iterateAccessorWithIndex<glm::vec2>(gltf, gltf.accessors[(*uv).second],
-                    [&](glm::vec2 v, size_t index) {
-                        vertices[buffOffset + index].uv_x = v.x;
-                        vertices[buffOffset + index].uv_y = v.y;
-                    });
-            }
+                            SMikkTSpaceContext context = {};
 
-            // load vertex colors
-            auto colors = p.findAttribute("COLOR_0");
-            if (colors != p.attributes.end()) {
+                            SMikkTSpaceInterface spaceInterface = {};
+                            spaceInterface.m_getNumFaces = [](const SMikkTSpaceContext* pContext) {
+                                SurfaceData* data = reinterpret_cast<SurfaceData*>(pContext->m_pUserData);
+                                return int(data->indexCount / 3);
+                            };
 
-                fastgltf::iterateAccessorWithIndex<glm::vec4>(gltf, gltf.accessors[(*colors).second],
-                    [&](glm::vec4 v, size_t index) {
-                        vertices[buffOffset + index].color = v;
-                    });
-            }
+                            spaceInterface.m_getNumVerticesOfFace = [](const SMikkTSpaceContext* pContext, int iFace) {
+                                return 3;
+                            };
 
-            if (p.materialIndex.has_value()) {
-                newSurface.material = materials[p.materialIndex.value()];
-            }
-            else {
-                newSurface.material = materials[0];
-            }
+                            spaceInterface.m_getPosition = [](const SMikkTSpaceContext* pContext, float fvPosOut[], const int iFace, const int iVert) {
+                                SurfaceData* data = reinterpret_cast<SurfaceData*>(pContext->m_pUserData);
+                                auto pos = data->vertices[data->indices[iFace * 3 + iVert]].position;
+                                for (int i = 0; i < 3; i++)
+                                    fvPosOut[i] = pos[i];
+                            };
+                            spaceInterface.m_getNormal = [](const SMikkTSpaceContext* pContext, float fvPosOut[], const int iFace, const int iVert) {
+                                SurfaceData* data = reinterpret_cast<SurfaceData*>(pContext->m_pUserData);
+                                auto norm = data->vertices[data->indices[iFace * 3 + iVert]].normal;
+                                for (int i = 0; i < 3; i++)
+                                    fvPosOut[i] = norm[i];
+                            };
+                            spaceInterface.m_getTexCoord = [](const SMikkTSpaceContext* pContext, float fvPosOut[], const int iFace, const int iVert) {
+                                SurfaceData* data = reinterpret_cast<SurfaceData*>(pContext->m_pUserData);
+                                fvPosOut[0] = data->vertices[data->indices[iFace * 3 + iVert]].uv_x;
+                                fvPosOut[1] = data->vertices[data->indices[iFace * 3 + iVert]].uv_y;
+                            };
 
-            //loop the vertices of this surface, find min/max bounds
-            glm::vec3 minpos = vertices[buffOffset].position;
-            glm::vec3 maxpos = vertices[buffOffset].position;
+                            spaceInterface.m_setTSpaceBasic = [](const SMikkTSpaceContext* pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert){
+                                SurfaceData* data = reinterpret_cast<SurfaceData*>(pContext->m_pUserData);
+                                auto& tangent = data->vertices[data->indices[iFace * 3 + iVert]].tangent;
+                                for (int i = 0; i < 3; i++)
+                                    tangent[i] = fvTangent[i];
+                                tangent.w = fSign;
+                            };
+                            context.m_pInterface = &spaceInterface;
+                            context.m_pUserData = &surfaceData;
+                            genTangSpaceDefault(&context);
+                        }
+
+                        // load vertex colors
+                        auto colors = p.findAttribute("COLOR_0");
+                        if (colors != p.attributes.end()) {
+
+                            fastgltf::iterateAccessorWithIndex<glm::vec4>(gltf, gltf.accessors[(*colors).second],
+                                [&](glm::vec4 v, size_t index) {
+                                    vertices[buffOffset + index].color = v;
+                                });
+                        }
+
+                        if (p.materialIndex.has_value()) {
+                            newSurface.material = materials[p.materialIndex.value()];
+                        }
+                        else {
+                            newSurface.material = materials[0];
+                        }
+
+                        //loop the vertices of this surface, find min/max bounds
+                        glm::vec3 minpos = vertices[buffOffset].position;
+                        glm::vec3 maxpos = vertices[buffOffset].position;
                         for (int i = buffOffset; i < buffOffset + vertexCount; i++) {
-                minpos = glm::min(minpos, vertices[i].position);
-                maxpos = glm::max(maxpos, vertices[i].position);
-            }
-            // calculate origin and extents from the min/max, use extent lenght for radius
-            newSurface.bounds.origin = (maxpos + minpos) / 2.f;
-            newSurface.bounds.extents = (maxpos - minpos) / 2.f;
-            newSurface.bounds.sphereRadius = glm::length(newSurface.bounds.extents);
+                            minpos = glm::min(minpos, vertices[i].position);
+                            maxpos = glm::max(maxpos, vertices[i].position);
+                        }
+                        // calculate origin and extents from the min/max, use extent lenght for radius
+                        newSurface.bounds.origin = (maxpos + minpos) / 2.f;
+                        newSurface.bounds.extents = (maxpos - minpos) / 2.f;
+                        newSurface.bounds.sphereRadius = glm::length(newSurface.bounds.extents);
 
 
-            SurfaceData surfaceDatum;
-            surfaceDatum.indexCount = newSurface.indirectCommand.indexCount;
-            surfaceDatum.firstIndex = newSurface.indirectCommand.firstIndex;
-            surfaceDatum.origin = newSurface.bounds.origin;
-            surfaceDatum.radius = newSurface.bounds.sphereRadius;
-            surfaceDatum.matID = newSurface.material->matID;
-            surfaceDatum.bufferOffset = BitfieldInsert((uint32_t)newSurface.material->passType, 0, 10);
-            uint32_t valid;
-            switch (newSurface.material->passType) {
-            case MaterialPass::Opaque:
-                surfaceDatum.bufferOffset |= BitfieldInsert(0, 10, 22);
-                break;
-            case MaterialPass::Cutout:
-                surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount, 10, 22);
-                break;
-            case MaterialPass::Transparent:
-                surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount + cutoutCount, 10, 22);
-                break;
-            default:
-                surfaceDatum.bufferOffset = 0;
-            }
+                        SurfaceData surfaceDatum;
+                        surfaceDatum.indexCount = newSurface.indirectCommand.indexCount;
+                        surfaceDatum.firstIndex = newSurface.indirectCommand.firstIndex;
+                        surfaceDatum.origin = newSurface.bounds.origin;
+                        surfaceDatum.radius = newSurface.bounds.sphereRadius;
+                        surfaceDatum.matID = newSurface.material->matID;
+                        surfaceDatum.bufferOffset = BitfieldInsert((uint32_t)newSurface.material->passType, 0, 10);
+                        uint32_t valid;
+                        switch (newSurface.material->passType) {
+                        case MaterialPass::Opaque:
+                            surfaceDatum.bufferOffset |= BitfieldInsert(0, 10, 22);
+                            break;
+                        case MaterialPass::Cutout:
+                            surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount, 10, 22);
+                            break;
+                        case MaterialPass::Transparent:
+                            surfaceDatum.bufferOffset |= BitfieldInsert(opaqueCount + cutoutCount, 10, 22);
+                            break;
+                        default:
+                            surfaceDatum.bufferOffset = 0;
+                        }
 
                         surfaceData[surfaceID] = surfaceDatum;
 
                         newSurface.id = surfaceID++;
-            surfaces.push_back(newSurface);
+                        surfaces.push_back(newSurface);
 
                         subIndexOffset += newSurface.indirectCommand.indexCount;
                         subVertexOffset += vertexCount;
-        }
+                    }
 
-        newmesh->uploadSurfaceData(surfaces);
+                    newmesh->uploadSurfaceData(surfaces);
                     idx = pendingMeshes.fetch_sub(1);
                 }
             });
