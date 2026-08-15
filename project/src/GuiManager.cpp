@@ -1,10 +1,9 @@
 #include "GuiManager.h"
 
-#include "vk_initializers.h"
-
-#include "vk_engine.h"
-#include "FencePool.h"
-#include "CommandPool.h"
+#include "VK/vk_initializers.h"
+#include "VK/vk_engine.h"
+#include "VK/FencePool.h"
+#include "VK/CommandPool.h"
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"

@@ -1,14 +1,14 @@
-﻿#include <SceneGraph.h>
+﻿#include "SceneGraph.h"
 
 #include <iostream>
 
 #include "vk_mem_alloc.h"
 
-#include "vk_engine.h"
-#include "vk_initializers.h"
-#include "vk_types.h"
-#include "Mesh.h"
-#include "ComputePipeline.h"
+#include "VK/vk_engine.h"
+#include "VK/vk_initializers.h"
+#include "VK/vk_types.h"
+#include "VK/Mesh.h"
+#include "VK/ComputePipeline.h"
 
 #include <glm/gtx/quaternion.hpp>
 

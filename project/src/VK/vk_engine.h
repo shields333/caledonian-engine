@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <vk_types.h>
-#include <vk_descriptors.h>
-#include <SceneGraph.h>
+#include "vk_types.h"
+#include "vk_descriptors.h"
+#include "SceneGraph/SceneGraph.h"
 
 #include "Device.h"
 #include "Swapchain.h"

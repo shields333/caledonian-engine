@@ -4,8 +4,8 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
-#include <vk_initializers.h>
-#include <GLTFLoader.h>
+#include "vk_initializers.h"
+#include "SceneGraph/GLTFLoader.h"
 
 #include <glm/gtx/transform.hpp>
 //bootstrap library

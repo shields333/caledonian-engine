@@ -2,7 +2,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "vk_engine.h"
+#include "VK/vk_engine.h"
 
 const int g_cameraSpeed = 5;
 

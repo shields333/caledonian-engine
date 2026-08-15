@@ -13,11 +13,11 @@
 #include <thread>
 #include <atomic>
 
-#include "vk_engine.h"
-#include "Image.h"
-#include "vk_descriptors.h"
+#include "VK/vk_engine.h"
+#include "VK/Image.h"
+#include "VK/vk_descriptors.h"
 
-#include "MikkTSpace/mikktspace.h"
+#include "mikktspace.h"
 
 
 VkFilter extract_filter(fastgltf::Filter filter)
@@ -136,7 +136,8 @@ std::optional<std::shared_ptr<Image>> loadImage(fastgltf::Asset& asset, fastgltf
 
 std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 {
-    fmt::print("Loading GLTF: {}\n", filePath);
+    fmt::println("/////////////////////////////////////////// Loading Scene ///////////////////////////////////////////");
+    fmt::println("Loading GLTF: {}", filePath);
 
     std::shared_ptr<SceneGraph> scene = std::make_shared<SceneGraph>();
     SceneGraph& file = *scene.get();
@@ -159,7 +160,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             gltf = std::move(load.get());
         }
         else {
-            std::cerr << "Failed to load glTF: " << fastgltf::to_underlying(load.error()) << std::endl;
+            fmt::println(stderr, "Failed to load glTF: {}", fastgltf::to_underlying(load.error()));
             return {};
         }
     }
@@ -169,12 +170,13 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
             gltf = std::move(load.get());
         }
         else {
-            std::cerr << "Failed to load glTF: " << fastgltf::to_underlying(load.error()) << std::endl;
+            fmt::println(stderr, "Failed to load glTF: {}", fastgltf::to_underlying(load.error()));
             return {};
         }
     }
     else {
-        std::cerr << "Failed to determine glTF container" << std::endl;
+        fmt::println(stderr, "Failed to determine glTF container");
+
         return {};
     }
 
@@ -216,6 +218,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     std::vector<std::thread> threads(maxThreads);
     std::atomic<int> pendingImages(gltf.images.size() - 1);
 
+    fmt::println("/////////////////////////////////////////// Loading Textures ///////////////////////////////////////////");
+
     for (auto& t : threads) {
         t = std::thread([&]()
             {
@@ -231,7 +235,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                         // we failed to load, so lets give the slot a default error texture to not
                         // completely break loading
                         file.images[idx + 1] = VulkanEngine::get().m_errorCheckerboardImage;
-                        std::cout << "gltf failed to load texture " << gltf.images[idx].name << std::endl;
+                        fmt::println(stderr, "gltf failed to load texture {}", gltf.images[idx].name);
                     }
                     idx = pendingImages.fetch_sub(1);
                 }
@@ -246,6 +250,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
     GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.m_materialDataBuffer->getInfo().pMappedData;
+
+    fmt::println("/////////////////////////////////////////// Loading Materials ///////////////////////////////////////////");
 
     // load all materials
     for (fastgltf::Material& mat : gltf.materials) {
@@ -412,7 +418,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     std::atomic<int> pendingMeshes(gltf.meshes.size() - 1);
     std::mutex mtx;
 
-    fmt::print("Loading Meshes\n");
+    fmt::println("/////////////////////////////////////////// Loading Meshes ///////////////////////////////////////////");
 
     for (auto& t : threads) {
         t = std::thread([&]()
@@ -629,6 +635,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     for (auto& t : threads)
         t.join();
 
+    fmt::println("/////////////////////////////////////////// Loading Nodes ///////////////////////////////////////////");
+
     // load all nodes and their meshes
     for (fastgltf::Node& node : gltf.nodes) {
         std::shared_ptr<Node> newNode;
@@ -705,6 +713,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         }
     }
 
+    fmt::println("/////////////////////////////////////////// Creating Buffers ///////////////////////////////////////////");
+
     // create buffers to hold the per instance data
     file.m_transformBuffer = std::make_unique<Buffer>(sizeof(glm::mat4) * transformData.size(),
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
@@ -720,6 +730,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     memcpy(file.m_surfaceBuffer->getInfo().pMappedData, surfaceData.data(), sizeof(SurfaceData)* surfaceData.size());
 
     file.createBuffers(indices, vertices);
+
+    fmt::println("/////////////////////////////////////////// Scene Loaded ///////////////////////////////////////////");
 
     return scene;
 }

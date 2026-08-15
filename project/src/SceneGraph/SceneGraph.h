@@ -1,15 +1,15 @@
 ﻿#pragma once
 
-#include <vk_types.h>
 #include <unordered_map>
 #include <filesystem>
 
-#include "Mesh.h"
-#include "Image.h"
-#include "Buffer.h"
-#include "Sampler.h"
-#include "vk_descriptors.h"
-#include "Materials.h"
+#include "VK/vk_types.h"
+#include "VK/Mesh.h"
+#include "VK/Image.h"
+#include "VK/Buffer.h"
+#include "VK/Sampler.h"
+#include "VK/vk_descriptors.h"
+#include "VK/Materials.h"
 
 #define DRAW_INDIRECT 1
 

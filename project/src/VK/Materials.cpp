@@ -1,5 +1,4 @@
 #include "Materials.h"
-
 #include "vk_engine.h"
 
 void GLTFMetallic_Roughness::build_pipelines()
