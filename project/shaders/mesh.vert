@@ -6,11 +6,10 @@
 #include "draw_structures.glsl"
 
 layout (location = 0) out vec3 outPos;
-layout (location = 1) out vec3 outNormal;
-layout (location = 2) out vec4 outColor;
-layout (location = 3) out vec2 outUV;
-layout (location = 4) out uint outMatID;
-layout (location = 5) out mat3 outTBN;
+layout (location = 1) out vec4 outColor;
+layout (location = 2) out vec2 outUV;
+layout (location = 3) out uint outMatID;
+layout (location = 4) out mat3 outTBN;
 
 //push constants block
 layout( push_constant ) uniform Constants
@@ -34,7 +33,6 @@ void main()
 	vec3 normal = mat3(objectData.modelMatrix) * v.normal;
 	vec3 tangent = mat3(objectData.modelMatrix) * v.tangent.xyz;
 	vec3 bitangent = cross(normal, tangent) * v.tangent.w;
-	outNormal = tangent;
 	outTBN = mat3(tangent, bitangent, normal);
 	
 	outColor = v.color;	

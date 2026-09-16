@@ -1,4 +1,12 @@
 
+set(main
+  main.cpp
+  camera.cpp
+  camera.h
+  GuiManager.cpp
+  GuiManager.h
+)
+
 set(vk 
   VK/vk_engine.h
   VK/vk_engine.cpp
@@ -42,16 +50,13 @@ set(SceneGraph
   SceneGraph/GLTFLoader.h
 )
 
+source_group("\\" FILES ${main})
 source_group("VK\\" FILES ${vk})
 source_group("SceneGraph\\" FILES ${SceneGraph})
 
 # Add source to this project's executable.
 add_executable (engine 
-  main.cpp
-  camera.cpp
-  camera.h
-  GuiManager.cpp
-  GuiManager.h
+  ${main}
   ${vk}
   ${SceneGraph}
 )

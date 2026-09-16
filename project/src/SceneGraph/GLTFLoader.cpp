@@ -320,8 +320,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         constants.colourFactors.z = mat.pbrData.baseColorFactor[2];
         constants.colourFactors.w = mat.pbrData.baseColorFactor[3];
 
-        constants.metalRoughFactors.x = 0;
-        constants.metalRoughFactors.y = 0.7;
+        constants.metalRoughFactors.x = mat.pbrData.roughnessFactor;
+        constants.metalRoughFactors.y = mat.pbrData.metallicFactor;
 
         constants.normalScale = mat.normalTexture->scale;
 

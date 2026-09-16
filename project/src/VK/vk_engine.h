@@ -45,13 +45,6 @@ struct GPUSceneData {
 	glm::vec4 cameraPos;
 };
 
-struct ComputePushConstants {
-	glm::vec4 data1;
-	glm::vec4 data2;
-	glm::vec4 data3;
-	glm::vec4 data4;
-};
-
 struct CullPushConstants {
 	std::array<Camera::FrustumPlane, 6> frustums;
 	uint32_t		objCount;
@@ -63,12 +56,9 @@ struct CullPushConstants {
 	VkDeviceAddress outDrawBuf;
 };
 
-struct ComputeEffect {
-	const char* name;
-
-	ComputePipeline* pipeline;
-
-	ComputePushConstants data;
+struct LumHistConstants {
+	glm::vec4 params;
+	VkDeviceAddress histogramBuf;
 };
 
 struct EngineStats {
@@ -81,13 +71,23 @@ struct EngineStats {
 class VulkanEngine 
 {
 public:
-	EngineStats m_stats;
+	EngineStats m_stats = {};
+
+	const std::string SHADER_PATH = "../project/shaders/";
 
 	Camera m_mainCamera;
 
 	DescriptorAllocatorGrowable m_globalDescriptorAllocator;
 
+	VkDescriptorSet	m_sceneTexSet;
+	VkDescriptorSet	m_lumHistTexSet;
+
+	std::unique_ptr<ComputePipeline> m_lumHistPipeline;
+	std::unique_ptr<ComputePipeline> m_lumAvgPipeline;
+	std::unique_ptr<Buffer> m_lumHistogram;
+
 	std::unique_ptr<ComputePipeline> m_cullPipeline;
+	std::unique_ptr<GraphicsPipeline> m_tonemapPipeline;
 
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
@@ -212,8 +212,7 @@ private:
 	void initCommandPools();
 	void initSyncStructures();
 	void init_descriptors();
-	void init_pipelines();
-	void init_background_pipelines();
+	void initPipelines();
 
 	void initDefaultData();
 	void loadMeshes();

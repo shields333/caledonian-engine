@@ -6,11 +6,10 @@
 #include "lighting.glsl"
 
 layout (location = 0) in vec3 inPos;
-layout (location = 1) in vec3 inNormal;
-layout (location = 2) in vec4 inColour;
-layout (location = 3) in vec2 inUV;
-layout (location = 4) flat in int inMatID;
-layout (location = 5) in mat3 inTBN;
+layout (location = 1) in vec4 inColour;
+layout (location = 2) in vec2 inUV;
+layout (location = 3) flat in int inMatID;
+layout (location = 4) in mat3 inTBN;
 
 layout (location = 0) out vec4 outFragColor;
 
@@ -31,8 +30,8 @@ void main()
 	vec3 texEmissive = texture(textures[material.emissiveID], inUV).rgb;
 	vec3 texNormal = texture(textures[material.normalID], inUV).rgb * 2.0 - 1.0;
 
-	float roughness = texRoughMetal.r * material.metalRoughFactors.g;
-	float metalness = texRoughMetal.g * material.metalRoughFactors.r;
+	float roughness = texRoughMetal.r * material.metalRoughFactors.r;
+	float metalness = texRoughMetal.g * material.metalRoughFactors.g;
 
 	vec3 emissiveColour = texEmissive * material.emmisiveFactors;
 

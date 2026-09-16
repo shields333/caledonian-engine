@@ -5,7 +5,7 @@
 #include <VkBootstrap.h>
 #include <SDL.h>
 
-Swapchain::Swapchain(VkFormat format /*= VK_FORMAT_B8G8R8A8_UNORM*/) :
+Swapchain::Swapchain(VkFormat format /*= VK_FORMAT_B8G8R8A8_SRGB*/) :
    m_swapchainImageFormat(format)
 {
     createSwapchain();

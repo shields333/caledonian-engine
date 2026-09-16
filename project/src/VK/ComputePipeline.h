@@ -17,6 +17,7 @@ public:
 
 	VkPipeline getHandle() { return m_handle; }
 	VkPipelineLayout getLayout() { return m_layout; }
+	VkDescriptorSetLayout getDescriptorLayout(int i) { return m_descriptorLayouts[i]; }
 
 private:
 	VkPipeline m_handle = VK_NULL_HANDLE;
