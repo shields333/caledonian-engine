@@ -116,10 +116,13 @@ void VulkanEngine::init()
 
     init_descriptors();
 
+    tonemapModule = std::make_unique<modules::Tonemapper>(m_drawImage.get());
+
     m_guiManager = std::make_unique<GuiManager>();
 
     m_deleteionQueue.push_function([&]() {
         m_guiManager.reset();
+        tonemapModule.reset();
         });
 }
 
@@ -302,18 +305,6 @@ void VulkanEngine::init_descriptors()
             });
     }
 
-    {
-        // create a descriptor set for the scene image texture
-        m_sceneTexSet = m_globalDescriptorAllocator.allocate(m_tonemapPipeline->getDescriptorLayout(0));
-        DescriptorWriter writer;
-        writer.writeImage(0, m_drawImage->getViewHandle(), m_defaultSamplerLinear->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        writer.update_set(m_device->getHandle(), m_sceneTexSet);
-
-        m_lumHistTexSet = m_globalDescriptorAllocator.allocate(m_lumHistPipeline->getDescriptorLayout(0));
-        writer.update_set(m_device->getHandle(), m_lumHistTexSet);
-
-    }
-
     m_deleteionQueue.push_function([&]() {
         m_globalDescriptorAllocator.destroy_pools(m_device->getHandle());
         });
@@ -324,23 +315,7 @@ void VulkanEngine::initPipelines()
 
     m_cullPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "culling.comp.spv");
 
-    m_lumHistPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "lumHist.comp.spv");
-    m_lumAvgPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "lumAvg.comp.spv");
-
-    PipelineBuilder builder;
-
-    std::vector<std::string> shaderPaths = { SHADER_PATH + "fullscreen.vert.spv", SHADER_PATH + "tonemap.frag.spv" };
-    builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    builder.setPolygonMode(VK_POLYGON_MODE_FILL);
-    builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-    builder.setColourAttachmentFormat(m_swapchain->m_swapchainImageFormat);
-
-    m_tonemapPipeline.reset(builder.buildPipeline(shaderPaths));
-
     m_deleteionQueue.push_function([&]() {
-        m_tonemapPipeline.reset();
-        m_lumAvgPipeline.reset();
-        m_lumHistPipeline.reset();
         m_cullPipeline.reset();
         });
 }
@@ -421,11 +396,8 @@ void VulkanEngine::createTextures()
 
     m_globalUniform = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
 
-    m_lumHistogram = std::make_unique<Buffer>(sizeof(uint32_t) * (256 + 1), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
-
     m_deleteionQueue.push_function([&]() {
         m_globalUniform.reset();
-        m_lumHistogram.reset();
 
         m_defaultSamplerLinear.reset();
         m_defaultSamplerNearest.reset();
@@ -545,40 +517,13 @@ void VulkanEngine::recordCommands()
 
     cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
 
-    {
-        LumHistConstants pushConstants;
-        pushConstants.params = glm::vec4(-10.f, 1.f / 12.f, m_stats.frametime / 1000.f, m_drawImage->getExtent().width * m_drawImage->getExtent().height);
-        pushConstants.histogramBuf = m_lumHistogram->getAddress();
-
-        cmd->bindPipeline(m_lumHistPipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
-        cmd->bindDescriptorSet(m_lumHistTexSet, m_lumHistPipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
-        cmd->pushConstants(&pushConstants, sizeof(LumHistConstants), m_lumHistPipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
-        cmd->dispatch((m_drawImage->getExtent().width + 15) / 16, (m_drawImage->getExtent().height + 15) / 16, 1);
-
-        cmd->barrier(*m_lumHistogram, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT);
-
-        pushConstants.params.y = 12.f;
-
-        cmd->bindPipeline(m_lumAvgPipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
-        cmd->pushConstants(&pushConstants, sizeof(LumHistConstants), m_lumHistPipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
-        cmd->dispatch(1, 1, 1);
-    }
+    tonemapModule->createHistogram(cmd);
 
     // begin UI pass
     cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     cmd->beginRendering(nullptr, &swapchainImage);
 
-    { // tonemap the final image
-        LumHistConstants pushConstants;
-        pushConstants.params = glm::vec4(-10.f, 1.f / 12.f, m_stats.frametime / 1000.f, m_drawImage->getExtent().width * m_drawImage->getExtent().height);
-        pushConstants.histogramBuf = m_lumHistogram->getAddress();
-
-        cmd->bindPipeline(m_tonemapPipeline->getHandle(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-        cmd->bindDescriptorSet(m_sceneTexSet, m_tonemapPipeline->getLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS);
-        cmd->pushConstants(&pushConstants, sizeof(LumHistConstants), m_tonemapPipeline->getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT);
-        cmd->draw(3, 1, 0, 0);
-    }
-
+    tonemapModule->applyTonemapping(cmd);
 
     // draw the GUI
     m_guiManager->draw(*cmd);

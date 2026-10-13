@@ -50,15 +50,22 @@ set(SceneGraph
   SceneGraph/GLTFLoader.h
 )
 
+set(Modules
+  Modules/Tonemapper.h
+  Modules/Tonemapper.cpp
+)
+
 source_group("\\" FILES ${main})
 source_group("VK\\" FILES ${vk})
 source_group("SceneGraph\\" FILES ${SceneGraph})
+source_group("Modules\\" FILES ${Modules})
 
 # Add source to this project's executable.
 add_executable (engine 
   ${main}
   ${vk}
   ${SceneGraph}
+  ${Modules}
 )
 
 set_property(TARGET engine PROPERTY CXX_STANDARD 20)

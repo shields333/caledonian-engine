@@ -18,7 +18,10 @@
 #include "GraphicsPipeline.h"
 #include "GuiManager.h"
 #include "Mesh.h"
-#include "camera.h"
+#include "Camera.h"
+
+// Render Modules
+#include "Modules/Tonemapper.h"
 
 struct FrameData {
 
@@ -79,15 +82,7 @@ public:
 
 	DescriptorAllocatorGrowable m_globalDescriptorAllocator;
 
-	VkDescriptorSet	m_sceneTexSet;
-	VkDescriptorSet	m_lumHistTexSet;
-
-	std::unique_ptr<ComputePipeline> m_lumHistPipeline;
-	std::unique_ptr<ComputePipeline> m_lumAvgPipeline;
-	std::unique_ptr<Buffer> m_lumHistogram;
-
 	std::unique_ptr<ComputePipeline> m_cullPipeline;
-	std::unique_ptr<GraphicsPipeline> m_tonemapPipeline;
 
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
@@ -203,6 +198,8 @@ private:
 			deletors.clear();
 		}
 	}m_deleteionQueue;
+
+	std::unique_ptr<modules::Tonemapper> tonemapModule;
 
 	VulkanEngine();
 	~VulkanEngine();
