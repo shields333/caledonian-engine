@@ -35,6 +35,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("D:/Documents/Visual Studio 2022/VulkanProject/third_party/fastgltf/cmake_install.cmake")
+  include("D:/Documents/Visual Studio 2022/VulkanProject/third_party/volk/cmake_install.cmake")
 
 endif()
 

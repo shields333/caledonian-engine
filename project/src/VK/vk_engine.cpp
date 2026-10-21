@@ -128,6 +128,8 @@ void VulkanEngine::init()
 
 void VulkanEngine::initVulkan()
 {
+    volkInitialize();
+
     vkb::InstanceBuilder builder;
 
 #if _DEBUG
@@ -146,6 +148,8 @@ void VulkanEngine::initVulkan()
     //grab the instance 
     m_instance = vkbInst.instance;
     m_debugMessenger = vkbInst.debug_messenger;
+
+    volkLoadInstance(m_instance);
 
     SDL_Vulkan_CreateSurface(m_window, m_instance, &m_surface);
 
@@ -169,15 +173,21 @@ void VulkanEngine::initVulkan()
     features.multiDrawIndirect = true;
     features.shaderInt64 = true;
 
+    VkPhysicalDeviceDescriptorHeapFeaturesEXT heapFeature = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+        .descriptorHeap = VK_TRUE};
+
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
     vkb::PhysicalDeviceSelector selector{ vkbInst };
     vkb::PhysicalDevice physicalDevice = selector
-        .set_minimum_version(1, 3)
+        .set_minimum_version(1, 4)
         .set_required_features_13(features13)
         .set_required_features_12(features12)
         .set_required_features_11(features11)
         .set_required_features(features)
+        .add_required_extension("VK_KHR_maintenance5")
+        .add_required_extension("VK_EXT_descriptor_heap")
+        .add_required_extension_features(heapFeature)
         .set_surface(m_surface)
         .select()
         .value();
@@ -191,6 +201,8 @@ void VulkanEngine::initVulkan()
     m_device = std::make_unique<Device>(vkbDevice.device);
     m_physicalDevice = physicalDevice.physical_device;
 
+    volkLoadDevice(m_device->getHandle());
+
     // use vkbootstrap to get a Graphics queue
     m_graphicsQueue = std::make_unique<Queue>(vkbDevice.get_queue(vkb::QueueType::graphics).value(),
         vkbDevice.get_queue_index(vkb::QueueType::graphics).value());
@@ -201,8 +213,13 @@ void VulkanEngine::initVulkan()
     allocatorInfo.device = m_device->getHandle();
     allocatorInfo.instance = m_instance;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-    vmaCreateAllocator(&allocatorInfo, &m_allocator);
 
+    VmaVulkanFunctions vmaVulkanFuncs{ .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+    .vkGetDeviceProcAddr = vkGetDeviceProcAddr };
+    allocatorInfo.pVulkanFunctions = &vmaVulkanFuncs;
+
+    vmaCreateAllocator(&allocatorInfo, &m_allocator);
+    
     m_deleteionQueue.push_function([&]() {
         vmaDestroyAllocator(m_allocator);
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
@@ -212,7 +229,7 @@ void VulkanEngine::initVulkan()
 void VulkanEngine::initSwapchain()
 {
     m_swapchain = std::make_unique<Swapchain>();
-    m_frameCount = m_swapchain->getswapchainImages().size();
+    m_frameCount = m_swapchain->getImageCount();
 
     VkImageUsageFlags drawImageUsages{};
     drawImageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -263,7 +280,6 @@ void VulkanEngine::initSyncStructures()
 
     for (int i = 0; i < m_frameCount; i++) {
         VK_CHECK(vkCreateSemaphore(m_device->getHandle(), &semaphoreCreateInfo, nullptr, &m_frames[i].swapchainSemaphore));
-        VK_CHECK(vkCreateSemaphore(m_device->getHandle(), &semaphoreCreateInfo, nullptr, &m_frames[i].renderSemaphore));
     }
 
     m_fencePool = std::make_unique<FencePool>();
@@ -271,7 +287,6 @@ void VulkanEngine::initSyncStructures()
     m_deleteionQueue.push_function([&]() {
         m_fencePool.reset();
         for (auto& frame : m_frames) {
-            vkDestroySemaphore(m_device->getHandle(), frame.renderSemaphore, nullptr);
             vkDestroySemaphore(m_device->getHandle(), frame.swapchainSemaphore, nullptr);
         }
         });
@@ -279,6 +294,16 @@ void VulkanEngine::initSyncStructures()
 
 void VulkanEngine::init_descriptors()
 {
+    VkPhysicalDeviceDescriptorHeapPropertiesEXT heapProps{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT };
+    VkPhysicalDeviceProperties2 deviceProps{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &heapProps };
+    vkGetPhysicalDeviceProperties2(m_physicalDevice, &deviceProps);
+
+    m_resHeap = std::make_unique<Buffer>(heapProps.imageDescriptorSize * UINT16_MAX, VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
+    VkDeviceAddressRangeEXT addrRange = { .address = m_frames[0].m_gpuSceneDataBuffer->getAddress(), .size = m_frames[0].m_gpuSceneDataBuffer->getInfo().size };
+    VkResourceDescriptorDataEXT descData = { .pAddressRange = &addrRange };
+    VkResourceDescriptorInfoEXT descInfo = { .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT, .type = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .data = descData };
+    VkHostAddressRangeEXT hostRange = { .address = m_resHeap->getAlloacation()->GetMappedData(), .size = m_resHeap->getInfo().size};
+    vkWriteResourceDescriptorsEXT(m_device->getHandle(), 1, &descInfo, &hostRange);
     //create a descriptor pool that will hold 10 sets with 1 image each
     std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes =
     {
@@ -307,6 +332,7 @@ void VulkanEngine::init_descriptors()
 
     m_deleteionQueue.push_function([&]() {
         m_globalDescriptorAllocator.destroy_pools(m_device->getHandle());
+        m_resHeap.reset();
         });
 }
 
@@ -501,8 +527,8 @@ void VulkanEngine::recordCommands()
     m_drawExtent.width = std::min(m_swapchain->m_swapchainExtent.width, m_drawImage->getExtent().width) * m_renderScale;
 
     // acquire the next swapchain image
-    m_swapchainIndex = m_swapchain->acquireImage(UINT64_MAX, frameData.swapchainSemaphore);
-    Image& swapchainImage = static_cast<Image&>(m_swapchain->getswapchainImages()[m_swapchainIndex]);
+    m_swapchain->acquireImage(UINT64_MAX, frameData.swapchainSemaphore);
+    Image& swapchainImage = static_cast<Image&>(m_swapchain->getswapchainImage());
 
     // reset the pool before recording
     frameData.commandPool->resetPool();
@@ -541,10 +567,10 @@ void VulkanEngine::submitFrame()
 {
     auto& frameData = m_frames[m_frameNumber];
 
-    frameData.fences.push_back(m_graphicsQueue->submit(frameData.mainCommandBuffer->getHandle(), frameData.renderSemaphore, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+    frameData.fences.push_back(m_graphicsQueue->submit(frameData.mainCommandBuffer->getHandle(), m_swapchain->getSemaphore(), VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                                                                         frameData.swapchainSemaphore, VK_PIPELINE_STAGE_2_TRANSFER_BIT));
 
-    m_graphicsQueue->present(m_swapchain->getHandle(), m_swapchainIndex, frameData.renderSemaphore);
+    m_graphicsQueue->present(m_swapchain->getHandle(), m_swapchain->getIndex(), m_swapchain->getSemaphore());
 
     ++m_frameNumber %= m_frameCount;
 }

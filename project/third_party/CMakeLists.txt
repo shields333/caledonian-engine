@@ -1,9 +1,9 @@
 find_package(Vulkan REQUIRED)
 
 add_library(vkbootstrap STATIC)
+add_library(mikktspace STATIC)
 add_library(glm INTERFACE)
 add_library(vma INTERFACE)
-
 add_library(stb_image INTERFACE)
 
 add_subdirectory(fastgltf)
@@ -15,21 +15,28 @@ target_sources(vkbootstrap PRIVATE
   vkbootstrap/VkBootstrap.cpp
   )
 
+target_sources(mikktspace PRIVATE 
+  MikkTSpace/mikktspace.h
+  MikkTSpace/mikktspace.c
+  )
+
+target_include_directories(mikktspace PUBLIC MikkTSpace)
+
+if (WIN32)
+   set(VOLK_STATIC_DEFINES VK_USE_PLATFORM_WIN32_KHR)
+endif()
+add_subdirectory(volk)
+
 target_include_directories(vkbootstrap PUBLIC vkbootstrap)
 target_link_libraries(vkbootstrap PUBLIC Vulkan::Vulkan $<$<BOOL:UNIX>:${CMAKE_DL_LIBS}>)
 set_property(TARGET vkbootstrap PROPERTY CXX_STANDARD 20)
 
-#both vma and glm and header only libs so we only need the include path
+#both vma and glm are header only libs so we only need the include path
 target_include_directories(vma INTERFACE vma)
 
 target_include_directories(glm INTERFACE glm)
 
-#add_library(sdl2 INTERFACE)
-
-#target_include_directories(sdl2 INTERFACE $ENV{VULKAN_SDK}/Include/SDL2 )
-#target_link_directories(sdl2 INTERFACE $ENV{VULKAN_SDK}/Lib )
-
-#target_link_libraries(sdl2 INTERFACE SDL2 SDL2main)
+target_include_directories(stb_image INTERFACE stb_image)
 
 add_library(imgui STATIC)
 
@@ -49,4 +56,13 @@ target_sources(imgui PRIVATE
 
 target_link_libraries(imgui PUBLIC Vulkan::Vulkan SDL2::SDL2)
 
-target_include_directories(stb_image INTERFACE stb_image)
+add_library(spirv-reflect STATIC)
+
+target_include_directories(spirv-reflect PUBLIC SPIRV-Reflect)
+
+target_sources(spirv-reflect PRIVATE 
+SPIRV-Reflect/spirv_reflect.h
+SPIRV-Reflect/spirv_reflect.c
+)
+
+target_link_libraries(spirv-reflect PUBLIC Vulkan::Vulkan)

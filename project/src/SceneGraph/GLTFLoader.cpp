@@ -185,7 +185,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 } };
 
-    file.m_descriptorPool.init(VulkanEngine::getDevice()->getHandle(), gltf.materials.size(), sizes);
+    file.m_descriptorPool.init(VulkanEngine::getDevice()->getHandle(), UINT16_MAX, sizes);
 
     scene->createPipelines();
 

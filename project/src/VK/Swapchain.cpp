@@ -1,6 +1,7 @@
 #include "Swapchain.h"
 
 #include "vk_engine.h"
+#include "vk_initializers.h"
 
 #include <VkBootstrap.h>
 #include <SDL.h>
@@ -9,10 +10,17 @@ Swapchain::Swapchain(VkFormat format /*= VK_FORMAT_B8G8R8A8_SRGB*/) :
    m_swapchainImageFormat(format)
 {
     createSwapchain();
+
+    VkSemaphoreCreateInfo semaphoreCreateInfo = vkinit::semaphore_create_info();
+    for (auto& semaphore : m_renderSemaphores)
+        VK_CHECK(vkCreateSemaphore(VulkanEngine::getDevice()->getHandle(), &semaphoreCreateInfo, nullptr, &semaphore));
 }
 
 Swapchain::~Swapchain()
 {
+    for (auto& semaphore : m_renderSemaphores)
+        vkDestroySemaphore(VulkanEngine::getDevice()->getHandle(), semaphore, nullptr);
+
     destroySwapchain();
 }
 
@@ -61,6 +69,8 @@ void Swapchain::createSwapchain()
             VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT,
             swapchainImageViews[i]);
     }
+
+    m_renderSemaphores.resize(swapchainImages.size());
 }
 
 void Swapchain::destroySwapchain()
@@ -73,13 +83,12 @@ void Swapchain::destroySwapchain()
 
 uint32_t Swapchain::acquireImage(uint64_t timeout, VkSemaphore semaphore)
 {
-    uint32_t index = 0;
-    if (vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &index) == VK_ERROR_OUT_OF_DATE_KHR) {
+    if (vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &m_swapchainIndex) == VK_ERROR_OUT_OF_DATE_KHR) {
         resizeSwapchain();
-        VK_CHECK(vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &index));
+        VK_CHECK(vkAcquireNextImageKHR(VulkanEngine::getDevice()->getHandle(), m_handle, timeout, semaphore, nullptr, &m_swapchainIndex));
     }
 
-    return index;
+    return m_swapchainIndex;
 }
 
 void Swapchain::resizeSwapchain()

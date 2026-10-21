@@ -25,7 +25,10 @@ public:
 	void createSwapchain();
 	void destroySwapchain();
 
-	std::vector<SwapchainImage>& getswapchainImages() { return m_swapchainImages; }
+	SwapchainImage& getswapchainImage() { return m_swapchainImages[m_swapchainIndex]; }
+	VkSemaphore getSemaphore() const { return m_renderSemaphores[m_swapchainIndex]; }
+	uint32_t getIndex() const { return m_swapchainIndex; }
+	uint32_t getImageCount() const { return m_swapchainImages.size(); }
 
 	uint32_t acquireImage(uint64_t timeout, VkSemaphore semaphore = VK_NULL_HANDLE);
 
@@ -34,6 +37,10 @@ public:
 private:
 
 	VkSwapchainKHR m_handle;
+
+	uint32_t m_swapchainIndex = 0;
+
+	std::vector<VkSemaphore> m_renderSemaphores;
 
 	std::vector<SwapchainImage> m_swapchainImages;
 };

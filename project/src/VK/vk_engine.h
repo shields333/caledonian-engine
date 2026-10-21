@@ -28,7 +28,7 @@ struct FrameData {
 	std::unique_ptr<CommandPool> commandPool;
 	CommandBuffer* mainCommandBuffer;
 
-	VkSemaphore swapchainSemaphore, renderSemaphore;
+	VkSemaphore swapchainSemaphore;
 	std::vector<Fence> fences;
 
 	DescriptorAllocatorGrowable m_frameDescriptors;
@@ -87,9 +87,9 @@ public:
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
 
-	uint32_t m_frameCount = 3;
+	std::unique_ptr<Buffer> m_resHeap;
 
-	uint32_t m_swapchainIndex = 0;
+	uint32_t m_frameCount = 3;
 
 	int m_frameNumber{ 0 };
 
