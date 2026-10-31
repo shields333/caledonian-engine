@@ -90,7 +90,7 @@ void SceneGraph::createBuffers(std::span<uint32_t> indices, std::span<Vertex> ve
 
     //write the texture array to its descriptor set
     DescriptorWriter writer;
-    writer.writeImageArray(0, images, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); //@TODO: use an image defined sampler
+    writer.writeImageArray(0, images, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     writer.update_set(VulkanEngine::getDevice()->getHandle(), m_textureSet);
 
     // shouldn't overwrite an existing mesh

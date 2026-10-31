@@ -23,8 +23,11 @@ public:
 		VkAccessFlags2			srcAccess = VK_ACCESS_2_NONE;
 	};
 
+	void setSampler(VkSampler sampler) { m_sampler = sampler; }
+
 	VkImage		getHandle()		const { return m_handle; }
 	VkImageView getViewHandle() const { return m_view; }
+	VkSampler	getSamplerHandle() const { return m_sampler; }
 
 	VkFormat			getFormat()	const		{ return m_format; }
 	VkImageAspectFlags	getAspectFlags() const	{ return m_aspectFlags; }
@@ -36,9 +39,10 @@ public:
 	void generateMipmaps(CommandBuffer& cmd);
 
 protected:
-	VkImage			m_handle		= VK_NULL_HANDLE;
-	VmaAllocation	m_allocation	= 0;
-	VkImageView		m_view			= VK_NULL_HANDLE;
+	VkImage			m_handle = VK_NULL_HANDLE;
+	VmaAllocation	m_allocation = 0;
+	VkImageView		m_view = VK_NULL_HANDLE;
+	VkSampler		m_sampler = VK_NULL_HANDLE;
 
 	VkFormat			m_format	  = VkFormat::VK_FORMAT_UNDEFINED;
 	VkExtent3D			m_extent	  = { 0, 0 };

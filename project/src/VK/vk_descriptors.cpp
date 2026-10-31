@@ -191,7 +191,7 @@ void DescriptorWriter::writeImageArray(int binding, std::vector<std::shared_ptr<
 
     for (int i = 0; i < images.size(); i++) {
         imageInfos.emplace_back(VkDescriptorImageInfo{
-        .sampler = sampler,
+        .sampler = images[i]->getSamplerHandle() == VK_NULL_HANDLE ? sampler : images[i]->getSamplerHandle(),
         .imageView = images[i]->getViewHandle(),
         .imageLayout = layout
             });

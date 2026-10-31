@@ -289,6 +289,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             if (gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.colorSampler = &file.samplers[gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.value()];
+
+            file.images[materialResources.colourID]->setSampler(materialResources.colorSampler->getHandle());
         }
         // look for metal/roughness texture
         if (mat.pbrData.metallicRoughnessTexture.has_value()) {
@@ -297,6 +299,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             if (gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.metalRoughSampler = &file.samplers[gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value()];
+
+            file.images[materialResources.metalRoughnessID]->setSampler(materialResources.metalRoughSampler->getHandle());
         }
         // look for normal texture
         if (mat.normalTexture.has_value()) {
@@ -305,6 +309,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             if (gltf.textures[mat.normalTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.normalSampler = &file.samplers[gltf.textures[mat.normalTexture.value().textureIndex].samplerIndex.value()];
+
+            file.images[materialResources.normalID]->setSampler(materialResources.normalSampler->getHandle());
         }
         // look for emissive texture
         if (mat.emissiveTexture.has_value()) {
@@ -313,6 +319,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             if (gltf.textures[mat.emissiveTexture.value().textureIndex].samplerIndex.has_value())
                 materialResources.emissiveSampler = &file.samplers[gltf.textures[mat.emissiveTexture.value().textureIndex].samplerIndex.value()];
+
+            file.images[materialResources.emissiveID]->setSampler(materialResources.emissiveSampler->getHandle());
         }
 
         constants.colourFactors.x = mat.pbrData.baseColorFactor[0];

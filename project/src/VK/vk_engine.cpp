@@ -173,9 +173,6 @@ void VulkanEngine::initVulkan()
     features.multiDrawIndirect = true;
     features.shaderInt64 = true;
 
-    VkPhysicalDeviceDescriptorHeapFeaturesEXT heapFeature = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
-        .descriptorHeap = VK_TRUE};
-
     //use vkbootstrap to select a gpu. 
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
     vkb::PhysicalDeviceSelector selector{ vkbInst };
@@ -185,9 +182,6 @@ void VulkanEngine::initVulkan()
         .set_required_features_12(features12)
         .set_required_features_11(features11)
         .set_required_features(features)
-        .add_required_extension("VK_KHR_maintenance5")
-        .add_required_extension("VK_EXT_descriptor_heap")
-        .add_required_extension_features(heapFeature)
         .set_surface(m_surface)
         .select()
         .value();
@@ -294,16 +288,6 @@ void VulkanEngine::initSyncStructures()
 
 void VulkanEngine::init_descriptors()
 {
-    VkPhysicalDeviceDescriptorHeapPropertiesEXT heapProps{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT };
-    VkPhysicalDeviceProperties2 deviceProps{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &heapProps };
-    vkGetPhysicalDeviceProperties2(m_physicalDevice, &deviceProps);
-
-    m_resHeap = std::make_unique<Buffer>(heapProps.imageDescriptorSize * UINT16_MAX, VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
-    VkDeviceAddressRangeEXT addrRange = { .address = m_frames[0].m_gpuSceneDataBuffer->getAddress(), .size = m_frames[0].m_gpuSceneDataBuffer->getInfo().size };
-    VkResourceDescriptorDataEXT descData = { .pAddressRange = &addrRange };
-    VkResourceDescriptorInfoEXT descInfo = { .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT, .type = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .data = descData };
-    VkHostAddressRangeEXT hostRange = { .address = m_resHeap->getAlloacation()->GetMappedData(), .size = m_resHeap->getInfo().size};
-    vkWriteResourceDescriptorsEXT(m_device->getHandle(), 1, &descInfo, &hostRange);
     //create a descriptor pool that will hold 10 sets with 1 image each
     std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes =
     {
@@ -332,7 +316,6 @@ void VulkanEngine::init_descriptors()
 
     m_deleteionQueue.push_function([&]() {
         m_globalDescriptorAllocator.destroy_pools(m_device->getHandle());
-        m_resHeap.reset();
         });
 }
 

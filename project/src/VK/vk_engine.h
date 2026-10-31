@@ -87,8 +87,6 @@ public:
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
 
-	std::unique_ptr<Buffer> m_resHeap;
-
 	uint32_t m_frameCount = 3;
 
 	int m_frameNumber{ 0 };
