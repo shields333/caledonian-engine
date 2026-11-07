@@ -27,9 +27,9 @@ VkImageAspectFlags getAspectBits(VkFormat format)
 Image::Image(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, void* data /* = nullptr */, bool generateMips /*= false*/) :
 	m_format(format), m_extent(extent), m_usageFlags(usageFlags), m_aspectFlags(getAspectBits(format))
 {
-	if (data || generateMips)
-		m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
+	if (data || generateMips) {
+		m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+	}
 	auto imageInfo = vkinit::image_create_info(m_format, m_usageFlags, m_extent);
 
 	if (generateMips)
@@ -46,8 +46,14 @@ Image::Image(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, v
 	VK_CHECK(vmaCreateImage(VulkanEngine::get().m_allocator, &imageInfo, &allocinfo, &m_handle, &m_allocation, nullptr));
 
 	// create the image's view
-	auto viewInfo = vkinit::imageview_create_info(format, m_handle, m_aspectFlags);
+	auto viewInfo = vkinit::imageview_create_info(format, m_handle, m_aspectFlags, imageInfo.mipLevels);
 	VK_CHECK(vkCreateImageView(VulkanEngine::getDevice()->getHandle(), &viewInfo, nullptr, &m_view));
+
+	// create views for each mip level individually
+	for (int i = 0; i < m_mipmaps.size(); i++) {
+		viewInfo = vkinit::imageview_create_info(format, m_handle, m_aspectFlags, 1, i);
+		VK_CHECK(vkCreateImageView(VulkanEngine::getDevice()->getHandle(), &viewInfo, nullptr, &m_mipmaps[i].view));
+	}
 
 	if (data)
 		uploadData(data, generateMips);
@@ -55,6 +61,9 @@ Image::Image(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, v
 
 Image::~Image()
 {
+	for (auto& mipLevel : m_mipmaps)
+		vkDestroyImageView(VulkanEngine::getDevice()->getHandle(), mipLevel.view, nullptr);
+
 	vkDestroyImageView(VulkanEngine::getDevice()->getHandle(), m_view, nullptr);
 	vmaDestroyImage(VulkanEngine::get().m_allocator, m_handle, m_allocation);
 }
@@ -87,37 +96,33 @@ void Image::uploadData(void* data, bool generateMips)
 	memcpy(stagingBuffer.getInfo().pMappedData, data, dataSize);
 
 	VulkanEngine::get().immediateSubmit([&](CommandBuffer cmd) {
-		cmd.barrier(*this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR, VK_ACCESS_2_TRANSFER_WRITE_BIT, 0, m_mipmaps.size());
+		cmd.barrier(*this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
 		// copy the buffer into the image
 		cmd.copyToImage(stagingBuffer, *this);
 		
-		if (generateMips)
-			generateMipmaps(cmd);
-		else
-			cmd.barrier(*this, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+		cmd.barrier(*this, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
 		});
 }
 
-void Image::generateMipmaps(CommandBuffer& cmd)
+void Image::generateMipmaps()
 {
-	VkExtent3D imageSize = m_extent;
+	std::vector<VkImageView> mipViews(m_mipmaps.size() - 1);
+	for (int i = 0; i < mipViews.size(); i++)
+		mipViews[i] = m_mipmaps[i + 1].view;
 
-	for (int mip = 0; mip < m_mipmaps.size(); mip++) {
-		cmd.barrier(*this, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR, VK_ACCESS_2_TRANSFER_READ_BIT, mip);
+	// create the downsampler descriptor set
+	VkDescriptorSet downsamplerSet = VulkanEngine::get().m_globalDescriptorAllocator.allocate(VulkanEngine::get().m_downSampleModule->getDescriptorLayout());
+	DescriptorWriter writer;
+	writer.writeImage(0, m_mipmaps[0].view, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+	writer.writeImageArray(1, mipViews, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+	writer.update_set(VulkanEngine::getDevice()->getHandle(), downsamplerSet);
 
-		if (mip < m_mipmaps.size() - 1) {
-			VkExtent3D halfSize = imageSize;
-			halfSize.width /= 2;
-			halfSize.height /= 2;
+	VulkanEngine::get().immediateSubmit([&](CommandBuffer cmd) {
+		VulkanEngine::get().m_downSampleModule->execute(&cmd, this, downsamplerSet, 0, mipViews.size());
+	});
 
-			cmd.blit(*this, *this, imageSize, halfSize, mip, mip+1);
-
-			imageSize = halfSize;
-		}
-	}
-
-	cmd.barrier(*this, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT, 0, m_mipmaps.size());
+	VulkanEngine::get().m_globalDescriptorAllocator.clear_pools(VulkanEngine::getDevice()->getHandle());
 }
 
 SwapchainImage::SwapchainImage(VkImage image, VkFormat format, VkExtent2D extent, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags, VkImageView view)

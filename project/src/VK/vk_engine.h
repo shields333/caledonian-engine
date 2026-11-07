@@ -22,6 +22,7 @@
 
 // Render Modules
 #include "Modules/Tonemapper.h"
+#include "Modules/DownSampler.h"
 
 struct FrameData {
 
@@ -75,8 +76,6 @@ class VulkanEngine
 {
 public:
 	EngineStats m_stats = {};
-
-	const std::string SHADER_PATH = "../project/shaders/";
 
 	Camera m_mainCamera;
 
@@ -141,6 +140,8 @@ public:
 
 	std::unique_ptr<GuiManager> m_guiManager;
 
+	std::unique_ptr<modules::DownSampler> m_downSampleModule;
+
 	void update_scene();
 
 	static VulkanEngine& get();
@@ -197,7 +198,7 @@ private:
 		}
 	}m_deleteionQueue;
 
-	std::unique_ptr<modules::Tonemapper> tonemapModule;
+	std::unique_ptr<modules::Tonemapper> m_tonemapModule;
 
 	VulkanEngine();
 	~VulkanEngine();

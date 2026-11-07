@@ -104,25 +104,28 @@ void VulkanEngine::init()
 {
     initVulkan();
 
+    m_downSampleModule = std::make_unique<modules::DownSampler>();
+
     initSwapchain();
 
     initCommandPools();
 
     initSyncStructures();
 
+    init_descriptors();
+
     initDefaultData();
 
     initPipelines();
 
-    init_descriptors();
-
-    tonemapModule = std::make_unique<modules::Tonemapper>(m_drawImage.get());
+    m_tonemapModule = std::make_unique<modules::Tonemapper>(m_drawImage.get());
 
     m_guiManager = std::make_unique<GuiManager>();
 
     m_deleteionQueue.push_function([&]() {
         m_guiManager.reset();
-        tonemapModule.reset();
+        m_tonemapModule.reset();
+        m_downSampleModule.reset();
         });
 }
 
@@ -157,6 +160,7 @@ void VulkanEngine::initVulkan()
     VkPhysicalDeviceVulkan13Features features13{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
+    features13.shaderDemoteToHelperInvocation = true;
 
     //vulkan 1.2 features
     VkPhysicalDeviceVulkan12Features features12{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
@@ -291,7 +295,7 @@ void VulkanEngine::init_descriptors()
     //create a descriptor pool that will hold 10 sets with 1 image each
     std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes =
     {
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 12 },
         { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 }
     };
 
@@ -368,18 +372,32 @@ void VulkanEngine::loadMeshes()
 
 void VulkanEngine::createTextures()
 {
+    VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+
+    sampl.magFilter = VK_FILTER_NEAREST;
+    sampl.minFilter = VK_FILTER_NEAREST;
+    m_defaultSamplerNearest = std::make_unique<Sampler>(sampl);
+
+    sampl.magFilter = VK_FILTER_LINEAR;
+    sampl.minFilter = VK_FILTER_LINEAR;
+    sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    m_defaultSamplerLinear = std::make_unique<Sampler>(sampl);
+
     //3 default textures, white, grey, black. 1 pixel each
     uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
     m_whiteImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&white);
+    m_whiteImage->setSampler(m_defaultSamplerNearest->getHandle());
 
     uint32_t grey = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
     m_greyImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&grey);
+    m_greyImage->setSampler(m_defaultSamplerNearest->getHandle());
 
     uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
     m_blackImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&black);
+    m_blackImage->setSampler(m_defaultSamplerNearest->getHandle());
 
     //checkerboard image
     uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
@@ -391,17 +409,7 @@ void VulkanEngine::createTextures()
     }
     m_errorCheckerboardImage = std::make_shared<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 16, 16, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&magenta);
-
-    VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
-
-    sampl.magFilter = VK_FILTER_NEAREST;
-    sampl.minFilter = VK_FILTER_NEAREST;
-    m_defaultSamplerNearest = std::make_unique<Sampler>(sampl);
-
-    sampl.magFilter = VK_FILTER_LINEAR;
-    sampl.minFilter = VK_FILTER_LINEAR;
-    sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    m_defaultSamplerLinear = std::make_unique<Sampler>(sampl);
+    m_errorCheckerboardImage->setSampler(m_defaultSamplerNearest->getHandle());
 
     m_globalUniform = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
 
@@ -458,7 +466,7 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     auto start = std::chrono::steady_clock::now();
 
     //write the buffer
-    GPUSceneData* sceneUniformData = (GPUSceneData*)m_frames[m_frameNumber].m_gpuSceneDataBuffer->getAlloacation()->GetMappedData();
+    GPUSceneData* sceneUniformData = (GPUSceneData*)m_frames[m_frameNumber].m_gpuSceneDataBuffer->getInfo().pMappedData;
     *sceneUniformData = m_sceneData;
 
     //create a descriptor set that binds that buffer and update it
@@ -526,13 +534,13 @@ void VulkanEngine::recordCommands()
 
     cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
 
-    tonemapModule->createHistogram(cmd);
+    m_tonemapModule->createHistogram(cmd);
 
     // begin UI pass
     cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     cmd->beginRendering(nullptr, &swapchainImage);
 
-    tonemapModule->applyTonemapping(cmd);
+    m_tonemapModule->applyTonemapping(cmd);
 
     // draw the GUI
     m_guiManager->draw(*cmd);

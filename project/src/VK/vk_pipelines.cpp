@@ -179,10 +179,17 @@ VkPipelineLayout vkutil::createPiplineLayout(const std::vector<SpvReflectShaderM
 		for (auto& binding : layout.second)
 			layoutBindings.push_back(std::move(binding.second));
 
+		std::vector<VkDescriptorBindingFlags> flags(2, VkDescriptorBindingFlagBits::VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+		VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo = {
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+			.bindingCount = (uint32_t)layoutBindings.size(),
+			.pBindingFlags = flags.data(),
+		};
 		VkDescriptorSetLayoutCreateInfo setLayoutInfo = {};
 		setLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		setLayoutInfo.bindingCount = layoutBindings.size();
 		setLayoutInfo.pBindings = layoutBindings.data();
+		setLayoutInfo.pNext = &flagsInfo;
 
 		descriptorLayouts.emplace_back();
 		VK_CHECK(vkCreateDescriptorSetLayout(VulkanEngine::getDevice()->getHandle(), &setLayoutInfo, nullptr, &descriptorLayouts.back()));

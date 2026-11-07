@@ -148,6 +148,12 @@ VkDescriptorSet DescriptorAllocatorGrowable::allocate(VkDescriptorSetLayout layo
     return ds;
 }
 
+DescriptorWriter::DescriptorWriter()
+{
+    imageInfos.reserve(50);
+    bufferInfos.reserve(50);
+}
+
 void DescriptorWriter::write_buffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type)
 {
     VkDescriptorBufferInfo& info = bufferInfos.emplace_back(VkDescriptorBufferInfo{
@@ -188,6 +194,7 @@ void DescriptorWriter::writeImage(int binding, VkImageView image, VkSampler samp
 
 void DescriptorWriter::writeImageArray(int binding, std::vector<std::shared_ptr<Image>>& images, VkSampler sampler, VkImageLayout layout, VkDescriptorType type)
 {
+    uint32_t start = imageInfos.size();
 
     for (int i = 0; i < images.size(); i++) {
         imageInfos.emplace_back(VkDescriptorImageInfo{
@@ -202,7 +209,29 @@ void DescriptorWriter::writeImageArray(int binding, std::vector<std::shared_ptr<
     write.dstSet = VK_NULL_HANDLE; //left empty for now until we need to write it
     write.descriptorCount = images.size();
     write.descriptorType = type;
-    write.pImageInfo = &imageInfos.front();
+    write.pImageInfo = &imageInfos[start];
+
+    writes.push_back(write);
+}
+
+void DescriptorWriter::writeImageArray(int binding, std::vector<VkImageView>& views, VkSampler sampler, VkImageLayout layout, VkDescriptorType type)
+{
+    uint32_t start = imageInfos.size();
+
+    for (int i = 0; i < views.size(); i++) {
+        imageInfos.emplace_back(VkDescriptorImageInfo{
+        .sampler = sampler,
+        .imageView = views[i],
+        .imageLayout = layout
+            });
+    }
+    VkWriteDescriptorSet write = { .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+
+    write.dstBinding = binding;
+    write.dstSet = VK_NULL_HANDLE; //left empty for now until we need to write it
+    write.descriptorCount = views.size();
+    write.descriptorType = type;
+    write.pImageInfo = &imageInfos[start];
 
     writes.push_back(write);
 }

@@ -1,6 +1,8 @@
 #pragma once 
 
 #include "vk_types.h"
+#include "ComputePipeline.h"
+#include "Buffer.h"
 
 class CommandBuffer;
 
@@ -21,6 +23,7 @@ public:
 		VkImageLayout			layout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
 		VkPipelineStageFlags2	srcStage = VK_PIPELINE_STAGE_2_NONE;
 		VkAccessFlags2			srcAccess = VK_ACCESS_2_NONE;
+		VkImageView				view = VK_NULL_HANDLE;
 	};
 
 	void setSampler(VkSampler sampler) { m_sampler = sampler; }
@@ -36,7 +39,7 @@ public:
 	Mipmap&				getMipmap(uint32_t level) { return m_mipmaps[level]; }
 
 	void uploadData(void* data, bool generateMips);
-	void generateMipmaps(CommandBuffer& cmd);
+	void generateMipmaps();
 
 protected:
 	VkImage			m_handle = VK_NULL_HANDLE;

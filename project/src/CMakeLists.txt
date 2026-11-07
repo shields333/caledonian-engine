@@ -53,6 +53,8 @@ set(SceneGraph
 set(Modules
   Modules/Tonemapper.h
   Modules/Tonemapper.cpp
+  Modules/DownSampler.h
+  Modules/DownSampler.cpp
 )
 
 source_group("\\" FILES ${main})

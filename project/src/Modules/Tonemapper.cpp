@@ -8,12 +8,12 @@ namespace modules
 {
 	Tonemapper::Tonemapper(const Image* img)
 	{
-		m_lumHistPipeline = std::make_unique<ComputePipeline>(VulkanEngine::get().SHADER_PATH + "lumHist.comp.spv");
-		m_lumAvgPipeline = std::make_unique<ComputePipeline>(VulkanEngine::get().SHADER_PATH + "lumAvg.comp.spv");
+		m_lumHistPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "lumHist.comp.spv");
+		m_lumAvgPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "lumAvg.comp.spv");
 
 		PipelineBuilder builder;
 
-		std::vector<std::string> shaderPaths = { VulkanEngine::get().SHADER_PATH + "fullscreen.vert.spv", VulkanEngine::get().SHADER_PATH + "tonemap.frag.spv" };
+		std::vector<std::string> shaderPaths = { SHADER_PATH + "fullscreen.vert.spv", SHADER_PATH + "tonemap.frag.spv" };
 		builder.setTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 		builder.setPolygonMode(VK_POLYGON_MODE_FILL);
 		builder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);

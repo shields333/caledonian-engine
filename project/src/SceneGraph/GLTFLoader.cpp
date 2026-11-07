@@ -245,13 +245,13 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
     for (auto& t : threads)
         t.join();
 
+    fmt::println("/////////////////////////////////////////// Loading Materials ///////////////////////////////////////////");
+
     // create buffer to hold the material data
     file.m_materialDataBuffer = std::make_unique<Buffer>(sizeof(GLTFMetallic_Roughness::MaterialConstants) * gltf.materials.size(),
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO);
     int data_index = 0;
     GLTFMetallic_Roughness::MaterialConstants* sceneMaterialConstants = (GLTFMetallic_Roughness::MaterialConstants*)file.m_materialDataBuffer->getInfo().pMappedData;
-
-    fmt::println("/////////////////////////////////////////// Loading Materials ///////////////////////////////////////////");
 
     // load all materials
     for (fastgltf::Material& mat : gltf.materials) {
@@ -291,6 +291,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 materialResources.colorSampler = &file.samplers[gltf.textures[mat.pbrData.baseColorTexture.value().textureIndex].samplerIndex.value()];
 
             file.images[materialResources.colourID]->setSampler(materialResources.colorSampler->getHandle());
+            file.images[materialResources.colourID]->generateMipmaps();
         }
         // look for metal/roughness texture
         if (mat.pbrData.metallicRoughnessTexture.has_value()) {
@@ -301,6 +302,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 materialResources.metalRoughSampler = &file.samplers[gltf.textures[mat.pbrData.metallicRoughnessTexture.value().textureIndex].samplerIndex.value()];
 
             file.images[materialResources.metalRoughnessID]->setSampler(materialResources.metalRoughSampler->getHandle());
+            file.images[materialResources.metalRoughnessID]->generateMipmaps();
         }
         // look for normal texture
         if (mat.normalTexture.has_value()) {
@@ -311,6 +313,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 materialResources.normalSampler = &file.samplers[gltf.textures[mat.normalTexture.value().textureIndex].samplerIndex.value()];
 
             file.images[materialResources.normalID]->setSampler(materialResources.normalSampler->getHandle());
+            file.images[materialResources.normalID]->generateMipmaps();
         }
         // look for emissive texture
         if (mat.emissiveTexture.has_value()) {
@@ -321,6 +324,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
                 materialResources.emissiveSampler = &file.samplers[gltf.textures[mat.emissiveTexture.value().textureIndex].samplerIndex.value()];
 
             file.images[materialResources.emissiveID]->setSampler(materialResources.emissiveSampler->getHandle());
+            file.images[materialResources.emissiveID]->generateMipmaps();
         }
 
         constants.colourFactors.x = mat.pbrData.baseColorFactor[0];
