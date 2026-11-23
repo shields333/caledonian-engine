@@ -1,0 +1,12 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : require
+
+#define compFunc(x, y, z, w) max(max(x, y), max(z, w));
+
+#include "downSample.glsl"
+
+void main() 
+{
+    downSample();
+}

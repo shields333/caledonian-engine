@@ -191,8 +191,12 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
     // load samplers
     for (fastgltf::Sampler& sampler : gltf.samplers) {
+        VkSamplerReductionModeCreateInfo reductMode = { .sType = VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO };
+        reductMode.reductionMode = VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE;
 
         VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, .pNext = nullptr };
+        sampl.pNext = &reductMode;
+
         sampl.maxLod = VK_LOD_CLAMP_NONE;
         sampl.minLod = 0;
 

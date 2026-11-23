@@ -88,6 +88,15 @@ Image& Image::operator=(Image&& other) noexcept
 	return *this;
 }
 
+std::vector<VkImageView> Image::getMipMapViews() const
+{
+	std::vector<VkImageView> mipViews(m_mipmaps.size());
+	for (int i = 0; i < mipViews.size(); i++)
+		mipViews[i] = m_mipmaps[i].view;
+
+	return mipViews;
+}
+
 void Image::uploadData(void* data, bool generateMips)
 {
 	size_t dataSize = m_extent.width * m_extent.height * 4;
@@ -116,10 +125,12 @@ void Image::generateMipmaps()
 	DescriptorWriter writer;
 	writer.writeImage(0, m_mipmaps[0].view, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 	writer.writeImageArray(1, mipViews, VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+	writer.writeImage(2, mipViews[5], VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 	writer.update_set(VulkanEngine::getDevice()->getHandle(), downsamplerSet);
 
 	VulkanEngine::get().immediateSubmit([&](CommandBuffer cmd) {
-		VulkanEngine::get().m_downSampleModule->execute(&cmd, this, downsamplerSet, 0, mipViews.size());
+		VulkanEngine::get().m_downSampleModule->execute(&cmd, this, this, downsamplerSet, 1, mipViews.size());
+		cmd.barrier(*this, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT, 0, mipViews.size());
 	});
 
 	VulkanEngine::get().m_globalDescriptorAllocator.clear_pools(VulkanEngine::getDevice()->getHandle());

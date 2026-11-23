@@ -37,6 +37,8 @@ public:
 	VkExtent3D			getExtent() const		{ return m_extent; }
 	VkExtent2D			getExtent2D() const { return VkExtent2D(m_extent.width, m_extent.height); }
 	Mipmap&				getMipmap(uint32_t level) { return m_mipmaps[level]; }
+	std::vector<VkImageView> getMipMapViews() const;
+	uint32_t			getMipCount() const { return m_mipmaps.size(); }
 
 	void uploadData(void* data, bool generateMips);
 	void generateMipmaps();

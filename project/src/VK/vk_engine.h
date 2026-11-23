@@ -109,9 +109,13 @@ public:
 	std::shared_ptr<Image> m_blackImage;
 	std::shared_ptr<Image> m_greyImage;
 	std::shared_ptr<Image> m_errorCheckerboardImage;
+	std::unique_ptr<Image> m_hizImage;
 
 	std::unique_ptr<Sampler> m_defaultSamplerLinear;
 	std::unique_ptr<Sampler> m_defaultSamplerNearest;
+	std::unique_ptr<Sampler> m_samplerMax;
+
+	VkDescriptorSet m_hizDescSet;
 
 	std::unique_ptr<FencePool> m_fencePool;
 

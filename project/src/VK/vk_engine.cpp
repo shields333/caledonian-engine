@@ -169,6 +169,7 @@ void VulkanEngine::initVulkan()
     features12.descriptorBindingPartiallyBound = true;
     features12.drawIndirectCount = true;
     features12.runtimeDescriptorArray = true;
+    features12.samplerFilterMinmax = true;
 
     VkPhysicalDeviceVulkan11Features features11{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };
     features11.shaderDrawParameters = true;
@@ -240,7 +241,7 @@ void VulkanEngine::initSwapchain()
         drawImageUsages);
 
     VkImageUsageFlags depthImageUsages{};
-    depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depthImageUsages |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
     m_depthImage = std::make_unique<Image>(VK_FORMAT_D32_SFLOAT, VkExtent3D(m_swapchain->m_swapchainExtent.width, m_swapchain->m_swapchainExtent.height, 1), 
         depthImageUsages);
@@ -372,16 +373,26 @@ void VulkanEngine::loadMeshes()
 
 void VulkanEngine::createTextures()
 {
+    VkSamplerReductionModeCreateInfo reductMode = { .sType = VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO };
+    reductMode.reductionMode = VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE;
+
     VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+    sampl.pNext = &reductMode;
 
     sampl.magFilter = VK_FILTER_NEAREST;
     sampl.minFilter = VK_FILTER_NEAREST;
     m_defaultSamplerNearest = std::make_unique<Sampler>(sampl);
 
-    sampl.magFilter = VK_FILTER_LINEAR;
-    sampl.minFilter = VK_FILTER_LINEAR;
+    sampl.magFilter = VK_FILTER_NEAREST;
+    sampl.minFilter = VK_FILTER_NEAREST;
     sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     m_defaultSamplerLinear = std::make_unique<Sampler>(sampl);
+
+    reductMode.reductionMode = VK_SAMPLER_REDUCTION_MODE_MAX;
+    sampl.magFilter = VK_FILTER_LINEAR;
+    sampl.minFilter = VK_FILTER_LINEAR;
+    sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    m_samplerMax = std::make_unique<Sampler>(sampl);
 
     //3 default textures, white, grey, black. 1 pixel each
     uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
@@ -398,6 +409,10 @@ void VulkanEngine::createTextures()
     m_blackImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R8G8B8A8_UNORM, VkExtent3D{ 1, 1, 1 },
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&black);
     m_blackImage->setSampler(m_defaultSamplerNearest->getHandle());
+
+    m_hizImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R32_SFLOAT, VkExtent3D{ m_depthImage->getExtent().width / 2, m_depthImage->getExtent().height / 2, 1},
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_2_STORAGE_BIT_KHR, nullptr, true);
+    m_hizImage->setSampler(m_samplerMax->getHandle());
 
     //checkerboard image
     uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
@@ -418,11 +433,13 @@ void VulkanEngine::createTextures()
 
         m_defaultSamplerLinear.reset();
         m_defaultSamplerNearest.reset();
+        m_samplerMax.reset();
 
         m_errorCheckerboardImage.reset();
         m_blackImage.reset();
         m_greyImage.reset();
         m_whiteImage.reset();
+        m_hizImage.reset();
         });
 }
 
@@ -532,7 +549,16 @@ void VulkanEngine::recordCommands()
 
     drawGeometry(*cmd);
 
-    cmd->barrier(*m_drawImage, VkImageLayout::VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
+    std::vector<VkImageView> mipViews = m_hizImage->getMipMapViews();
+    VkDescriptorSet hizDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_downSampleModule->getDescriptorLayout());
+    DescriptorWriter writer;
+    writer.writeImage(0, m_depthImage->getViewHandle(), VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.writeImageArray(1, mipViews, VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.writeImage(2, mipViews[5], VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.update_set(VulkanEngine::getDevice()->getHandle(), hizDescriptor);
+    m_downSampleModule->execute(cmd, m_depthImage.get(), m_hizImage.get(), hizDescriptor, 0, m_hizImage->getMipCount(), modules::MAX);
+
+    cmd->barrier(*m_drawImage, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
 
     m_tonemapModule->createHistogram(cmd);
 
@@ -549,7 +575,7 @@ void VulkanEngine::recordCommands()
     cmd->endRendering();
 
     // transition swapchain image for present
-    cmd->barrier(swapchainImage, VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE);
+    cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE);
 
     cmd->end();
 }
