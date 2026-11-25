@@ -1,0 +1,23 @@
+#version 460
+
+#extension GL_EXT_buffer_reference2 : require
+
+layout(buffer_reference, std430) buffer VisibleDrawCountBuffer{
+    uint counter[];
+};
+
+//push constants block
+layout( push_constant ) uniform Constants
+{
+    VisibleDrawCountBuffer outDrawCountBuf;
+    uint numOfCounters;
+} pushConstants;
+
+layout (local_size_x = 32) in;
+void main() 
+{
+    if (gl_GlobalInvocationID.x < pushConstants.numOfCounters){
+        pushConstants.outDrawCountBuf.counter[gl_GlobalInvocationID.x] = 0;
+    }
+}
+

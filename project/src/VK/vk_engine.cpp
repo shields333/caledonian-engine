@@ -328,9 +328,11 @@ void VulkanEngine::initPipelines()
 {
 
     m_cullPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "culling.comp.spv");
+    m_resetPipeline = std::make_unique<ComputePipeline>(SHADER_PATH + "resetDraw.comp.spv");
 
     m_deleteionQueue.push_function([&]() {
         m_cullPipeline.reset();
+        m_resetPipeline.reset();
         });
 }
 
@@ -493,20 +495,64 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     writer.update_set(m_device->getHandle(), globalDescriptor);
 
-    if (!m_stopUpdate)
-        m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get());
+    {
+        if (!m_stopUpdate) {
+            cmd.barrier(*m_hizImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, m_hizImage->getMipCount());
+
+            VkDescriptorSet cullDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_cullPipeline->getDescriptorLayout(0));
+            writer.clear();
+            writer.writeImage(0, m_hizImage->getViewHandle(), m_defaultSamplerNearest->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            writer.update_set(m_device->getHandle(), cullDescriptor);
+            m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get(), cullDescriptor, 0);
+        }
+        //begin a render pass  connected to our draw image
+        VkClearColorValue clearColour = { 0.f, 0.f, 0.f, 0.f };
+        cmd.beginRendering(m_depthImage.get(), VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, 
+            m_drawImage.get(), VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, &clearColour);
+
+        //set dynamic viewport and scissor
+        cmd.setViewport(m_drawExtent);
+        cmd.setScissor(m_drawExtent);
+
+        m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer);
+
+        cmd.endRendering();
+    }
+
+    std::vector<VkImageView> mipViews = m_hizImage->getMipMapViews();
+    VkDescriptorSet hizDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_downSampleModule->getDescriptorLayout());
+    writer.clear();
+    writer.writeImage(0, m_depthImage->getViewHandle(), VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.writeImageArray(1, mipViews, VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.writeImage(2, mipViews[5], VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.update_set(VulkanEngine::getDevice()->getHandle(), hizDescriptor);
+    m_downSampleModule->execute(&cmd, m_depthImage.get(), m_hizImage.get(), hizDescriptor, 0, m_hizImage->getMipCount(), modules::MAX);
+
+    cmd.barrier(*m_depthImage, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     
-    //begin a render pass  connected to our draw image
-    VkClearColorValue clearColour = { 0.f, 0.f, 0.f, 0.f };
-    cmd.beginRendering(m_depthImage.get(), m_drawImage.get(), &clearColour);
+    {
+        if (!m_stopUpdate) {
+            cmd.barrier(*m_hizImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, m_hizImage->getMipCount());
 
-    //set dynamic viewport and scissor
-    cmd.setViewport(m_drawExtent);
-    cmd.setScissor(m_drawExtent);
+            VkDescriptorSet cullDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_cullPipeline->getDescriptorLayout(0));
+            writer.clear();
+            writer.writeImage(0, m_hizImage->getViewHandle(), m_defaultSamplerNearest->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            writer.update_set(m_device->getHandle(), cullDescriptor);
+            m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get(), cullDescriptor, 1);
+        }
+        //begin a render pass  connected to our draw image
+        VkClearColorValue clearColour = { 0.f, 0.f, 0.f, 0.f };
+        cmd.beginRendering(m_depthImage.get(), VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_DONT_CARE, 
+            m_drawImage.get(), VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, nullptr);
 
-    m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer);
+        //set dynamic viewport and scissor
+        cmd.setViewport(m_drawExtent);
+        cmd.setScissor(m_drawExtent);
 
-    cmd.endRendering();
+        m_activeScene->draw(cmd, globalDescriptor, m_sceneData.viewproj, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer);
+
+        cmd.endRendering();
+    }
 
     auto end = std::chrono::steady_clock::now();
 
@@ -549,22 +595,14 @@ void VulkanEngine::recordCommands()
 
     drawGeometry(*cmd);
 
-    std::vector<VkImageView> mipViews = m_hizImage->getMipMapViews();
-    VkDescriptorSet hizDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_downSampleModule->getDescriptorLayout());
-    DescriptorWriter writer;
-    writer.writeImage(0, m_depthImage->getViewHandle(), VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    writer.writeImageArray(1, mipViews, VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-    writer.writeImage(2, mipViews[5], VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-    writer.update_set(VulkanEngine::getDevice()->getHandle(), hizDescriptor);
-    m_downSampleModule->execute(cmd, m_depthImage.get(), m_hizImage.get(), hizDescriptor, 0, m_hizImage->getMipCount(), modules::MAX);
-
     cmd->barrier(*m_drawImage, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
 
     m_tonemapModule->createHistogram(cmd);
 
     // begin UI pass
     cmd->barrier(swapchainImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
-    cmd->beginRendering(nullptr, &swapchainImage);
+    cmd->beginRendering(nullptr, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        &swapchainImage, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE);
 
     m_tonemapModule->applyTonemapping(cmd);
 

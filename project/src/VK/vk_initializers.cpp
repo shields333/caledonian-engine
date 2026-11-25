@@ -124,7 +124,7 @@ VkPresentInfoKHR vkinit::present_info()
 
 //> color_info
 VkRenderingAttachmentInfo vkinit::attachment_info(
-    VkImageView view, VkClearColorValue* clear ,VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
+    VkImageView view, VkClearColorValue* clear ,VkImageLayout layout, VkAttachmentLoadOp loadOp /*= VK_ATTACHMENT_LOAD_OP_CLEAR*/, VkAttachmentStoreOp storeOp /*= VK_ATTACHMENT_STORE_OP_STORE*/)
 {
     VkRenderingAttachmentInfo colorAttachment {};
     colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -132,8 +132,8 @@ VkRenderingAttachmentInfo vkinit::attachment_info(
 
     colorAttachment.imageView = view;
     colorAttachment.imageLayout = layout;
-    colorAttachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.loadOp = loadOp;
+    colorAttachment.storeOp = storeOp;
     if (clear) {
         colorAttachment.clearValue = static_cast<VkClearValue>(*clear);
     }
@@ -143,7 +143,7 @@ VkRenderingAttachmentInfo vkinit::attachment_info(
 //< color_info
 //> depth_info
 VkRenderingAttachmentInfo vkinit::depth_attachment_info(
-    VkImageView view, VkImageLayout layout /*= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL*/)
+    VkImageView view, VkImageLayout layout, VkAttachmentLoadOp loadOp /*= VK_ATTACHMENT_LOAD_OP_CLEAR*/, VkAttachmentStoreOp storeOp /*= VK_ATTACHMENT_STORE_OP_STORE*/)
 {
     VkRenderingAttachmentInfo depthAttachment {};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -151,8 +151,8 @@ VkRenderingAttachmentInfo vkinit::depth_attachment_info(
 
     depthAttachment.imageView = view;
     depthAttachment.imageLayout = layout;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.loadOp = loadOp;
+    depthAttachment.storeOp = storeOp;
     depthAttachment.clearValue.depthStencil.depth = 0.f;
 
     return depthAttachment;

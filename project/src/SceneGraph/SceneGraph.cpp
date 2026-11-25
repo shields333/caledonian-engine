@@ -153,7 +153,7 @@ void SceneGraph::updateContext(const glm::mat4& topMatrix)
     }
 }
 
-void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline)
+void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& drawsBuffer, ComputePipeline* cullpipeline, VkDescriptorSet descriptorSet, uint32_t pass)
 {
     uint32_t* opaqueDrawPtr = (uint32_t*)drawsBuffer.getInfo().pMappedData;
     uint32_t* cutoutDrawPtr = (uint32_t*)((char*)opaqueDrawPtr + sizeof(uint32_t));
@@ -164,11 +164,22 @@ void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& draw
     VulkanEngine::get().m_stats.drawcall_count = opaqueDrawPtr[0] + cutoutDrawPtr[0] + transparentDrawPtr[0];
 
     // reset draw counts to 0
-    memset(opaqueDrawPtr, 0, sizeof(uint32_t) * 3);
+    //memset(opaqueDrawPtr, 0, sizeof(uint32_t) * 3);
+
+    ResetCounterConstants resetConstants;
+    resetConstants.outDrawCountBuf = drawsBuffer.getAddress();
+    resetConstants.numOfCounters = 3;
+
+    cmd.bindPipeline(VulkanEngine::get().m_resetPipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+    // sizeof returns 16 bytes so manually setting size to 12
+    cmd.pushConstants(&resetConstants, 12, VulkanEngine::get().m_resetPipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
+    cmd.dispatch(1, 1, 1);
 
     CullPushConstants pushConstants;
     pushConstants.frustums = VulkanEngine::get().m_mainCamera.m_frustumPlanes;
     pushConstants.objCount = m_objectCount;
+    pushConstants.cull = pass;
     pushConstants.inInstanceBuf = m_instanceBuffer->getAddress();
     pushConstants.inTransformBuf = m_transformBuffer->getAddress();
     pushConstants.inSurfaceBuf = m_surfaceBuffer->getAddress();
@@ -177,6 +188,8 @@ void SceneGraph::cull(CommandBuffer& cmd, Buffer& objectDataBuffer, Buffer& draw
     pushConstants.outDrawBuf = drawsBuffer.getAddress() + sizeof(uint32_t)*3;
 
     cmd.bindPipeline(cullpipeline->getHandle(), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+    cmd.bindDescriptorSet(descriptorSet, cullpipeline->getLayout(), VK_PIPELINE_BIND_POINT_COMPUTE);
 
     cmd.pushConstants(&pushConstants, sizeof(CullPushConstants), cullpipeline->getLayout(), VK_SHADER_STAGE_COMPUTE_BIT);
 

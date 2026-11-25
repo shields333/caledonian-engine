@@ -52,12 +52,18 @@ struct GPUSceneData {
 struct CullPushConstants {
 	std::array<Camera::FrustumPlane, 6> frustums;
 	uint32_t		objCount;
+	uint32_t		cull;
 	VkDeviceAddress inInstanceBuf;
 	VkDeviceAddress inTransformBuf;
 	VkDeviceAddress inSurfaceBuf;
 	VkDeviceAddress outObjBuf;
 	VkDeviceAddress outDrawCountBuf;
 	VkDeviceAddress outDrawBuf;
+};
+
+struct ResetCounterConstants {
+	VkDeviceAddress outDrawCountBuf;
+	uint32_t numOfCounters;
 };
 
 struct LumHistConstants {
@@ -82,6 +88,7 @@ public:
 	DescriptorAllocatorGrowable m_globalDescriptorAllocator;
 
 	std::unique_ptr<ComputePipeline> m_cullPipeline;
+	std::unique_ptr<ComputePipeline> m_resetPipeline;
 
 	std::unordered_map<std::string, std::shared_ptr<SceneGraph>> loadedScenes;
 	std::shared_ptr<SceneGraph> m_activeScene;
@@ -114,8 +121,6 @@ public:
 	std::unique_ptr<Sampler> m_defaultSamplerLinear;
 	std::unique_ptr<Sampler> m_defaultSamplerNearest;
 	std::unique_ptr<Sampler> m_samplerMax;
-
-	VkDescriptorSet m_hizDescSet;
 
 	std::unique_ptr<FencePool> m_fencePool;
 

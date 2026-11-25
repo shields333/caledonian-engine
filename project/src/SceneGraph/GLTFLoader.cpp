@@ -716,7 +716,7 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
         if (MeshNode* meshNode = dynamic_cast<MeshNode*>(node.get())) {
             transformData.push_back(meshNode->worldTransform);
 
-            InstanceData instDatum;
+            InstanceData instDatum = {};
             instDatum.transformID = transformData.size() - 1;
 
             for (auto& surface : meshNode->mesh->getSurfaces()) {

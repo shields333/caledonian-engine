@@ -8,6 +8,7 @@ layout (local_size_x = 32) in;
 struct InstanceData{
     uint transformID;
     uint surfaceID;
+    bool visible;
 };
 layout(buffer_reference, std430) readonly buffer InstanceBuffer{
 	InstanceData data[];
@@ -44,11 +45,14 @@ layout(buffer_reference, std430) buffer VisibleDrawBuffer{
     VkDrawIndexedIndirectCommand data[];
 };
 
+layout (set = 0, binding = 0) uniform sampler2D hizTex;
+
 //push constants block
 layout( push_constant ) uniform Constants
 {
     vec4 frustums[6];
     uint objCount;
+    uint cull;
     InstanceBuffer inInstanceBuf;
     TransformBuffer inTransformBuf;
     SurfaceBuffer inSurfaceBuf;
@@ -73,31 +77,60 @@ void main()
     if (gl_GlobalInvocationID.x >= pushConstants.objCount)
         return;
 
-    InstanceData instance = pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x];
-
+    InstanceData instance = pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x]; 
     SurfaceData surface = pushConstants.inSurfaceBuf.data[instance.surfaceID];
 
-    if(frustumCull(surface)){    
-        mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
+    if (pushConstants.cull == 1){
+        if(frustumCull(surface)){    
+            if (!instance.visible){ // if the instance was visible then it has already been rendered
+                mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
 
-        uint counterID = BitfieldExtract(surface.bufferOffset, 0, 10);
-        uint drawOffset = BitfieldExtract(surface.bufferOffset, 10, 22);
-        
-        uint count = atomicAdd(pushConstants.outDrawCountBuf.counter[counterID], 1);
+                uint counterID = BitfieldExtract(surface.bufferOffset, 0, 10);
+                uint drawOffset = BitfieldExtract(surface.bufferOffset, 10, 22);
+                
+                uint count = atomicAdd(pushConstants.outDrawCountBuf.counter[counterID], 1);
 
-        VkDrawIndexedIndirectCommand drawCmd;
-        drawCmd.indexCount = surface.indexCount;
-        drawCmd.firstIndex = surface.firstIndex;
-        drawCmd.firstInstance = count;
-        drawCmd.instanceCount = 1;
-        drawCmd.vertexOffset = 0;
+                VkDrawIndexedIndirectCommand drawCmd;
+                drawCmd.indexCount = surface.indexCount;
+                drawCmd.firstIndex = surface.firstIndex;
+                drawCmd.firstInstance = count;
+                drawCmd.instanceCount = 1;
+                drawCmd.vertexOffset = 0;
 
-        ObjectData objData;
-        objData.modelMatrix = modelMatrix;
-        objData.matID = surface.matID;
-        
-        pushConstants.outObjBuf.data[drawOffset + count] = objData;
-        pushConstants.outDrawBuf.data[drawOffset + count] = drawCmd;
+                ObjectData objData;
+                objData.modelMatrix = modelMatrix;
+                objData.matID = surface.matID;
+                
+                pushConstants.outObjBuf.data[drawOffset + count] = objData;
+                pushConstants.outDrawBuf.data[drawOffset + count] = drawCmd;
+            }
+            pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x].visible = true;
+        } else {
+            pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x].visible = false;
+        }
+    } else {
+        if(instance.visible){
+            mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
+
+            uint counterID = BitfieldExtract(surface.bufferOffset, 0, 10);
+            uint drawOffset = BitfieldExtract(surface.bufferOffset, 10, 22);
+            
+            uint count = atomicAdd(pushConstants.outDrawCountBuf.counter[counterID], 1);
+
+            VkDrawIndexedIndirectCommand drawCmd;
+            drawCmd.indexCount = surface.indexCount;
+            drawCmd.firstIndex = surface.firstIndex;
+            drawCmd.firstInstance = count;
+            drawCmd.instanceCount = 1;
+            drawCmd.vertexOffset = 0;
+
+            ObjectData objData;
+            objData.modelMatrix = modelMatrix;
+            objData.matID = surface.matID;
+            
+            pushConstants.outObjBuf.data[drawOffset + count] = objData;
+            pushConstants.outDrawBuf.data[drawOffset + count] = drawCmd;
+        }
     }
 }
 

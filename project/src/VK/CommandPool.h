@@ -32,7 +32,8 @@ public:
 	void setViewport(VkExtent2D extent);
 	void setScissor(VkExtent2D extent);
 	void dispatch(uint32_t x, uint32_t y, uint32_t z);
-	void beginRendering(const Image* depth, const Image* colour, VkClearColorValue* clearColour = nullptr) const;
+	void beginRendering(const Image* depth, VkAttachmentLoadOp depthLoadOp, VkAttachmentStoreOp depthStoreOp,
+		const Image* colour, VkAttachmentLoadOp colourLoadOp, VkAttachmentStoreOp colourStoreOp, VkClearColorValue* clearColour = nullptr) const;
 	//void beginRendering(const Image* depth, VkAttachmentLoadOp depthLoad, VkAttachmentStoreOp depthStore, const Image* colour, VkAttachmentLoadOp colourLoad, VkAttachmentStoreOp colourStore) const;
 	void endRendering();
 	void draw(uint32_t vertexCount, uint32_t instanceCount,uint32_t firstVertex, uint32_t firstInstance);
