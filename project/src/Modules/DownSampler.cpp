@@ -9,7 +9,7 @@ namespace modules
 	DownSampler::DownSampler()
 	{
 		m_downSamplePipelines[0] = std::make_unique<ComputePipeline>(SHADER_PATH + "meanDownSampler.comp.spv");
-		m_downSamplePipelines[1] = std::make_unique<ComputePipeline>(SHADER_PATH + "maxDownSampler.comp.spv");
+		m_downSamplePipelines[1] = std::make_unique<ComputePipeline>(SHADER_PATH + "minDownSampler.comp.spv");
 
 		m_atomicBuffer = std::make_unique<Buffer>(sizeof(uint32_t), VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO);
 	}
@@ -39,8 +39,11 @@ namespace modules
 	void DownSampler::execute(CommandBuffer* cmd, Image* srcImg, Image* dstImg, VkDescriptorSet descSet, uint32_t firstMip, uint32_t mipCount, downSampleMode mode /*= MEAN*/)
 	{
 		uint32_t firstOutputMip = firstMip;
-		if (srcImg == dstImg)
+		glm::vec2 firstOutputExtent = glm::vec2(dstImg->getExtent2D().width, dstImg->getExtent2D().height); //TODO: select the correct mipmap extent
+		if (srcImg == dstImg) {
 			firstOutputMip = firstMip - 1;
+			firstOutputExtent /= 2;
+		}
 
 		// reset the counter
 		uint32_t* counter = static_cast<uint32_t*>(m_atomicBuffer->getInfo().pMappedData);
@@ -51,7 +54,8 @@ namespace modules
 		DownSamplerPushConstants constants = {
 			m_atomicBuffer->getAddress(),
 			firstOutputMip,
-			mipCount
+			mipCount,
+			firstOutputExtent
 		};
 
 		cmd->barrier(*srcImg, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, 1);

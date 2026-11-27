@@ -2,6 +2,7 @@
 
 #extension GL_GOOGLE_include_directive : require
 #include "draw_structures.glsl"
+#include "input_structures.glsl"
 
 layout (local_size_x = 32) in;
 
@@ -9,6 +10,9 @@ struct InstanceData{
     uint transformID;
     uint surfaceID;
     bool visible;
+    float boundsWidth;
+    float boundsHeight;
+    float mipIndex;
 };
 layout(buffer_reference, std430) readonly buffer InstanceBuffer{
 	InstanceData data[];
@@ -45,7 +49,7 @@ layout(buffer_reference, std430) buffer VisibleDrawBuffer{
     VkDrawIndexedIndirectCommand data[];
 };
 
-layout (set = 0, binding = 0) uniform sampler2D hizTex;
+layout (set = 0, binding = 1) uniform sampler2D hizTex;
 
 //push constants block
 layout( push_constant ) uniform Constants
@@ -64,11 +68,62 @@ layout( push_constant ) uniform Constants
 uint BitfieldExtract(uint src, uint off, uint bits) { uint mask = (1u << bits) - 1; return (src >> off) & mask; } // ABfe
 uint BitfieldInsert(uint src, uint ins, uint bits) { uint mask = (1u << bits) - 1; return (src << ins) & (mask << ins); } // ABfiM
 
+// 2D Polyhedral Bounds of a Clipped, Perspective-Projected 3D Sphere
+// https://jcgt.org/published/0002/02/05/
+bool tryCalculateSphereBounds(
+	vec3 _center,
+	float _radius,
+	float _zNear,
+	float _P00,
+	float _P11,
+	out vec4 _AABB)
+{
+	if (-_center.z < (_radius + _zNear))
+	{
+		return false;
+	}
+
+	vec2 centerXZ = -_center.xz;
+	vec2 vX = vec2(sqrt(dot(centerXZ, centerXZ) - _radius * _radius), _radius);
+	vec2 minX = mat2(vX.x, vX.y, -vX.y, vX.x) * centerXZ;
+	vec2 maxX = mat2(vX.x, -vX.y, vX.y, vX.x) * centerXZ;
+
+	vec2 centerYZ = -_center.yz;
+	vec2 vY = vec2(sqrt(dot(centerYZ, centerYZ) - _radius * _radius), _radius);
+	vec2 minY = mat2(vY.x, vY.y, -vY.y, vY.x) * centerYZ;
+	vec2 maxY = mat2(vY.x, -vY.y, vY.y, vY.x) * centerYZ;
+
+	_AABB = 0.5 - 0.5 * vec4(
+		minX.x / minX.y * _P00, minY.x / minY.y * _P11,
+		maxX.x / maxX.y * _P00, maxY.x / maxY.y * _P11);
+
+	return true;
+}
+
 bool frustumCull(SurfaceData surface) {
     for (int i = 0; i < 6; i++)
         if (((dot(surface.origin, pushConstants.frustums[i].xyz) + pushConstants.frustums[i].w) < -surface.radius)){
             return false;
         }
+    return true;
+}
+
+bool occlussionCull(SurfaceData surface) {
+    vec3 centreViewSpace = (sceneData.view * vec4(surface.origin, 1.0)).xyz;
+    float P00 = sceneData.proj[0][0];
+    float P11 = sceneData.proj[1][1];
+    float zNear = sceneData.proj[3][2];
+    vec4 AABB;
+    if (tryCalculateSphereBounds(centreViewSpace, surface.radius, zNear, P00, P11, AABB)){
+        float boundsWidth = pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x].boundsWidth = (AABB.z - AABB.x) * sceneData.hizSize.x;
+        float boundsHeight = pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x].boundsHeight = (AABB.w - AABB.y) * sceneData.hizSize.y;
+        float mipIndex = pushConstants.inInstanceBuf.data[gl_GlobalInvocationID.x].mipIndex = floor(log2(max(boundsWidth, boundsHeight)));
+
+        float occluderDepth = textureLod(hizTex, 0.5 * (AABB.xy + AABB.zw), mipIndex).x;
+        float nearestBoundsDepth = zNear / (-centreViewSpace.z - surface.radius);
+
+        return occluderDepth < nearestBoundsDepth;
+    }
     return true;
 }
 
@@ -81,7 +136,7 @@ void main()
     SurfaceData surface = pushConstants.inSurfaceBuf.data[instance.surfaceID];
 
     if (pushConstants.cull == 1){
-        if(frustumCull(surface)){    
+        if(frustumCull(surface) && occlussionCull(surface)){    
             if (!instance.visible){ // if the instance was visible then it has already been rendered
                 mat4 modelMatrix = pushConstants.inTransformBuf.data[instance.transformID];
 

@@ -318,6 +318,8 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
             file.images[materialResources.normalID]->setSampler(materialResources.normalSampler->getHandle());
             file.images[materialResources.normalID]->generateMipmaps();
+
+            constants.normalScale = mat.normalTexture->scale;
         }
         // look for emissive texture
         if (mat.emissiveTexture.has_value()) {
@@ -338,8 +340,6 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
         constants.metalRoughFactors.x = mat.pbrData.roughnessFactor;
         constants.metalRoughFactors.y = mat.pbrData.metallicFactor;
-
-        constants.normalScale = mat.normalTexture->scale;
 
         constants.emmisiveFactors.x = mat.emissiveFactor[0];
         constants.emmisiveFactors.y = mat.emissiveFactor[1];
@@ -436,6 +436,11 @@ std::optional<std::shared_ptr<SceneGraph>> loadGltf(std::string_view filePath)
 
     fmt::println("/////////////////////////////////////////// Loading Meshes ///////////////////////////////////////////");
 
+    maxThreads = std::thread::hardware_concurrency() - 1;
+    if (maxThreads > gltf.meshes.size())
+        maxThreads = gltf.meshes.size();
+
+    threads.resize(maxThreads);
     for (auto& t : threads) {
         t = std::thread([&]()
             {

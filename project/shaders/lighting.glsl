@@ -1,5 +1,7 @@
 #define PI 3.14159265359
 
+layout(set = 1, binding = 0) uniform sampler2D textures[];
+
 float D_GGX(float NoH, float a) 
 {
     float a2 = a * a;

@@ -2,7 +2,7 @@
 
 #extension GL_GOOGLE_include_directive : require
 
-#define compFunc(x, y, z, w) max(max(x, y), max(z, w));
+#define compFunc(x, y, z, w) min(min(x, y), min(z, w));
 
 #include "downSample.glsl"
 

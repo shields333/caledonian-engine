@@ -12,7 +12,7 @@ namespace modules
 {
 	enum downSampleMode {
 		MEAN = 0,
-		MAX = 1
+		MIN = 1
 	};
 
 	class DownSampler
@@ -40,6 +40,7 @@ namespace modules
 			VkDeviceAddress atomicCounter;
 			uint32_t baseMip;
 			uint32_t mipCount;
+			glm::vec2 hizExtents;
 		};
 	};
 

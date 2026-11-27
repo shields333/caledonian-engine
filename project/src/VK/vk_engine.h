@@ -47,6 +47,7 @@ struct GPUSceneData {
 	glm::vec4 sunlightDirection; // w for sun power
 	glm::vec4 sunlightColor;
 	glm::vec4 cameraPos;
+	glm::vec2  hizSize;
 };
 
 struct CullPushConstants {
@@ -120,7 +121,7 @@ public:
 
 	std::unique_ptr<Sampler> m_defaultSamplerLinear;
 	std::unique_ptr<Sampler> m_defaultSamplerNearest;
-	std::unique_ptr<Sampler> m_samplerMax;
+	std::unique_ptr<Sampler> m_samplerMin;
 
 	std::unique_ptr<FencePool> m_fencePool;
 

@@ -47,6 +47,9 @@ struct InstanceData {
     glm::uint transformID;
     glm::uint surfaceID;
     alignas (4) bool visible;
+    float boundsWidth;
+    float boundsHeight;
+    float mipIndex;
 };
 
 struct SurfaceData {

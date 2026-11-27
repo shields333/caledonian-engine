@@ -19,6 +19,7 @@ layout( push_constant ) uniform Constants
     AtomicCounter atomicCounter;
     uint baseMip;
     uint mipCount;
+    vec2 hizExtents;
 } pushConstants;
 
 
@@ -51,15 +52,13 @@ void calc4(uvec2 threadDims, inout uint outputMip, uvec2 binOffset, uvec2 writeB
 
 void downSample()
 {
-    ivec2 inputExtents = ivec2(textureSize(inputTex, 0));
-
     uvec2 threadDims = uvec2(THREADS_X, THREADS_Y) / 2;
     uint outputMip = pushConstants.baseMip;
     uvec2 binOffset = uvec2(THREADS_X, THREADS_Y) / 2;
     uvec2 writeBin = uvec2(gl_LocalInvocationID.xy % 2) * binOffset;
 
     // write out mip 1
-    vec2 uv = (vec2(gl_GlobalInvocationID.xy) * 2 + 1) / vec2(inputExtents);
+    vec2 uv = (vec2(gl_GlobalInvocationID.xy) + 0.5) / vec2(pushConstants.hizExtents);
     vec4 mip = textureLod(inputTex, uv, 0.0);
     imageStore(outputImg[outputMip], ivec2(gl_GlobalInvocationID.xy), mip);
 

@@ -34,3 +34,15 @@ const std::string SHADER_PATH = "../project/shaders/";
 inline uint32_t BitfieldExtract(uint32_t src, uint32_t off, uint32_t bits) { uint32_t mask = (1u << bits) - 1; return (src >> off) & mask; } // ABfe
 inline uint32_t BitfieldInsert(uint32_t src, uint32_t ins, uint32_t bits) { uint32_t mask = (1u << bits) - 1; return (src << ins) & (mask << ins); } // ABfiM
 
+inline uint32_t roundUpToPowerOfTwo(
+	float _value)
+{
+	float valueBase = glm::log2(_value);
+
+	if (glm::fract(valueBase) == 0.0f)
+	{
+		return _value;
+	}
+
+	return glm::pow(2.0f, glm::trunc(valueBase + 1.0f));
+}

@@ -182,7 +182,7 @@ void VulkanEngine::initVulkan()
     //We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct features
     vkb::PhysicalDeviceSelector selector{ vkbInst };
     vkb::PhysicalDevice physicalDevice = selector
-        .set_minimum_version(1, 4)
+        .set_minimum_version(1, 3)
         .set_required_features_13(features13)
         .set_required_features_12(features12)
         .set_required_features_11(features11)
@@ -380,6 +380,9 @@ void VulkanEngine::createTextures()
 
     VkSamplerCreateInfo sampl = { .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
     sampl.pNext = &reductMode;
+    sampl.maxLod = 12.f;
+    sampl.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampl.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
     sampl.magFilter = VK_FILTER_NEAREST;
     sampl.minFilter = VK_FILTER_NEAREST;
@@ -390,11 +393,12 @@ void VulkanEngine::createTextures()
     sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     m_defaultSamplerLinear = std::make_unique<Sampler>(sampl);
 
-    reductMode.reductionMode = VK_SAMPLER_REDUCTION_MODE_MAX;
+    reductMode.reductionMode = VK_SAMPLER_REDUCTION_MODE_MIN;
     sampl.magFilter = VK_FILTER_LINEAR;
     sampl.minFilter = VK_FILTER_LINEAR;
     sampl.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    m_samplerMax = std::make_unique<Sampler>(sampl);
+
+    m_samplerMin = std::make_unique<Sampler>(sampl);
 
     //3 default textures, white, grey, black. 1 pixel each
     uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
@@ -412,9 +416,9 @@ void VulkanEngine::createTextures()
         VK_IMAGE_USAGE_SAMPLED_BIT, (void*)&black);
     m_blackImage->setSampler(m_defaultSamplerNearest->getHandle());
 
-    m_hizImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R32_SFLOAT, VkExtent3D{ m_depthImage->getExtent().width / 2, m_depthImage->getExtent().height / 2, 1},
+    m_hizImage = std::make_unique<Image>(VkFormat::VK_FORMAT_R32_SFLOAT, VkExtent3D{ roundUpToPowerOfTwo(m_depthImage->getExtent().width / 2), roundUpToPowerOfTwo(m_depthImage->getExtent().height / 2), 1},
         VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_2_STORAGE_BIT_KHR, nullptr, true);
-    m_hizImage->setSampler(m_samplerMax->getHandle());
+    m_hizImage->setSampler(m_samplerMin->getHandle());
 
     //checkerboard image
     uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
@@ -435,7 +439,7 @@ void VulkanEngine::createTextures()
 
         m_defaultSamplerLinear.reset();
         m_defaultSamplerNearest.reset();
-        m_samplerMax.reset();
+        m_samplerMin.reset();
 
         m_errorCheckerboardImage.reset();
         m_blackImage.reset();
@@ -467,6 +471,8 @@ void VulkanEngine::update_scene()
     m_sceneData.sunlightColor = glm::vec4(glm::vec3(255.f, 255.f, 251.f) / 255.f, 3.f);
     m_sceneData.sunlightDirection = glm::vec4(0, -0.5, 0.5, 1.f);
 
+    m_sceneData.hizSize = glm::vec2(m_hizImage->getExtent().width, m_hizImage->getExtent().height);
+
     auto end = std::chrono::steady_clock::now();
 
     //convert to microseconds (integer), and then come back to miliseconds
@@ -495,16 +501,15 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     writer.update_set(m_device->getHandle(), globalDescriptor);
 
+    VkDescriptorSet cullDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_cullPipeline->getDescriptorLayout(0));
+    writer.clear();
+    writer.write_buffer(0, m_frames[m_frameNumber].m_gpuSceneDataBuffer->getHandle(), sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    writer.writeImage(1, m_hizImage->getViewHandle(), m_samplerMin->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.update_set(m_device->getHandle(), cullDescriptor);
     {
-        if (!m_stopUpdate) {
-            cmd.barrier(*m_hizImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, m_hizImage->getMipCount());
+        cmd.barrier(*m_hizImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, m_hizImage->getMipCount());
 
-            VkDescriptorSet cullDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_cullPipeline->getDescriptorLayout(0));
-            writer.clear();
-            writer.writeImage(0, m_hizImage->getViewHandle(), m_defaultSamplerNearest->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            writer.update_set(m_device->getHandle(), cullDescriptor);
-            m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get(), cullDescriptor, 0);
-        }
+        m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get(), cullDescriptor, 0);
         //begin a render pass  connected to our draw image
         VkClearColorValue clearColour = { 0.f, 0.f, 0.f, 0.f };
         cmd.beginRendering(m_depthImage.get(), VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, 
@@ -522,11 +527,11 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
     std::vector<VkImageView> mipViews = m_hizImage->getMipMapViews();
     VkDescriptorSet hizDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_downSampleModule->getDescriptorLayout());
     writer.clear();
-    writer.writeImage(0, m_depthImage->getViewHandle(), VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    writer.writeImageArray(1, mipViews, VulkanEngine::get().m_samplerMax->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+    writer.writeImage(0, m_depthImage->getViewHandle(), VulkanEngine::get().m_samplerMin->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    writer.writeImageArray(1, mipViews, VulkanEngine::get().m_samplerMin->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
     writer.writeImage(2, mipViews[5], VulkanEngine::get().m_defaultSamplerLinear->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_GENERAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
     writer.update_set(VulkanEngine::getDevice()->getHandle(), hizDescriptor);
-    m_downSampleModule->execute(&cmd, m_depthImage.get(), m_hizImage.get(), hizDescriptor, 0, m_hizImage->getMipCount(), modules::MAX);
+    m_downSampleModule->execute(&cmd, m_depthImage.get(), m_hizImage.get(), hizDescriptor, 0, m_hizImage->getMipCount(), modules::MIN);
 
     cmd.barrier(*m_depthImage, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     
@@ -534,10 +539,6 @@ void VulkanEngine::drawGeometry(CommandBuffer& cmd)
         if (!m_stopUpdate) {
             cmd.barrier(*m_hizImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 0, m_hizImage->getMipCount());
 
-            VkDescriptorSet cullDescriptor = m_frames[m_frameNumber].m_frameDescriptors.allocate(m_cullPipeline->getDescriptorLayout(0));
-            writer.clear();
-            writer.writeImage(0, m_hizImage->getViewHandle(), m_defaultSamplerNearest->getHandle(), VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            writer.update_set(m_device->getHandle(), cullDescriptor);
             m_activeScene->cull(cmd, *m_frames[m_frameNumber].m_objectDataBuffer, *m_frames[m_frameNumber].m_drawsBuffer, m_cullPipeline.get(), cullDescriptor, 1);
         }
         //begin a render pass  connected to our draw image

@@ -127,8 +127,8 @@ VkPipelineLayout vkutil::createPiplineLayout(const std::vector<SpvReflectShaderM
 				layoutBinding.descriptorType = static_cast<VkDescriptorType>(reflBinding.descriptor_type);
 				layoutBinding.descriptorCount = 1;
 
-				// assume that an array of 1 is boundless
-				if (reflBinding.array.dims_count == 1 && reflBinding.array.dims[0] == 1)
+				// assume that an array of 1 or 0 is boundless
+				if (reflBinding.array.dims_count == 1 && (reflBinding.array.dims[0] == 1 || reflBinding.array.dims[0] == 0))
 					layoutBinding.descriptorCount = UINT16_MAX;
 				else
 					for (uint32_t i_dim = 0; i_dim < reflBinding.array.dims_count; ++i_dim) {
